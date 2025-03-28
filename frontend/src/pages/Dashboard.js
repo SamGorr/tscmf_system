@@ -7,6 +7,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   AreaChart, Area
 } from 'recharts';
+import { MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
+import { formatGoodsList, formatCurrency, formatDate } from '../utils/dataUtils';
 
 // Set this to true to force using mock data instead of API
 const FORCE_MOCK_DATA = true;
@@ -27,242 +29,7 @@ const MOCK_DATA = {
     { id: 4, name: 'Import Loan', code: 'IL', category: 'FINANCING', interest_rate: 7.0 },
     { id: 5, name: 'Supply Chain Finance', code: 'SCF', category: 'FINANCING', interest_rate: 5.5 }
   ],
-  transactions: [
-    { 
-      id: 1, 
-      reference_number: 'TRX-2023-00001',
-      source: 'Email',
-      client_id: 1,
-      product_id: 1,
-      event_type: 'NEW',
-      status: 'Transaction Booked',
-      currency: 'USD',
-      amount: 250000,
-      created_at: '2023-01-15T10:30:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 2, 
-      reference_number: 'TRX-2023-00002',
-      source: 'File',
-      client_id: 3,
-      product_id: 2,
-      event_type: 'NEW',
-      status: 'Pending Review',
-      currency: 'EUR',
-      amount: 75000,
-      created_at: '2023-01-26T14:45:00Z',
-      type: 'Inquiry'
-    },
-    { 
-      id: 3, 
-      reference_number: 'TRX-2023-00003',
-      source: 'Manual',
-      client_id: 2,
-      product_id: 4,
-      event_type: 'NEW',
-      status: 'Viability Check Failed - Limit',
-      currency: 'USD',
-      amount: 500000,
-      created_at: '2023-02-18T09:15:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 4, 
-      reference_number: 'TRX-2023-00004',
-      source: 'Email',
-      client_id: 5,
-      product_id: 3,
-      event_type: 'NEW',
-      status: 'Viability Check Successes',
-      currency: 'GBP',
-      amount: 125000,
-      created_at: '2023-02-20T11:00:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 5, 
-      reference_number: 'TRX-2023-00005',
-      source: 'File',
-      client_id: 4,
-      product_id: 5,
-      event_type: 'NEW',
-      status: 'Transaction Rejected',
-      currency: 'USD',
-      amount: 350000,
-      created_at: '2023-02-28T16:30:00Z',
-      type: 'Cancellation'
-    },
-    { 
-      id: 6, 
-      reference_number: 'TRX-2023-00006',
-      source: 'Manual',
-      client_id: 1,
-      product_id: 2,
-      event_type: 'NEW',
-      status: 'Transaction Booked',
-      currency: 'USD',
-      amount: 180000,
-      created_at: '2023-03-10T09:20:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 7, 
-      reference_number: 'TRX-2023-00007',
-      source: 'Email',
-      client_id: 2,
-      product_id: 3,
-      event_type: 'NEW',
-      status: 'Viability Check Failed - Exposure',
-      currency: 'EUR',
-      amount: 220000,
-      created_at: '2023-03-15T14:30:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 8, 
-      reference_number: 'TRX-2023-00008',
-      source: 'Manual',
-      client_id: 3,
-      product_id: 1,
-      event_type: 'NEW',
-      status: 'Pending Review',
-      currency: 'USD',
-      amount: 85000,
-      created_at: '2023-03-22T11:45:00Z',
-      type: 'Inquiry'
-    },
-    { 
-      id: 9, 
-      reference_number: 'TRX-2023-00009',
-      source: 'File',
-      client_id: 4,
-      product_id: 4,
-      event_type: 'NEW',
-      status: 'Transaction Booked',
-      currency: 'GBP',
-      amount: 320000,
-      created_at: '2023-04-05T10:15:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 10, 
-      reference_number: 'TRX-2023-00010',
-      source: 'Email',
-      client_id: 5,
-      product_id: 5,
-      event_type: 'NEW',
-      status: 'Viability Check Successes',
-      currency: 'USD',
-      amount: 275000,
-      created_at: '2023-04-12T16:00:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 11, 
-      reference_number: 'TRX-2023-00011',
-      source: 'Manual',
-      client_id: 1,
-      product_id: 3,
-      event_type: 'NEW',
-      status: 'Transaction Booked',
-      currency: 'EUR',
-      amount: 150000,
-      created_at: '2023-04-20T09:30:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 12, 
-      reference_number: 'TRX-2023-00012',
-      source: 'File',
-      client_id: 2,
-      product_id: 2,
-      event_type: 'NEW',
-      status: 'Viability Check Failed - Sanction',
-      currency: 'USD',
-      amount: 420000,
-      created_at: '2023-05-03T13:45:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 13, 
-      reference_number: 'TRX-2023-00013',
-      source: 'Email',
-      client_id: 3,
-      product_id: 4,
-      event_type: 'NEW',
-      status: 'Pending Review',
-      currency: 'GBP',
-      amount: 195000,
-      created_at: '2023-05-15T11:20:00Z',
-      type: 'Inquiry'
-    },
-    { 
-      id: 14, 
-      reference_number: 'TRX-2023-00014',
-      source: 'Manual',
-      client_id: 4,
-      product_id: 1,
-      event_type: 'NEW',
-      status: 'Transaction Booked',
-      currency: 'USD',
-      amount: 310000,
-      created_at: '2023-05-22T15:10:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 15, 
-      reference_number: 'TRX-2023-00015',
-      source: 'File',
-      client_id: 5,
-      product_id: 5,
-      event_type: 'NEW',
-      status: 'Viability Check Failed - Eligibility',
-      currency: 'EUR',
-      amount: 265000,
-      created_at: '2023-06-01T10:45:00Z',
-      type: 'Cancellation'
-    },
-    { 
-      id: 16, 
-      reference_number: 'TRX-2023-00016',
-      source: 'Email',
-      client_id: 1,
-      product_id: 2,
-      event_type: 'NEW',
-      status: 'Transaction Booked',
-      currency: 'USD',
-      amount: 175000,
-      created_at: '2023-06-10T14:30:00Z',
-      type: 'Request'
-    },
-    { 
-      id: 17, 
-      reference_number: 'TRX-2023-00017',
-      source: 'Manual',
-      client_id: 2,
-      product_id: 3,
-      event_type: 'NEW',
-      status: 'Pending Review',
-      currency: 'GBP',
-      amount: 230000,
-      created_at: '2023-06-18T11:15:00Z',
-      type: 'Inquiry'
-    },
-    { 
-      id: 18, 
-      reference_number: 'TRX-2023-00018',
-      source: 'File',
-      client_id: 3,
-      product_id: 1,
-      event_type: 'NEW',
-      status: 'Viability Check Successes',
-      currency: 'USD',
-      amount: 290000,
-      created_at: '2023-06-25T09:50:00Z',
-      type: 'Request'
-    }
-  ]
+  transactions: MOCK_TRANSACTION_DATA
 };
 
 const Dashboard = () => {
@@ -872,6 +639,7 @@ const Dashboard = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goods</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -883,9 +651,10 @@ const Dashboard = () => {
                   <tr key={transaction.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{transaction.reference_number}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.source}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.client_id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.client_name || transaction.client_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.amount} {transaction.currency}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(transaction.amount, transaction.currency)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatGoodsList(transaction.goods_list)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${transaction.status.includes('Success') || transaction.status.includes('Booked') ? 'bg-green-100 text-green-800' : 
@@ -896,7 +665,7 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(transaction.created_at).toLocaleDateString()}
+                      {formatDate(transaction.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link to={`/transactions/${transaction.id}`} className="text-primary hover:text-primary-dark">View</Link>
@@ -905,7 +674,7 @@ const Dashboard = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">No transactions found</td>
+                  <td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">No transactions found</td>
                 </tr>
               )}
             </tbody>

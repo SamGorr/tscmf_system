@@ -1,67 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-
-// Mock data for when API fails
-const mockTransactionData = {
-  id: '1',
-  reference_number: 'TRX-MOCK-12345',
-  client_id: 'CLIENT-001',
-  client_name: 'Demo Bank Asia',
-  client_country: 'Singapore',
-  client_address: '123 Finance Street, Singapore 049320',
-  client_type: 'Issuing Bank',
-  risk_rating: 'A',
-  used_limit: '1,500,000',
-  approved_limit: '5,000,000',
-  onboard_date: '2023-01-15',
-  product_id: 'PRODUCT-001',
-  event_type: 'REQUEST',
-  amount: '250000',
-  currency: 'USD',
-  status: 'SUBMITTED',
-  source: 'Manual',
-  created_at: new Date().toISOString(),
-  entities: [
-    {
-      id: '1',
-      type: 'Issuing Bank',
-      name: 'Demo Bank Asia',
-      country: 'Singapore',
-      address: '123 Finance Street, Singapore 049320'
-    },
-    {
-      id: '2',
-      type: 'Confirming Bank',
-      name: 'Global Trust Bank',
-      country: 'United States',
-      address: '789 Banking Ave, New York, NY 10001'
-    },
-    {
-      id: '3',
-      type: 'Importer',
-      name: 'Tech Import Co.',
-      country: 'Vietnam',
-      address: '456 Import Boulevard, Ho Chi Minh City, Vietnam'
-    },
-    {
-      id: '4',
-      type: 'Supplier',
-      name: 'Acme Trading Co.',
-      country: 'Vietnam',
-      address: '456 Export Road, Ho Chi Minh City, Vietnam'
-    }
-  ],
-  goods_list: 'Electronic Components\nSemiconductor Parts\nCircuit Boards',
-  industry: 'Electronics Manufacturing',
-  sanctions_check_passed: null,
-  eligibility_check_passed: null,
-  limits_check_passed: null,
-  exposure_check_passed: null,
-  request_date: new Date().toISOString(),
-  approval_date: null,
-  completion_date: null
-};
+import { mockTransactionData, MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
+import { 
+  normalizeTransaction, 
+  normalizeGoodsList, 
+  formatCurrency, 
+  formatDate
+} from '../utils/dataUtils';
 
 const TransactionDetail = () => {
   const { id } = useParams();
@@ -113,28 +59,20 @@ const TransactionDetail = () => {
       try {
         // First attempt to fetch from API
         const response = await axios.get(`http://localhost:8000/api/transactions/${id}`);
-        setTransaction(response.data);
+        const normalizedData = normalizeTransaction(response.data);
+        setTransaction(normalizedData);
         
-        // Set entities from API response or initialize empty array
-        setEntities(response.data.entities || []);
+        // Set entities from normalized response
+        setEntities(normalizedData.entities);
         
-        // Initialize trade goods from goods_list (convert string to array of objects)
-        const goodsList = response.data.goods_list || '';
-        const parsedGoods = goodsList.split('\n')
-          .filter(item => item.trim().length > 0)
-          .map((item, index) => ({
-            id: `good-${index + 1}`,
-            name: item.trim(),
-            quantity: '',
-            unit: ''
-          }));
-        setTradeGoods(parsedGoods);
+        // Set trade goods from normalized response
+        setTradeGoods(normalizedData.goods_list);
         
         // Initialize form data from transaction
-        if (response.data) {
+        if (normalizedData) {
           setFormData({
-            goodsList: response.data.goods_list || '',
-            industry: response.data.industry || ''
+            goodsList: normalizedData.goods_list,
+            industry: normalizedData.industry || ''
           });
         }
         
@@ -144,26 +82,22 @@ const TransactionDetail = () => {
         
         // If API fails, use mock data instead of showing error
         console.log('Using mock data for demonstration');
-        const mockData = {...mockTransactionData, id};
-        setTransaction(mockData);
-        setEntities(mockData.entities || []);
         
-        // Initialize trade goods from mock data
-        const goodsList = mockData.goods_list || '';
-        const parsedGoods = goodsList.split('\n')
-          .filter(item => item.trim().length > 0)
-          .map((item, index) => ({
-            id: `good-${index + 1}`,
-            name: item.trim(),
-            quantity: '',
-            unit: ''
-          }));
-        setTradeGoods(parsedGoods);
+        // First try to find the transaction in our MOCK_TRANSACTION_DATA array
+        const foundTransaction = MOCK_TRANSACTION_DATA.find(t => t.id.toString() === id);
+        
+        // If found, use that transaction data, otherwise use the default mockTransactionData with updated ID
+        const mockData = foundTransaction || {...mockTransactionData, id};
+        const normalizedData = normalizeTransaction(mockData);
+        
+        setTransaction(normalizedData);
+        setEntities(normalizedData.entities);
+        setTradeGoods(normalizedData.goods_list);
         
         // Initialize form data from mock transaction
         setFormData({
-          goodsList: mockData.goods_list || '',
-          industry: mockData.industry || ''
+          goodsList: normalizedData.goods_list,
+          industry: normalizedData.industry || ''
         });
         
         setLoading(false);
@@ -260,11 +194,9 @@ const TransactionDetail = () => {
     try {
       setProcessingAction(true);
       
-      // Convert tradeGoods array back to string for API
-      const goodsList = tradeGoods.map(good => good.name).join('\n');
-      
+      // Using the tradeGoods array directly now
       const response = await axios.put(`http://localhost:8000/api/transactions/${id}`, {
-        goods_list: goodsList,
+        goods_list: tradeGoods,
         industry: formData.industry
       });
       
@@ -274,12 +206,10 @@ const TransactionDetail = () => {
     } catch (err) {
       console.error('Error updating trading information:', err);
       
-      // Convert tradeGoods array back to string for local state
-      const goodsList = tradeGoods.map(good => good.name).join('\n');
-      
+      // Update local transaction state with form data
       setTransaction(prev => ({
         ...prev,
-        goods_list: goodsList,
+        goods_list: tradeGoods,
         industry: formData.industry
       }));
       setIsEditingTrading(false);
@@ -297,7 +227,9 @@ const TransactionDetail = () => {
       setProcessingAction(true);
       
       const response = await axios.put(`http://localhost:8000/api/transactions/${id}`, {
-        entities: entities
+        entities: entities,
+        goods_list: tradeGoods,
+        industry: formData.industry
       });
       
       setTransaction(response.data);
@@ -309,13 +241,10 @@ const TransactionDetail = () => {
       // If API fails, update local state with form data
       console.log('Using mock data for demonstration');
       
-      // Convert tradeGoods array back to string for local state
-      const goodsList = tradeGoods.map(good => good.name).join('\n');
-      
       setTransaction(prev => ({
         ...prev,
         entities: entities,
-        goods_list: goodsList,
+        goods_list: tradeGoods,
         industry: formData.industry
       }));
       setIsEditing(false);
@@ -587,7 +516,7 @@ const TransactionDetail = () => {
               <h2 className="text-lg font-medium text-gray-800">
                 {transaction.reference_number}
               </h2>
-              <p className="text-sm text-gray-500">Created on {new Date(transaction.created_at).toLocaleString()}</p>
+              <p className="text-sm text-gray-500">Created on {formatDate(transaction.created_at, true)}</p>
             </div>
             <div className="flex items-center space-x-2">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(transaction.status)}`}>
@@ -611,7 +540,9 @@ const TransactionDetail = () => {
             
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">Amount</h3>
-              <p className="text-base">{transaction.amount} {transaction.currency}</p>
+              <p className="text-lg text-gray-800 font-medium">
+                {formatCurrency(transaction.amount, transaction.currency)}
+              </p>
             </div>
             
             <div>
@@ -955,7 +886,7 @@ const TransactionDetail = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-800">
-                {currentTradeGoodIndex !== null ? 'Edit Good' : 'Add New Good'}
+                {currentTradeGoodIndex !== null ? 'Edit Trade Good' : 'Add New Trade Good'}
               </h3>
             </div>
             <form onSubmit={handleTradeGoodSubmit}>
@@ -980,10 +911,10 @@ const TransactionDetail = () => {
                     value={tradeGoodFormData.quantity}
                     onChange={handleTradeGoodInputChange}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                    placeholder="e.g. 1000"
+                    placeholder="Enter quantity"
                   />
                 </div>
-                <div>
+                <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
                   <select
                     name="unit"
@@ -992,30 +923,36 @@ const TransactionDetail = () => {
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                   >
                     <option value="">Select Unit</option>
-                    <option value="pcs">Pieces</option>
-                    <option value="kg">Kilograms</option>
-                    <option value="tons">Tons</option>
-                    <option value="liters">Liters</option>
-                    <option value="m">Meters</option>
-                    <option value="m2">Square Meters</option>
-                    <option value="m3">Cubic Meters</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="pallets">Pallets</option>
-                    <option value="containers">Containers</option>
+                    <option value="pcs">Pieces (pcs)</option>
+                    <option value="units">Units</option>
+                    <option value="tonnes">Tonnes</option>
+                    <option value="kg">Kilograms (kg)</option>
+                    <option value="g">Grams (g)</option>
+                    <option value="lbs">Pounds (lbs)</option>
+                    <option value="litres">Litres</option>
+                    <option value="gallons">Gallons</option>
+                    <option value="barrels">Barrels</option>
+                    <option value="m">Meters (m)</option>
+                    <option value="ft">Feet (ft)</option>
+                    <option value="sqm">Square Meters (sqm)</option>
+                    <option value="MCF">Thousand Cubic Feet (MCF)</option>
+                    <option value="lot">Lot</option>
+                    <option value="package">Package</option>
+                    <option value="container">Container</option>
                   </select>
                 </div>
               </div>
-              <div className="px-6 py-3 bg-gray-50 flex justify-end space-x-2 rounded-b-lg">
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setShowTradeGoodModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   {currentTradeGoodIndex !== null ? 'Update' : 'Add'}
                 </button>
