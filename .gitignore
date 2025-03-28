@@ -10,7 +10,9 @@ backend/node_modules/
 mcp.json
 
 # Python
-/backend/app/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Production build files
 /build
