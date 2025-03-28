@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: tscmf-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tscmf_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tscmf-network
+
+  backend:
+    build: ./backend
+    container_name: tscmf-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=tscmf_db
+      - CORS_ORIGINS=*
+    depends_on:
+      - postgres
+    networks:
+      - tscmf-network
+
+  frontend:
+    build: ./frontend
+    container_name: tscmf-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://backend:8000
+      - WDS_SOCKET_HOST=127.0.0.1
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=0
+      - HOST=0.0.0.0
+      - PUBLIC_URL=http://localhost:3000
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    networks:
+      - tscmf-network
+
+networks:
+  tscmf-network:
+    driver: bridge
+
+volumes:
+  postgres_data: 

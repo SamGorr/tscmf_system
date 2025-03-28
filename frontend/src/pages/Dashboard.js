@@ -1,0 +1,927 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+import { AdjustmentsHorizontalIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
+  AreaChart, Area
+} from 'recharts';
+
+// Set this to true to force using mock data instead of API
+const FORCE_MOCK_DATA = true;
+
+// Mock data for testing when API is not available
+const MOCK_DATA = {
+  clients: [
+    { id: 1, name: 'Global Traders Inc.', code: 'GTI', client_type: 'CORPORATE', country: 'USA' },
+    { id: 2, name: 'Eastern Suppliers Ltd.', code: 'ESL', client_type: 'CORPORATE', country: 'China' },
+    { id: 3, name: 'African Farmers Cooperative', code: 'AFC', client_type: 'SME', country: 'Kenya' },
+    { id: 4, name: 'South American Exporters', code: 'SAE', client_type: 'CORPORATE', country: 'Brazil' },
+    { id: 5, name: 'European Distribution Network', code: 'EDN', client_type: 'CORPORATE', country: 'Germany' }
+  ],
+  products: [
+    { id: 1, name: 'Invoice Financing', code: 'IF', category: 'FINANCING', interest_rate: 5.75 },
+    { id: 2, name: 'Warehouse Receipt Financing', code: 'WRF', category: 'FINANCING', interest_rate: 6.25 },
+    { id: 3, name: 'Export Credit Insurance', code: 'ECI', category: 'INSURANCE', premium_rate: 2.5 },
+    { id: 4, name: 'Import Loan', code: 'IL', category: 'FINANCING', interest_rate: 7.0 },
+    { id: 5, name: 'Supply Chain Finance', code: 'SCF', category: 'FINANCING', interest_rate: 5.5 }
+  ],
+  transactions: [
+    { 
+      id: 1, 
+      reference_number: 'TRX-2023-00001',
+      source: 'Email',
+      client_id: 1,
+      product_id: 1,
+      event_type: 'NEW',
+      status: 'Transaction Booked',
+      currency: 'USD',
+      amount: 250000,
+      created_at: '2023-01-15T10:30:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 2, 
+      reference_number: 'TRX-2023-00002',
+      source: 'File',
+      client_id: 3,
+      product_id: 2,
+      event_type: 'NEW',
+      status: 'Pending Review',
+      currency: 'EUR',
+      amount: 75000,
+      created_at: '2023-01-26T14:45:00Z',
+      type: 'Inquiry'
+    },
+    { 
+      id: 3, 
+      reference_number: 'TRX-2023-00003',
+      source: 'Manual',
+      client_id: 2,
+      product_id: 4,
+      event_type: 'NEW',
+      status: 'Viability Check Failed - Limit',
+      currency: 'USD',
+      amount: 500000,
+      created_at: '2023-02-18T09:15:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 4, 
+      reference_number: 'TRX-2023-00004',
+      source: 'Email',
+      client_id: 5,
+      product_id: 3,
+      event_type: 'NEW',
+      status: 'Viability Check Successes',
+      currency: 'GBP',
+      amount: 125000,
+      created_at: '2023-02-20T11:00:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 5, 
+      reference_number: 'TRX-2023-00005',
+      source: 'File',
+      client_id: 4,
+      product_id: 5,
+      event_type: 'NEW',
+      status: 'Transaction Rejected',
+      currency: 'USD',
+      amount: 350000,
+      created_at: '2023-02-28T16:30:00Z',
+      type: 'Cancellation'
+    },
+    { 
+      id: 6, 
+      reference_number: 'TRX-2023-00006',
+      source: 'Manual',
+      client_id: 1,
+      product_id: 2,
+      event_type: 'NEW',
+      status: 'Transaction Booked',
+      currency: 'USD',
+      amount: 180000,
+      created_at: '2023-03-10T09:20:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 7, 
+      reference_number: 'TRX-2023-00007',
+      source: 'Email',
+      client_id: 2,
+      product_id: 3,
+      event_type: 'NEW',
+      status: 'Viability Check Failed - Exposure',
+      currency: 'EUR',
+      amount: 220000,
+      created_at: '2023-03-15T14:30:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 8, 
+      reference_number: 'TRX-2023-00008',
+      source: 'Manual',
+      client_id: 3,
+      product_id: 1,
+      event_type: 'NEW',
+      status: 'Pending Review',
+      currency: 'USD',
+      amount: 85000,
+      created_at: '2023-03-22T11:45:00Z',
+      type: 'Inquiry'
+    },
+    { 
+      id: 9, 
+      reference_number: 'TRX-2023-00009',
+      source: 'File',
+      client_id: 4,
+      product_id: 4,
+      event_type: 'NEW',
+      status: 'Transaction Booked',
+      currency: 'GBP',
+      amount: 320000,
+      created_at: '2023-04-05T10:15:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 10, 
+      reference_number: 'TRX-2023-00010',
+      source: 'Email',
+      client_id: 5,
+      product_id: 5,
+      event_type: 'NEW',
+      status: 'Viability Check Successes',
+      currency: 'USD',
+      amount: 275000,
+      created_at: '2023-04-12T16:00:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 11, 
+      reference_number: 'TRX-2023-00011',
+      source: 'Manual',
+      client_id: 1,
+      product_id: 3,
+      event_type: 'NEW',
+      status: 'Transaction Booked',
+      currency: 'EUR',
+      amount: 150000,
+      created_at: '2023-04-20T09:30:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 12, 
+      reference_number: 'TRX-2023-00012',
+      source: 'File',
+      client_id: 2,
+      product_id: 2,
+      event_type: 'NEW',
+      status: 'Viability Check Failed - Sanction',
+      currency: 'USD',
+      amount: 420000,
+      created_at: '2023-05-03T13:45:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 13, 
+      reference_number: 'TRX-2023-00013',
+      source: 'Email',
+      client_id: 3,
+      product_id: 4,
+      event_type: 'NEW',
+      status: 'Pending Review',
+      currency: 'GBP',
+      amount: 195000,
+      created_at: '2023-05-15T11:20:00Z',
+      type: 'Inquiry'
+    },
+    { 
+      id: 14, 
+      reference_number: 'TRX-2023-00014',
+      source: 'Manual',
+      client_id: 4,
+      product_id: 1,
+      event_type: 'NEW',
+      status: 'Transaction Booked',
+      currency: 'USD',
+      amount: 310000,
+      created_at: '2023-05-22T15:10:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 15, 
+      reference_number: 'TRX-2023-00015',
+      source: 'File',
+      client_id: 5,
+      product_id: 5,
+      event_type: 'NEW',
+      status: 'Viability Check Failed - Eligibility',
+      currency: 'EUR',
+      amount: 265000,
+      created_at: '2023-06-01T10:45:00Z',
+      type: 'Cancellation'
+    },
+    { 
+      id: 16, 
+      reference_number: 'TRX-2023-00016',
+      source: 'Email',
+      client_id: 1,
+      product_id: 2,
+      event_type: 'NEW',
+      status: 'Transaction Booked',
+      currency: 'USD',
+      amount: 175000,
+      created_at: '2023-06-10T14:30:00Z',
+      type: 'Request'
+    },
+    { 
+      id: 17, 
+      reference_number: 'TRX-2023-00017',
+      source: 'Manual',
+      client_id: 2,
+      product_id: 3,
+      event_type: 'NEW',
+      status: 'Pending Review',
+      currency: 'GBP',
+      amount: 230000,
+      created_at: '2023-06-18T11:15:00Z',
+      type: 'Inquiry'
+    },
+    { 
+      id: 18, 
+      reference_number: 'TRX-2023-00018',
+      source: 'File',
+      client_id: 3,
+      product_id: 1,
+      event_type: 'NEW',
+      status: 'Viability Check Successes',
+      currency: 'USD',
+      amount: 290000,
+      created_at: '2023-06-25T09:50:00Z',
+      type: 'Request'
+    }
+  ]
+};
+
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    clients: 0,
+    products: 0,
+    transactions: {
+      total: 0,
+      approved: 0,
+      processing: 0,
+      declined: 0
+    }
+  });
+  const [transactions, setTransactions] = useState([]);
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Filter states
+  const [filters, setFilters] = useState({
+    type: '',
+    status: '',
+    dateFrom: '',
+    dateTo: '',
+    amountMin: '',
+    amountMax: '',
+  });
+
+  // Transaction types and statuses
+  const transactionTypes = ['Inquiry', 'Request', 'Cancellation', 'Closure'];
+  const transactionStatuses = [
+    'Pending Review', 
+    'Viability Check Successes', 
+    'Viability Check Failed - Sanction', 
+    'Viability Check Failed - Limit', 
+    'Viability Check Failed - Exposure', 
+    'Viability Check Failed - Eligibility', 
+    'Transaction Booked', 
+    'Transaction Rejected'
+  ];
+
+  // Chart colors
+  const COLORS = ['#007DB7', '#00A5D2', '#00B6C9', '#8DC63F', '#FDB515', '#FF7F50', '#9370DB', '#20B2AA'];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (FORCE_MOCK_DATA) {
+          // Use mock data
+          const clientsData = MOCK_DATA.clients;
+          const productsData = MOCK_DATA.products;
+          const transactionsData = MOCK_DATA.transactions.map(t => ({
+            ...t,
+            type: t.type || transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
+            status: t.status || transactionStatuses[Math.floor(Math.random() * transactionStatuses.length)]
+          }));
+          
+          // Count transactions by status
+          const approved = transactionsData.filter(t => 
+            t.status === 'Transaction Booked' || t.status === 'Viability Check Successes'
+          ).length;
+          const processing = transactionsData.filter(t => 
+            t.status === 'Pending Review'
+          ).length;
+          const declined = transactionsData.filter(t => 
+            t.status.includes('Failed') || t.status === 'Transaction Rejected'
+          ).length;
+          
+          setStats({
+            clients: clientsData.length,
+            products: productsData.length,
+            transactions: {
+              total: transactionsData.length,
+              approved,
+              processing,
+              declined
+            }
+          });
+          
+          setTransactions(transactionsData);
+          setFilteredTransactions(transactionsData);
+          
+          // Get 5 most recent transactions
+          const sorted = [...transactionsData].sort((a, b) => 
+            new Date(b.created_at) - new Date(a.created_at)
+          ).slice(0, 5);
+          
+          setRecentTransactions(sorted);
+          setLoading(false);
+          return;
+        }
+        
+        // If not using mock data, try the API...
+        // Get the API URL from environment variable
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://backend:8000';
+        
+        try {
+          // In a real app, you'd likely have a dedicated endpoint for dashboard stats
+          // For demo purposes, we'll make multiple calls
+          const [clientsRes, productsRes, transactionsRes] = await Promise.all([
+            axios.get(`${apiUrl}/api/clients`),
+            axios.get(`${apiUrl}/api/products`),
+            axios.get(`${apiUrl}/api/transactions`)
+          ]);
+          
+          // Process API data
+          const enhancedTransactions = transactionsRes.data.map(t => ({
+            ...t,
+            type: transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
+            status: transactionStatuses[Math.floor(Math.random() * transactionStatuses.length)],
+            source: ['Email', 'File', 'Manual'][Math.floor(Math.random() * 3)]
+          }));
+          
+          // Count transactions by status
+          const approved = enhancedTransactions.filter(t => 
+            t.status === 'Transaction Booked' || t.status === 'Viability Check Successes'
+          ).length;
+          const processing = enhancedTransactions.filter(t => 
+            t.status === 'Pending Review'
+          ).length;
+          const declined = enhancedTransactions.filter(t => 
+            t.status.includes('Failed') || t.status === 'Transaction Rejected'
+          ).length;
+          
+          setStats({
+            clients: clientsRes.data.length,
+            products: productsRes.data.length,
+            transactions: {
+              total: enhancedTransactions.length,
+              approved,
+              processing,
+              declined
+            }
+          });
+          
+          setTransactions(enhancedTransactions);
+          setFilteredTransactions(enhancedTransactions);
+          
+          // Get 5 most recent transactions
+          const sorted = [...enhancedTransactions].sort((a, b) => 
+            new Date(b.created_at) - new Date(a.created_at)
+          ).slice(0, 5);
+          
+          setRecentTransactions(sorted);
+          setLoading(false);
+        } catch (apiError) {
+          // API failed, use mock data anyway
+          console.error('API error, falling back to mock data:', apiError);
+          
+          // Use mock data
+          const clientsData = MOCK_DATA.clients;
+          const productsData = MOCK_DATA.products;
+          const transactionsData = MOCK_DATA.transactions.map(t => ({
+            ...t,
+            type: t.type || transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
+            status: t.status || transactionStatuses[Math.floor(Math.random() * transactionStatuses.length)]
+          }));
+          
+          // Count transactions by status
+          const approved = transactionsData.filter(t => 
+            t.status === 'Transaction Booked' || t.status === 'Viability Check Successes'
+          ).length;
+          const processing = transactionsData.filter(t => 
+            t.status === 'Pending Review'
+          ).length;
+          const declined = transactionsData.filter(t => 
+            t.status.includes('Failed') || t.status === 'Transaction Rejected'
+          ).length;
+          
+          setStats({
+            clients: clientsData.length,
+            products: productsData.length,
+            transactions: {
+              total: transactionsData.length,
+              approved,
+              processing,
+              declined
+            }
+          });
+          
+          setTransactions(transactionsData);
+          setFilteredTransactions(transactionsData);
+          
+          // Get 5 most recent transactions
+          const sorted = [...transactionsData].sort((a, b) => 
+            new Date(b.created_at) - new Date(a.created_at)
+          ).slice(0, 5);
+          
+          setRecentTransactions(sorted);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error in dashboard:', err);
+        setError('Failed to load dashboard data: ' + (err.message || 'Unknown error'));
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Apply filters function
+  const applyFilters = () => {
+    let result = [...transactions];
+    
+    if (filters.type) {
+      result = result.filter(t => t.type === filters.type);
+    }
+    
+    if (filters.status) {
+      result = result.filter(t => t.status === filters.status);
+    }
+    
+    if (filters.dateFrom) {
+      const fromDate = new Date(filters.dateFrom);
+      result = result.filter(t => new Date(t.created_at) >= fromDate);
+    }
+    
+    if (filters.dateTo) {
+      const toDate = new Date(filters.dateTo);
+      toDate.setHours(23, 59, 59, 999); // End of day
+      result = result.filter(t => new Date(t.created_at) <= toDate);
+    }
+    
+    if (filters.amountMin) {
+      result = result.filter(t => parseFloat(t.amount) >= parseFloat(filters.amountMin));
+    }
+    
+    if (filters.amountMax) {
+      result = result.filter(t => parseFloat(t.amount) <= parseFloat(filters.amountMax));
+    }
+    
+    setFilteredTransactions(result);
+  };
+
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({
+      ...filters,
+      [name]: value
+    });
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setFilters({
+      type: '',
+      status: '',
+      dateFrom: '',
+      dateTo: '',
+      amountMin: '',
+      amountMax: '',
+    });
+    setFilteredTransactions(transactions);
+  };
+
+  // Prepare chart data functions
+  const prepareStatusChartData = () => {
+    // Group by status
+    const statusCounts = {};
+    filteredTransactions.forEach(t => {
+      statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
+    });
+    
+    return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+  };
+  
+  const prepareTypeChartData = () => {
+    // Group by type
+    const typeCounts = {};
+    filteredTransactions.forEach(t => {
+      typeCounts[t.type] = (typeCounts[t.type] || 0) + 1;
+    });
+    
+    return Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
+  };
+  
+  const prepareMonthlyChartData = () => {
+    // Group by month for time series data
+    const monthlyCounts = {};
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    filteredTransactions.forEach(t => {
+      const date = new Date(t.created_at);
+      const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      monthlyCounts[monthKey] = (monthlyCounts[monthKey] || 0) + 1;
+    });
+    
+    // Sort by month chronologically
+    return Object.entries(monthlyCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => {
+        const [aMonth, aYear] = a.name.split(' ');
+        const [bMonth, bYear] = b.name.split(' ');
+        return new Date(`${aMonth} 1, ${aYear}`) - new Date(`${bMonth} 1, ${bYear}`);
+      });
+  };
+
+  const statusChartData = prepareStatusChartData();
+  const typeChartData = prepareTypeChartData();
+  const monthlyChartData = prepareMonthlyChartData();
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 p-4 rounded-md">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-red-800">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 bg-primary-light p-3 rounded-md">
+              <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <h2 className="text-sm font-medium text-gray-500">Total Clients</h2>
+              <p className="text-3xl font-semibold text-gray-800">{stats.clients}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 bg-secondary p-3 rounded-md">
+              <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <h2 className="text-sm font-medium text-gray-500">Total Products</h2>
+              <p className="text-3xl font-semibold text-gray-800">{stats.products}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 bg-accent p-3 rounded-md">
+              <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <h2 className="text-sm font-medium text-gray-500">Total Transactions</h2>
+              <p className="text-3xl font-semibold text-gray-800">{stats.transactions.total}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 bg-warning p-3 rounded-md">
+              <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <h2 className="text-sm font-medium text-gray-500">Approved Transactions</h2>
+              <p className="text-3xl font-semibold text-gray-800">{stats.transactions.approved}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Data Visualization - All charts side by side */}
+      <div className="mb-8">
+        <h3 className="text-lg font-medium text-gray-800 mb-4">Transaction Analytics</h3>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Status Donut Chart */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">By Status</h4>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusChartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={70}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    paddingAngle={5}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name.split(' ')[0]}: ${(percent * 100).toFixed(0)}%`}
+                    labelLine={true}
+                  >
+                    {statusChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} transactions`, 'Count']} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Transaction Type Bar Chart */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">By Type</h4>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={typeChartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar 
+                    dataKey="value" 
+                    name="Transactions" 
+                    fill="#8DC63F" 
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Monthly Area Chart */}
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Monthly Trend</h4>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={monthlyChartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 30 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    name="Transactions" 
+                    stroke="#007DB7" 
+                    fill="#007DB7" 
+                    fillOpacity={0.6} 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Transactions Table with Filters */}
+      <div className="bg-white rounded-lg shadow-md mb-8">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-lg font-medium text-gray-800">Transactions</h3>
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <AdjustmentsHorizontalIcon className="h-4 w-4 mr-1" />
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
+            <button 
+              onClick={resetFilters}
+              className="flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+            >
+              <ArrowPathIcon className="h-4 w-4 mr-1" />
+              Reset
+            </button>
+          </div>
+        </div>
+        
+        {/* Filters Section */}
+        {showFilters && (
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
+                <select
+                  name="type"
+                  value={filters.type}
+                  onChange={handleFilterChange}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                >
+                  <option value="">All Types</option>
+                  {transactionTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                >
+                  <option value="">All Statuses</option>
+                  {transactionStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                <input
+                  type="date"
+                  name="dateFrom"
+                  value={filters.dateFrom}
+                  onChange={handleFilterChange}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                <input
+                  type="date"
+                  name="dateTo"
+                  value={filters.dateTo}
+                  onChange={handleFilterChange}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Min Amount</label>
+                <input
+                  type="number"
+                  name="amountMin"
+                  value={filters.amountMin}
+                  onChange={handleFilterChange}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                  placeholder="0.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max Amount</label>
+                <input
+                  type="number"
+                  name="amountMax"
+                  value={filters.amountMax}
+                  onChange={handleFilterChange}
+                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={applyFilters}
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Transactions Table */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredTransactions.length ? (
+                filteredTransactions.slice(0, 10).map((transaction) => (
+                  <tr key={transaction.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{transaction.reference_number}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.source}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.client_id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.amount} {transaction.currency}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${transaction.status.includes('Success') || transaction.status.includes('Booked') ? 'bg-green-100 text-green-800' : 
+                          transaction.status.includes('Pending') ? 'bg-blue-100 text-blue-800' : 
+                          transaction.status.includes('Failed') || transaction.status.includes('Rejected') ? 'bg-red-100 text-red-800' : 
+                          'bg-gray-100 text-gray-800'}`}>
+                        {transaction.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(transaction.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <Link to={`/transactions/${transaction.id}`} className="text-primary hover:text-primary-dark">View</Link>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">No transactions found</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+          <span className="text-sm text-gray-700">
+            Showing {Math.min(10, filteredTransactions.length)} of {filteredTransactions.length} transactions
+          </span>
+          <Link to="/transactions" className="text-sm font-medium text-primary hover:text-primary-dark">
+            View all transactions →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard; 
