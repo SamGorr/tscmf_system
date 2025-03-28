@@ -6,6 +6,12 @@ backend/node_modules/
 /.pnp
 .pnp.js
 
+# MCP
+mcp.json
+
+# Python
+/backend/app/__pycache__/
+
 # Production build files
 /build
 /dist
