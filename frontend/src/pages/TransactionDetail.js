@@ -54,6 +54,10 @@ const TransactionDetail = () => {
   // First add a new state for the trading information modal
   const [showTradeInfoModal, setShowTradeInfoModal] = useState(false);
 
+  // Add this to your state declarations at the top of the component
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showFileModal, setShowFileModal] = useState(false);
+
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
@@ -590,10 +594,39 @@ const TransactionDetail = () => {
               <p className="text-base whitespace-pre-wrap">{transaction.notes}</p>
             </div>
           )}
+
+          {/* View Source Email Button - Only for Email sourced transactions */}
+          {transaction.source === 'Email' && (
+            <div className="mt-6 flex justify-start">
+              <button
+                onClick={() => setShowEmailModal(true)}
+                className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                View Source Email
+              </button>
+            </div>
+          )}
+
+          {/* View Source File Button - Only for File sourced transactions */}
+          {transaction.source === 'File' && (
+            <div className="mt-6 flex justify-start">
+              <button
+                onClick={() => setShowFileModal(true)}
+                className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                </svg>
+                View Source File
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      
-
       
       {/* Trade Entity Information Section */}
       {(!transaction.source || ['Manual', 'Email', 'File'].includes(transaction.source)) && (
@@ -1014,7 +1047,188 @@ const TransactionDetail = () => {
           </div>
         </div>
       </div>
-     </div>
+      
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 h-3/4 flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-800">
+                Source Email
+              </h3>
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              >
+                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-6">
+              <div className="mb-4 border-b pb-4">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-2 text-gray-500 font-medium">From:</div>
+                  <div className="col-span-10">{transaction.client_name} &lt;finance@{transaction.client_name?.toLowerCase().replace(/\s+/g, '')}example.com&gt;</div>
+                  
+                  <div className="col-span-2 text-gray-500 font-medium">To:</div>
+                  <div className="col-span-10">transactions@adbtradeportal.com</div>
+                  
+                  <div className="col-span-2 text-gray-500 font-medium">Subject:</div>
+                  <div className="col-span-10">Transaction Request: {transaction.reference_number}</div>
+                  
+                  <div className="col-span-2 text-gray-500 font-medium">Date:</div>
+                  <div className="col-span-10">{formatDate(transaction.created_at, true)}</div>
+                </div>
+              </div>
+              
+              <div className="email-body">
+                <p className="mb-4">Dear ADB Trade Portal Team,</p>
+                
+                <p className="mb-4">I would like to submit a new transaction request with the following details:</p>
+                
+                <div className="bg-gray-50 p-4 rounded-md mb-4">
+                  <p><strong>Transaction Reference:</strong> {transaction.reference_number}</p>
+                  <p><strong>Amount:</strong> {formatCurrency(transaction.amount, transaction.currency)}</p>
+                  <p><strong>Event Type:</strong> {transaction.event_type}</p>
+                  <p><strong>Product:</strong> {transaction.product_name || 'Not specified'}</p>
+                  <p><strong>Industry:</strong> {transaction.industry}</p>
+                  
+                  <p className="mt-2"><strong>Goods:</strong></p>
+                  <ul className="list-disc pl-5 mt-1">
+                    {Array.isArray(transaction.goods_list) ? 
+                      transaction.goods_list.map((good, index) => (
+                        <li key={index}>{good.name} - {good.quantity} {good.unit}</li>
+                      )) : 
+                      <li>Goods list not available</li>
+                    }
+                  </ul>
+                  
+                  <p className="mt-2"><strong>Entities:</strong></p>
+                  <ul className="list-disc pl-5 mt-1">
+                    {transaction.entities && transaction.entities.map((entity, index) => (
+                      <li key={index}>{entity.type}: {entity.name}, {entity.country}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <p className="mb-4">Please process this transaction at your earliest convenience. If you need any further information, please let me know.</p>
+                
+                <p className="mb-4">Thank you for your assistance.</p>
+                
+                <p className="mb-2">Best regards,</p>
+                <p className="mb-1">{transaction.client_name ? transaction.client_name.split(' ')[0] : 'Contact'} {transaction.client_name ? transaction.client_name.split(' ').slice(1).join(' ') : 'Person'}</p>
+                <p className="text-gray-600">{transaction.client_name}</p>
+                <p className="text-gray-600">{transaction.client_address}</p>
+                <p className="text-gray-600">Tel: +{Math.floor(Math.random() * 9) + 1}-{Math.floor(Math.random() * 900) + 100}-{Math.floor(Math.random() * 900) + 100}-{Math.floor(Math.random() * 9000) + 1000}</p>
+                <p className="text-gray-600">Email: finance@{transaction.client_name?.toLowerCase().replace(/\s+/g, '')}example.com</p>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* File Modal */}
+      {showFileModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 h-3/4 flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-800">
+                Source File Content
+              </h3>
+              <button
+                onClick={() => setShowFileModal(false)}
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              >
+                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-6">
+              <div className="mb-4 border-b pb-4">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-2 text-gray-500 font-medium">File Name:</div>
+                  <div className="col-span-10">{transaction.reference_number.toLowerCase().replace(/-/g, '_')}.csv</div>
+                  
+                  <div className="col-span-2 text-gray-500 font-medium">File Type:</div>
+                  <div className="col-span-10">CSV (Comma Separated Values)</div>
+                  
+                  <div className="col-span-2 text-gray-500 font-medium">Uploaded:</div>
+                  <div className="col-span-10">{formatDate(transaction.created_at, true)}</div>
+                  
+                  <div className="col-span-2 text-gray-500 font-medium">Size:</div>
+                  <div className="col-span-10">{Math.floor(Math.random() * 10) + 2} KB</div>
+                </div>
+              </div>
+              
+              <div className="file-content font-mono text-sm bg-gray-50 p-4 rounded-md overflow-x-auto">
+                <pre className="whitespace-pre-wrap">
+{`transaction_id,${transaction.reference_number}
+client_id,${transaction.client_id}
+client_name,${transaction.client_name}
+product_id,${transaction.product_id}
+product_name,${transaction.product_name || 'Not specified'}
+event_type,${transaction.event_type}
+currency,${transaction.currency}
+amount,${transaction.amount}
+industry,${transaction.industry || 'Not specified'}
+
+# Entities
+entity_type,entity_name,entity_country,entity_address
+${transaction.entities && transaction.entities.map(entity => 
+  `${entity.type},${entity.name},${entity.country},${entity.address}`
+).join('\n')}
+
+# Goods List
+good_name,good_quantity,good_unit
+${Array.isArray(transaction.goods_list) ? 
+  transaction.goods_list.map(good => 
+    `${good.name},${good.quantity || 'N/A'},${good.unit || 'N/A'}`
+  ).join('\n') : 
+  '# No goods specified'
+}
+
+# Additional Information
+maturity_date,${transaction.maturity_date ? new Date(transaction.maturity_date).toISOString().split('T')[0] : 'N/A'}
+pricing_rate,${transaction.pricing_rate || 'N/A'}
+notes,${transaction.notes ? transaction.notes.replace(/\n/g, ' ') : 'N/A'}
+`}
+                </pre>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-2">
+              <button
+                onClick={() => setShowFileModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  alert('Download functionality would be implemented here in a production environment.');
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Download File
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
