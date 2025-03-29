@@ -595,10 +595,8 @@ const TransactionDetail = () => {
       
 
       
-      {/* Manual Source Transaction Details Section */}
-     
-      {/* Replace the Trade Entity Information section with a table */}
-      {(!transaction.source || transaction.source === 'Manual') && (
+      {/* Trade Entity Information Section */}
+      {(!transaction.source || ['Manual', 'Email', 'File'].includes(transaction.source)) && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Trade Entity Information</h2>
@@ -630,7 +628,7 @@ const TransactionDetail = () => {
               )}
             </div>
           </div>
-
+          
           {entities.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -689,7 +687,7 @@ const TransactionDetail = () => {
       )}
       
       {/* Trading Information Section */}
-      {(!transaction.source || transaction.source === 'Manual') && (
+      {(!transaction.source || ['Manual', 'Email', 'File'].includes(transaction.source)) && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Trading Information</h2>
