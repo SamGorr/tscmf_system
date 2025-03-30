@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isConfigDropdownOpen, setIsConfigDropdownOpen] = useState(false);
+  const configDropdownRef = useRef(null);
   const location = useLocation();
   
   const navigation = [
@@ -12,8 +14,30 @@ const Navbar = () => {
     { name: 'Transactions', href: '/transactions' },
   ];
 
+  const configOptions = [
+    { name: 'Pricing Matrix', href: '/config/pricing-matrix' },
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (configDropdownRef.current && !configDropdownRef.current.contains(event.target)) {
+        setIsConfigDropdownOpen(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [configDropdownRef]);
+
   const isActive = (path) => {
     return location.pathname === path ? 'bg-primary-dark text-white' : 'text-gray-700 hover:bg-gray-100';
+  };
+
+  const isConfigActive = () => {
+    return location.pathname.startsWith('/config') ? 'bg-primary-dark text-white' : 'text-gray-700 hover:bg-gray-100';
   };
 
   return (
@@ -34,6 +58,42 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Configuration Dropdown */}
+              <div className="relative" ref={configDropdownRef}>
+                <button
+                  onClick={() => setIsConfigDropdownOpen(!isConfigDropdownOpen)}
+                  className={`${isConfigActive()} px-3 py-2 rounded-md text-sm font-medium flex items-center`}
+                >
+                  Configuration
+                  <svg 
+                    className={`ml-1 h-4 w-4 transition-transform ${isConfigDropdownOpen ? 'transform rotate-180' : ''}`} 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isConfigDropdownOpen && (
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 animate-fadeIn">
+                    <div className="py-1">
+                      {configOptions.map((option) => (
+                        <Link
+                          key={option.name}
+                          to={option.href}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsConfigDropdownOpen(false)}
+                        >
+                          {option.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           
@@ -72,6 +132,23 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Mobile Configuration Options */}
+            <div>
+              <div className="px-3 py-2 rounded-md text-base font-medium text-gray-700">Configuration</div>
+              <div className="pl-4">
+                {configOptions.map((option) => (
+                  <Link
+                    key={option.name}
+                    to={option.href}
+                    className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {option.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}

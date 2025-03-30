@@ -13,3 +13,4 @@ alwaysApply: true
 
 - Do not modify any exiting implemented functionality
 - Do not add new functionalities unless you are specifically told to do so
+- Use the browser to review the implementation and troubleshoot issue if neccessary
