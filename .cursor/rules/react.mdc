@@ -1,7 +1,12 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: This rule explains React component patterns, hooks usage, and best practices.
 globs: **/*.jsx,**/*.tsx
-alwaysApply: false
+alwaysApply: true
 ---
 
 # React rules

@@ -1,7 +1,12 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: This rule explains FastAPI conventions and best practices for high-performance Python APIs.
 globs: **/*.py
-alwaysApply: false
+alwaysApply: true
 ---
 
 # FastAPI rules

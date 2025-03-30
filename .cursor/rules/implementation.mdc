@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: This rule explains how to implement new requests from the user.
+globs: *
+alwaysApply: true
+---
+
+# Implementation rules
+
+- Do not modify any exiting implemented functionality
+- Do not add new functionalities unless you are specifically told to do so

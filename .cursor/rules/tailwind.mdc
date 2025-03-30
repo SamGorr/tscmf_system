@@ -1,7 +1,12 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: This rule explains Tailwind CSS conventions, utility classes, and best practices for modern UI development.
 globs: *
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Tailwind CSS rules
