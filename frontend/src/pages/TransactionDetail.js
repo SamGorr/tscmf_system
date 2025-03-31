@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { mockTransactionData, MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
 import { 
   normalizeTransaction, 
@@ -35,7 +35,9 @@ import {
   IdentificationIcon,
   TruckIcon,
   CalculatorIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  ArrowTopRightOnSquareIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 
 // Add some CSS for animations
@@ -141,6 +143,14 @@ const TransactionDetail = () => {
   });
   const [pricingResult, setPricingResult] = useState(null);
   const [checkingPrice, setCheckingPrice] = useState(false);
+
+  // Add this to the state declarations inside the TransactionDetail component
+  const [checkingStatus, setCheckingStatus] = useState({
+    sanctions: false,
+    eligibility: false,
+    limits: false,
+    exposure: false
+  });
 
   useEffect(() => {
     const fetchTransaction = async () => {
@@ -677,6 +687,69 @@ const TransactionDetail = () => {
       
       setCheckingPrice(false);
     }, 1000);
+  };
+
+  // Add this function before the return statement
+  const handleRunSanctionsCheck = async () => {
+    try {
+      setCheckingStatus(prev => ({ ...prev, sanctions: true }));
+      
+      // In a real implementation, this would make an API call
+      // Simulate API call with a timeout
+      setTimeout(async () => {
+        try {
+          // Make sure we have entities to check, if not, create a placeholder
+          const entitiesToCheck = entities && entities.length > 0 ? entities : [
+            { name: 'Unknown Entity', type: 'Unknown Type' }
+          ];
+          
+          // Simulate an API response
+          const mockResponse = {
+            passed: Math.random() > 0.3, // Random result, 70% chance of passing
+            details: entitiesToCheck.map((entity, index) => ({
+              entity_name: entity.name || 'Unknown Entity',
+              entity_type: entity.type || 'Unknown Type',
+              status: Math.random() > 0.3 ? 'CLEAR' : 'MATCH',
+              matches: Math.random() > 0.3 ? [] : [
+                {
+                  list_name: 'OFAC SDN',
+                  match_score: Math.floor(Math.random() * 30) + 70,
+                  match_name: entity.name || 'Unknown Entity'
+                }
+              ],
+              pep_status: Math.random() > 0.8 ? 'PEP' : 'NON-PEP',
+              adverse_media: Math.random() > 0.7 ? [
+                {
+                  source: 'Reuters',
+                  date: '2022-05-15',
+                  title: 'Company linked to fraud investigation',
+                  summary: 'The entity was mentioned in connection with an ongoing fraud investigation in Eastern Europe.'
+                }
+              ] : [],
+              risk_score: Math.floor(Math.random() * 100),
+              check_timestamp: new Date().toISOString()
+            })),
+            check_timestamp: new Date().toISOString()
+          };
+          
+          // Update the transaction with the sanctions check result
+          setTransaction(prev => ({
+            ...prev,
+            sanctions_check_passed: mockResponse.passed,
+            sanctions_check_details: mockResponse.details,
+            sanctions_check_timestamp: mockResponse.check_timestamp
+          }));
+          
+          setCheckingStatus(prev => ({ ...prev, sanctions: false }));
+        } catch (error) {
+          console.error('Error processing sanctions check:', error);
+          setCheckingStatus(prev => ({ ...prev, sanctions: false }));
+        }
+      }, 2000); // Simulate a 2-second API call
+    } catch (error) {
+      console.error('Error initiating sanctions check:', error);
+      setCheckingStatus(prev => ({ ...prev, sanctions: false }));
+    }
   };
 
   if (loading) {
@@ -1760,22 +1833,70 @@ const TransactionDetail = () => {
         </div>
         
         <div className="px-6 py-4">
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={handleRunSanctionsCheck}
+              disabled={checkingStatus.sanctions}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50 mr-2"
+            >
+              {checkingStatus.sanctions ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Running Checks...
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="h-4 w-4 mr-2" />
+                  Run Service Checks
+                </>
+              )}
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-gray-50 p-4 rounded-lg flex items-start">
               <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Sanctions Check</h3>
-                {transaction.sanctions_check_passed === null ? (
+              <div className="w-full">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Sanctions Check</h3>
+                  {transaction.sanctions_check_timestamp && transaction.sanctions_check_details && transaction.sanctions_check_details.length > 0 && (
+                    <Link 
+                      to={`/sanctions-check/${id}`} 
+                      className="text-primary hover:text-primary-dark text-xs flex items-center"
+                    >
+                      <span>View Details</span>
+                      <ArrowTopRightOnSquareIcon className="h-3 w-3 ml-1" />
+                    </Link>
+                  )}
+                </div>
+                {checkingStatus.sanctions ? (
+                  <div className="flex items-center justify-center py-2">
+                    <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                ) : transaction.sanctions_check_passed === null ? (
                   <p className="text-base text-gray-500 flex items-center">
                     <ExclamationCircleIcon className="h-4 w-4 mr-1 text-gray-400" />
                     Not processed
                   </p>
                 ) : (
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center ${transaction.sanctions_check_passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {transaction.sanctions_check_passed ? 
-                      <><CheckCircleIcon className="h-4 w-4 mr-1" />Passed</> : 
-                      <><XCircleIcon className="h-4 w-4 mr-1" />Failed</>}
-                  </span>
+                  <>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center ${transaction.sanctions_check_passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {transaction.sanctions_check_passed ? 
+                        <><CheckCircleIcon className="h-4 w-4 mr-1" />Passed</> : 
+                        <><XCircleIcon className="h-4 w-4 mr-1" />Failed</>}
+                    </span>
+                    {transaction.sanctions_check_timestamp && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Last checked: {new Date(transaction.sanctions_check_timestamp).toLocaleString()}
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
             </div>

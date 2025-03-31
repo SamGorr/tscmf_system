@@ -41,7 +41,13 @@ export const normalizeTransaction = (transaction) => {
   return {
     ...transaction,
     entities: transaction.entities || [],
-    goods_list: normalizeGoodsList(transaction.goods_list)
+    goods_list: normalizeGoodsList(transaction.goods_list),
+    sanctions_check_passed: transaction.sanctions_check_passed !== undefined ? transaction.sanctions_check_passed : null,
+    sanctions_check_details: transaction.sanctions_check_details || [],
+    sanctions_check_timestamp: transaction.sanctions_check_timestamp || null,
+    eligibility_check_passed: transaction.eligibility_check_passed !== undefined ? transaction.eligibility_check_passed : null,
+    limits_check_passed: transaction.limits_check_passed !== undefined ? transaction.limits_check_passed : null,
+    exposure_check_passed: transaction.exposure_check_passed !== undefined ? transaction.exposure_check_passed : null
   };
 };
 
