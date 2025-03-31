@@ -8,6 +8,7 @@ import Transactions from './pages/Transactions';
 import TransactionDetail from './pages/TransactionDetail';
 import PricingMatrix from './pages/PricingMatrix';
 import SanctionsCheckDetail from './pages/SanctionsCheckDetail';
+import EligibilityCheckConfig from './pages/EligibilityCheckConfig';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/transactions/:id" element={<TransactionDetail />} />
             <Route path="/sanctions-check/:id" element={<SanctionsCheckDetail />} />
             <Route path="/config/pricing-matrix" element={<PricingMatrix />} />
+            <Route path="/config/eligibility-check" element={<EligibilityCheckConfig />} />
           </Routes>
         </div>
       </div>

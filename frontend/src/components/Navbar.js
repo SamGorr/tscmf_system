@@ -16,6 +16,7 @@ const Navbar = () => {
 
   const configOptions = [
     { name: 'Pricing Matrix', href: '/config/pricing-matrix' },
+    { name: 'Eligibility Check', href: '/config/eligibility-check' },
   ];
 
   // Close dropdown when clicking outside
