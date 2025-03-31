@@ -812,8 +812,8 @@ const TransactionDetail = () => {
 
       {/* ADB Client Profile Section */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center px-6 py-4">
             <BuildingOfficeIcon className="h-5 w-5 text-gray-600 mr-2" />
             <h2 className="text-lg font-medium text-gray-800">ADB Client Profile</h2>
           </div>
@@ -882,8 +882,8 @@ const TransactionDetail = () => {
       
       {/* Transaction Overview Section */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex justify-between items-center">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="flex justify-between items-center px-6 py-4">
             <div className="flex items-center">
               <DocumentTextIcon className="h-5 w-5 text-gray-600 mr-2" />
               <div>
@@ -1033,420 +1033,430 @@ const TransactionDetail = () => {
       </div>
       
       {/* Pricing Information Section - Add this before Trade Entity Information */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 hover:shadow-lg transition-shadow duration-300">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center px-6 py-4">
             <CalculatorIcon className="h-5 w-5 text-gray-600 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-800">Pricing Information</h2>
+            <h2 className="text-lg font-medium text-gray-800">Pricing Information</h2>
           </div>
-          <div>
-            {!isEditingPricing ? (
-              <button
-                onClick={() => setIsEditingPricing(true)}
-                className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-              >
-                <PencilSquareIcon className="h-4 w-4 mr-1" />
-                Edit Pricing
-              </button>
-            ) : (
-              <div className="flex space-x-2">
+        </div>
+        <div className="px-6 py-4">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              {!isEditingPricing ? (
                 <button
-                  type="button"
-                  onClick={handleSubmitPricingSection}
-                  className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
+                  onClick={() => setIsEditingPricing(true)}
+                  className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
                 >
-                  <CheckIcon className="h-4 w-4 mr-1" />
-                  Save Changes
+                  <PencilSquareIcon className="h-4 w-4 mr-1" />
+                  Edit Pricing
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingPricing(false)}
-                  className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-                >
-                  <XCircleIcon className="h-4 w-4 mr-1" />
-                  Cancel
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <div className="flex items-start">
-            <GlobeAmericasIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Country</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="country"
-                  value={pricingData.country}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                />
               ) : (
-                <p className="text-base">{pricingData.country || 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <MapPinIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Location</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="location"
-                  value={pricingData.location}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                  placeholder="Enter 'ALL' for all locations"
-                />
-              ) : (
-                <p className="text-base">{pricingData.location || 'ALL'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <BuildingLibraryIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Bank</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="bank"
-                  value={pricingData.bank}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                />
-              ) : (
-                <p className="text-base">{pricingData.bank || 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Beneficiary</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="beneficiary"
-                  value={pricingData.beneficiary}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                  placeholder="Enter 'ALL' for all beneficiaries"
-                />
-              ) : (
-                <p className="text-base">{pricingData.beneficiary || 'ALL'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Product</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="product"
-                  value={pricingData.product}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                />
-              ) : (
-                <p className="text-base">{pricingData.product || 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <ClockIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="tenor"
-                  value={pricingData.tenor}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                  placeholder="e.g. 90 days"
-                />
-              ) : (
-                <p className="text-base">{pricingData.tenor || 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Requested Price (%)</h3>
-              {isEditingPricing ? (
-                <input
-                  type="number"
-                  name="requestedPrice"
-                  value={pricingData.requestedPrice}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                  step="0.01"
-                  min="0"
-                />
-              ) : (
-                <p className="text-base">{pricingData.requestedPrice ? `${pricingData.requestedPrice}%` : 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Frequency</h3>
-              {isEditingPricing ? (
-                <select
-                  name="paymentFrequency"
-                  value={pricingData.paymentFrequency}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                >
-                  <option value="Daily">Daily</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Monthly">Monthly</option>
-                  <option value="Quarterly">Quarterly</option>
-                  <option value="Annually">Annually</option>
-                  <option value="At Maturity">At Maturity</option>
-                </select>
-              ) : (
-                <p className="text-base">{pricingData.paymentFrequency || 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <BanknotesIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-            <div className="w-full">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Local Currency</h3>
-              {isEditingPricing ? (
-                <input
-                  type="text"
-                  name="localCurrency"
-                  value={pricingData.localCurrency}
-                  onChange={handlePricingInputChange}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                  placeholder="e.g. USD"
-                />
-              ) : (
-                <p className="text-base">{pricingData.localCurrency || 'Not specified'}</p>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={handleCheckPricing}
-            disabled={checkingPrice}
-            className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50"
-          >
-            {checkingPrice ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Checking...
-              </>
-            ) : (
-              <>
-                <CalculatorIcon className="h-4 w-4 mr-2" />
-                Check Pricing
-              </>
-            )}
-          </button>
-        </div>
-        
-        {/* Pricing Result */}
-        {pricingResult && (
-          <div className={`p-4 rounded-lg mb-4 animate-fadeIn ${
-            pricingResult.status === 'success' ? 'bg-green-50 border border-green-200' : 
-            pricingResult.status === 'warning' ? 'bg-yellow-50 border border-yellow-200' : 
-            'bg-blue-50 border border-blue-200'
-          }`}>
-            <div className="flex items-start">
-              {pricingResult.status === 'success' ? (
-                <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-              ) : pricingResult.status === 'warning' ? (
-                <ExclamationCircleIcon className="h-5 w-5 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
-              ) : (
-                <InformationCircleIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-              )}
-              <div className="w-full">
-                <h3 className={`text-base font-medium ${
-                  pricingResult.status === 'success' ? 'text-green-800' : 
-                  pricingResult.status === 'warning' ? 'text-yellow-800' : 
-                  'text-blue-800'
-                }`}>
-                  {pricingResult.message}
-                </h3>
-                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-sm text-gray-600">Indicative Price Range:</p>
-                    <p className="text-base font-medium">{pricingResult.priceRange.min}% - {pricingResult.priceRange.max}%</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Requested Price:</p>
-                    <p className="text-base font-medium">{pricingResult.requestedPrice}%</p>
-                  </div>
-                  {pricingResult.status !== 'success' && (
-                    <div>
-                      <p className="text-sm text-gray-600">Price Difference:</p>
-                      <p className={`text-base font-medium ${
-                        pricingResult.status === 'warning' ? 'text-red-600' : 'text-blue-600'
-                      }`}>
-                        {pricingResult.difference > 0 ? '+' : ''}{pricingResult.difference}%
-                      </p>
-                    </div>
-                  )}
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleSubmitPricingSection}
+                    className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
+                  >
+                    <CheckIcon className="h-4 w-4 mr-1" />
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingPricing(false)}
+                    className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
+                  >
+                    <XCircleIcon className="h-4 w-4 mr-1" />
+                    Cancel
+                  </button>
                 </div>
-
-                {/* Display applied business rules if any */}
-                {pricingResult.appliedRules && pricingResult.appliedRules.length > 0 && (
-                  <div className="mt-3 border-t border-gray-200 pt-3">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Applied Business Rules:</p>
-                    <ul className="space-y-1">
-                      {pricingResult.appliedRules.map((rule, index) => (
-                        <li key={index} className="flex items-center text-sm">
-                          <CheckIcon className="h-4 w-4 text-green-500 mr-2" />
-                          <span>{rule.name}</span>
-                          <span className="ml-1 text-gray-500">
-                            ({rule.adjustment > 0 ? '+' : ''}{rule.adjustment}%)
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div className="flex items-start">
+              <GlobeAmericasIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Country</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="country"
+                    value={pricingData.country}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.country || 'Not specified'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <MapPinIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Location</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="location"
+                    value={pricingData.location}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    placeholder="Enter 'ALL' for all locations"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.location || 'ALL'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <BuildingLibraryIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Bank</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="bank"
+                    value={pricingData.bank}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.bank || 'Not specified'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Beneficiary</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="beneficiary"
+                    value={pricingData.beneficiary}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    placeholder="Enter 'ALL' for all beneficiaries"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.beneficiary || 'ALL'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Product</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="product"
+                    value={pricingData.product}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.product || 'Not specified'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <ClockIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="tenor"
+                    value={pricingData.tenor}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    placeholder="e.g. 90 days"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.tenor || 'Not specified'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Requested Price (%)</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="number"
+                    name="requestedPrice"
+                    value={pricingData.requestedPrice}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    step="0.01"
+                    min="0"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.requestedPrice ? `${pricingData.requestedPrice}%` : 'Not specified'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Frequency</h3>
+                {isEditingPricing ? (
+                  <select
+                    name="paymentFrequency"
+                    value={pricingData.paymentFrequency}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  >
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Annually">Annually</option>
+                    <option value="At Maturity">At Maturity</option>
+                  </select>
+                ) : (
+                  <p className="text-base">{pricingData.paymentFrequency || 'Not specified'}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <BanknotesIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div className="w-full">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Local Currency</h3>
+                {isEditingPricing ? (
+                  <input
+                    type="text"
+                    name="localCurrency"
+                    value={pricingData.localCurrency}
+                    onChange={handlePricingInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                    placeholder="e.g. USD"
+                  />
+                ) : (
+                  <p className="text-base">{pricingData.localCurrency || 'Not specified'}</p>
                 )}
               </div>
             </div>
           </div>
-        )}
+          
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={handleCheckPricing}
+              disabled={checkingPrice}
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50"
+            >
+              {checkingPrice ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Checking...
+                </>
+              ) : (
+                <>
+                  <CalculatorIcon className="h-4 w-4 mr-2" />
+                  Check Pricing
+                </>
+              )}
+            </button>
+          </div>
+          
+          {/* Pricing Result */}
+          {pricingResult && (
+            <div className={`p-4 rounded-lg mb-4 animate-fadeIn ${
+              pricingResult.status === 'success' ? 'bg-green-50 border border-green-200' : 
+              pricingResult.status === 'warning' ? 'bg-yellow-50 border border-yellow-200' : 
+              'bg-blue-50 border border-blue-200'
+            }`}>
+              <div className="flex items-start">
+                {pricingResult.status === 'success' ? (
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                ) : pricingResult.status === 'warning' ? (
+                  <ExclamationCircleIcon className="h-5 w-5 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
+                ) : (
+                  <InformationCircleIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                )}
+                <div className="w-full">
+                  <h3 className={`text-base font-medium ${
+                    pricingResult.status === 'success' ? 'text-green-800' : 
+                    pricingResult.status === 'warning' ? 'text-yellow-800' : 
+                    'text-blue-800'
+                  }`}>
+                    {pricingResult.message}
+                  </h3>
+                  <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-sm text-gray-600">Indicative Price Range:</p>
+                      <p className="text-base font-medium">{pricingResult.priceRange.min}% - {pricingResult.priceRange.max}%</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Requested Price:</p>
+                      <p className="text-base font-medium">{pricingResult.requestedPrice}%</p>
+                    </div>
+                    {pricingResult.status !== 'success' && (
+                      <div>
+                        <p className="text-sm text-gray-600">Price Difference:</p>
+                        <p className={`text-base font-medium ${
+                          pricingResult.status === 'warning' ? 'text-red-600' : 'text-blue-600'
+                        }`}>
+                          {pricingResult.difference > 0 ? '+' : ''}{pricingResult.difference}%
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Display applied business rules if any */}
+                  {pricingResult.appliedRules && pricingResult.appliedRules.length > 0 && (
+                    <div className="mt-3 border-t border-gray-200 pt-3">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Applied Business Rules:</p>
+                      <ul className="space-y-1">
+                        {pricingResult.appliedRules.map((rule, index) => (
+                          <li key={index} className="flex items-center text-sm">
+                            <CheckIcon className="h-4 w-4 text-green-500 mr-2" />
+                            <span>{rule.name}</span>
+                            <span className="ml-1 text-gray-500">
+                              ({rule.adjustment > 0 ? '+' : ''}{rule.adjustment}%)
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Trade Entity Information Section */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6 hover:shadow-lg transition-shadow duration-300">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center px-6 py-4">
             <BuildingLibraryIcon className="h-5 w-5 text-gray-600 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-800">Trade Entity Information</h2>
-          </div>
-          <div>
-            {!isEditingEntity ? (
-              <button
-                onClick={() => setIsEditingEntity(true)}
-                className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-              >
-                <PencilSquareIcon className="h-4 w-4 mr-1" />
-                Edit Details
-              </button>
-            ) : (
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={handleSubmitEntitySection}
-                  className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
-                >
-                  <CheckIcon className="h-4 w-4 mr-1" />
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingEntity(false)}
-                  className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-                >
-                  <XCircleIcon className="h-4 w-4 mr-1" />
-                  Cancel
-                </button>
-              </div>
-            )}
+            <h2 className="text-lg font-medium text-gray-800">Trade Entity Information</h2>
           </div>
         </div>
-        
-        {entities.length > 0 ? (
-          <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-                  {isEditingEntity && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {entities.map((entity, index) => (
-                  <tr key={entity.id || index} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{entity.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.address}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.country}</td>
-                    {isEditingEntity && (
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-3">
-                          <button 
-                            onClick={() => openEditEntityModal(entity)}
-                            className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                          >
-                            <PencilSquareIcon className="h-4 w-4 mr-1" />
-                            Edit
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteEntity(entity.id || index)}
-                            className="text-red-600 hover:text-red-900 flex items-center"
-                          >
-                            <TrashIcon className="h-4 w-4 mr-1" />
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    )}
+        <div className="px-6 py-4">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              {!isEditingEntity ? (
+                <button
+                  onClick={() => setIsEditingEntity(true)}
+                  className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                >
+                  <PencilSquareIcon className="h-4 w-4 mr-1" />
+                  Edit Details
+                </button>
+              ) : (
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleSubmitEntitySection}
+                    className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
+                  >
+                    <CheckIcon className="h-4 w-4 mr-1" />
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingEntity(false)}
+                    className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
+                  >
+                    <XCircleIcon className="h-4 w-4 mr-1" />
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {entities.length > 0 ? (
+            <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                    {isEditingEntity && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <p className="text-gray-500 italic">No entity information available</p>
-          </div>
-        )}
-        
-        {isEditingEntity && (
-          <div className="mt-4">
-            <button
-              onClick={openAddEntityModal}
-              className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Add Entity
-            </button>
-          </div>
-        )}
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {entities.map((entity, index) => (
+                    <tr key={entity.id || index} className="hover:bg-gray-50 transition-colors duration-150">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.type}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{entity.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.address}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.country}</td>
+                      {isEditingEntity && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-3">
+                            <button 
+                              onClick={() => openEditEntityModal(entity)}
+                              className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                            >
+                              <PencilSquareIcon className="h-4 w-4 mr-1" />
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteEntity(entity.id || index)}
+                              className="text-red-600 hover:text-red-900 flex items-center"
+                            >
+                              <TrashIcon className="h-4 w-4 mr-1" />
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-lg p-6 text-center">
+              <p className="text-gray-500 italic">No entity information available</p>
+            </div>
+          )}
+          
+          {isEditingEntity && (
+            <div className="mt-4">
+              <button
+                onClick={openAddEntityModal}
+                className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Entity
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Trading Information Section */}
-      {(!transaction.source || ['Manual', 'Email', 'File'].includes(transaction.source)) && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 hover:shadow-lg transition-shadow duration-300">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center px-6 py-4">
+            <TruckIcon className="h-5 w-5 text-gray-600 mr-2" />
+            <h2 className="text-lg font-medium text-gray-800">Trading Information</h2>
+          </div>
+        </div>
+        <div className="px-6 py-4">
           <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center">
-              <TruckIcon className="h-5 w-5 text-gray-600 mr-2" />
-              <h2 className="text-xl font-semibold text-gray-800">Trading Information</h2>
-            </div>
             <div>
               {!isEditingTrading ? (
                 <button
@@ -1569,7 +1579,7 @@ const TransactionDetail = () => {
             )}
           </div>
         </div>
-      )}
+      </div>
       
       {/* Entity Modal */}
       {showEntityModal && (
@@ -1742,8 +1752,8 @@ const TransactionDetail = () => {
       
       {/* Service Checks Result Section */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center">
+        <div className="border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center px-6 py-4">
             <ShieldCheckIcon className="h-5 w-5 text-gray-600 mr-2" />
             <h2 className="text-lg font-medium text-gray-800">Service Check Results</h2>
           </div>
