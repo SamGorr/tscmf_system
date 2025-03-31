@@ -10,6 +10,9 @@ import {
   ArrowUpTrayIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import ProgramConfig from '../components/eligibility/ProgramConfig';
+import TermsConditions from '../components/eligibility/TermsConditions';
+import Guidelines from '../components/eligibility/Guidelines';
 
 // Mock data for goods lists
 const MOCK_GOODS_LISTS = {
@@ -222,7 +225,8 @@ const EligibilityCheckConfig = () => {
   });
   const [matchingCriteria, setMatchingCriteria] = useState({
     fuzzyMatchSensitivity: 0.8,
-    enablePartialMatch: true
+    enablePartialMatch: true,
+    minimumScore: 0.7
   });
   const [termsConditions, setTermsConditions] = useState([]);
   const [guidelines, setGuidelines] = useState([]);
@@ -327,15 +331,13 @@ const EligibilityCheckConfig = () => {
               {/* Program, Products, and Transactions Configuration */}
               <div className="bg-white shadow-sm rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Program & Product Configuration</h3>
-                <div className="space-y-4">
-                  {/* Add configuration form fields here */}
-                </div>
+                <ProgramConfig />
               </div>
 
               {/* Matching Criteria Configuration */}
               <div className="bg-white shadow-sm rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Matching Criteria</h3>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Fuzzy Matching Sensitivity
@@ -346,15 +348,52 @@ const EligibilityCheckConfig = () => {
                       max="1"
                       step="0.1"
                       value={matchingCriteria.fuzzyMatchSensitivity}
-                      onChange={(e) => setMatchingCriteria({
-                        ...matchingCriteria,
+                      onChange={(e) => setMatchingCriteria(prev => ({
+                        ...prev,
                         fuzzyMatchSensitivity: parseFloat(e.target.value)
-                      })}
+                      }))}
                       className="mt-1 w-full"
                     />
                     <span className="text-sm text-gray-500">
                       {matchingCriteria.fuzzyMatchSensitivity}
                     </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Minimum Match Score
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={matchingCriteria.minimumScore}
+                      onChange={(e) => setMatchingCriteria(prev => ({
+                        ...prev,
+                        minimumScore: parseFloat(e.target.value)
+                      }))}
+                      className="mt-1 w-full"
+                    />
+                    <span className="text-sm text-gray-500">
+                      {matchingCriteria.minimumScore}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="enablePartialMatch"
+                      checked={matchingCriteria.enablePartialMatch}
+                      onChange={(e) => setMatchingCriteria(prev => ({
+                        ...prev,
+                        enablePartialMatch: e.target.checked
+                      }))}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="enablePartialMatch" className="ml-2 block text-sm text-gray-700">
+                      Enable Partial Matching
+                    </label>
                   </div>
                 </div>
               </div>
@@ -362,17 +401,13 @@ const EligibilityCheckConfig = () => {
               {/* Terms & Conditions Configuration */}
               <div className="bg-white shadow-sm rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Terms & Conditions</h3>
-                <div className="space-y-4">
-                  {/* Add terms & conditions configuration here */}
-                </div>
+                <TermsConditions />
               </div>
 
               {/* Transaction Check Guidelines */}
               <div className="bg-white shadow-sm rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Transaction Check Guidelines</h3>
-                <div className="space-y-4">
-                  {/* Add guidelines management here */}
-                </div>
+                <Guidelines />
               </div>
             </div>
           </Tab.Panel>
