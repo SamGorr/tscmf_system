@@ -524,48 +524,154 @@ const TransactionDetail = () => {
     // In a real application, this would make an API call to the pricing service
     // For demo purposes, simulate a pricing check result after a delay
     setTimeout(() => {
-      // Mock pricing matrix logic
-      const mockMatrixPrice = parseFloat(pricingData.requestedPrice) * 0.9 + Math.random() * 0.4;
+      // Simulate calling the pricing matrix API
+      // These would normally come from the Pricing Matrix configuration
+      const mockPricingMatrix = {
+        // Define some country-based pricing
+        countries: {
+          'USA': { baseRate: 3.5, range: 0.25 },
+          'UK': { baseRate: 3.75, range: 0.3 },
+          'Germany': { baseRate: 3.6, range: 0.2 },
+          'France': { baseRate: 3.65, range: 0.25 },
+          'Japan': { baseRate: 3.45, range: 0.15 },
+          'China': { baseRate: 4.0, range: 0.35 },
+          'India': { baseRate: 4.2, range: 0.4 },
+          'Brazil': { baseRate: 4.5, range: 0.5 },
+          'Australia': { baseRate: 3.55, range: 0.25 },
+          'Canada': { baseRate: 3.5, range: 0.2 },
+          // Default for other countries
+          'default': { baseRate: 4.0, range: 0.3 }
+        },
+        
+        // Define product-based adjustments
+        products: {
+          'Invoice Financing': -0.1,
+          'Warehouse Receipt Financing': 0.2,
+          'Export Credit Insurance': 0.15,
+          'Import Loan': 0.25,
+          'Supply Chain Finance': -0.15,
+          'Letter of Credit': 0,
+          'Bank Guarantee': 0.1,
+          'default': 0
+        },
+        
+        // Define tenor-based adjustments
+        tenors: {
+          '30 days': -0.15,
+          '60 days': -0.05,
+          '90 days': 0,
+          '180 days': 0.15,
+          '270 days': 0.3,
+          '365 days': 0.45,
+          'default': 0
+        },
+        
+        // Business rules
+        businessRules: [
+          {
+            // Example rule for high-value deals
+            condition: { field: 'amount', operator: '>', value: 1000000 },
+            adjustment: -0.2,
+            name: 'Large Transaction Discount'
+          },
+          {
+            // Example rule for specific beneficiary
+            condition: { field: 'beneficiary', operator: '==', value: 'Premium Client' },
+            adjustment: -0.15,
+            name: 'Premium Client Discount'
+          }
+        ]
+      };
+      
+      // Extract the country data or use default
+      const countryData = mockPricingMatrix.countries[pricingData.country] || 
+                          mockPricingMatrix.countries['default'];
+      
+      // Get base rate from matrix
+      let matrixRate = countryData.baseRate;
+      
+      // Apply product adjustment if it exists
+      const productAdjustment = mockPricingMatrix.products[pricingData.product] || 
+                                mockPricingMatrix.products['default'];
+      matrixRate += productAdjustment;
+      
+      // Apply tenor adjustment if it exists
+      const tenorAdjustment = mockPricingMatrix.tenors[pricingData.tenor] || 
+                              mockPricingMatrix.tenors['default'];
+      matrixRate += tenorAdjustment;
+      
+      // Apply any business rules
+      const appliedRules = [];
+      
+      mockPricingMatrix.businessRules.forEach(rule => {
+        let shouldApply = false;
+        
+        // Simplified rule evaluation logic
+        if (rule.condition.field === 'amount' && 
+            rule.condition.operator === '>' && 
+            transaction.amount > rule.condition.value) {
+          shouldApply = true;
+        }
+        
+        if (rule.condition.field === 'beneficiary' && 
+            rule.condition.operator === '==' && 
+            pricingData.beneficiary === rule.condition.value) {
+          shouldApply = true;
+        }
+        
+        if (shouldApply) {
+          matrixRate += rule.adjustment;
+          appliedRules.push({
+            name: rule.name,
+            adjustment: rule.adjustment
+          });
+        }
+      });
+      
+      // Calculate acceptable range
+      const priceRange = {
+        min: (matrixRate - countryData.range).toFixed(2),
+        max: (matrixRate + countryData.range).toFixed(2)
+      };
       
       // Calculate the difference between requested and matrix price
-      const priceDiff = parseFloat(pricingData.requestedPrice) - mockMatrixPrice;
+      const requestedPrice = parseFloat(pricingData.requestedPrice);
+      const priceDiff = requestedPrice - matrixRate;
       
-      // Create mock pricing result
-      if (Math.abs(priceDiff) <= 0.2) { // Within accepted range
+      // Create result based on comparison
+      if (requestedPrice >= parseFloat(priceRange.min) && 
+          requestedPrice <= parseFloat(priceRange.max)) {
+        // Within range - success
         setPricingResult({
           status: 'success',
           message: 'Requested price matches the indicative price range',
-          indicativePrice: mockMatrixPrice.toFixed(2),
-          requestedPrice: parseFloat(pricingData.requestedPrice).toFixed(2),
+          indicativePrice: matrixRate.toFixed(2),
+          requestedPrice: requestedPrice.toFixed(2),
           difference: 0,
-          priceRange: {
-            min: (mockMatrixPrice - 0.2).toFixed(2),
-            max: (mockMatrixPrice + 0.2).toFixed(2)
-          }
+          priceRange,
+          appliedRules
         });
-      } else if (priceDiff > 0) { // Requested price is higher
+      } else if (priceDiff > 0) {
+        // Above range - warning
         setPricingResult({
           status: 'warning',
           message: 'Requested price exceeds the indicative price range',
-          indicativePrice: mockMatrixPrice.toFixed(2),
-          requestedPrice: parseFloat(pricingData.requestedPrice).toFixed(2),
+          indicativePrice: matrixRate.toFixed(2),
+          requestedPrice: requestedPrice.toFixed(2),
           difference: priceDiff.toFixed(2),
-          priceRange: {
-            min: (mockMatrixPrice - 0.2).toFixed(2),
-            max: (mockMatrixPrice + 0.2).toFixed(2)
-          }
+          priceRange,
+          appliedRules
         });
-      } else { // Requested price is lower
+      } else {
+        // Below range - info
         setPricingResult({
           status: 'info',
           message: 'Requested price is below the indicative price range',
-          indicativePrice: mockMatrixPrice.toFixed(2),
-          requestedPrice: parseFloat(pricingData.requestedPrice).toFixed(2),
+          indicativePrice: matrixRate.toFixed(2),
+          requestedPrice: requestedPrice.toFixed(2),
           difference: priceDiff.toFixed(2),
-          priceRange: {
-            min: (mockMatrixPrice - 0.2).toFixed(2),
-            max: (mockMatrixPrice + 0.2).toFixed(2)
-          }
+          priceRange,
+          appliedRules
         });
       }
       
@@ -1179,7 +1285,7 @@ const TransactionDetail = () => {
               ) : (
                 <InformationCircleIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
               )}
-              <div>
+              <div className="w-full">
                 <h3 className={`text-base font-medium ${
                   pricingResult.status === 'success' ? 'text-green-800' : 
                   pricingResult.status === 'warning' ? 'text-yellow-800' : 
@@ -1207,6 +1313,24 @@ const TransactionDetail = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Display applied business rules if any */}
+                {pricingResult.appliedRules && pricingResult.appliedRules.length > 0 && (
+                  <div className="mt-3 border-t border-gray-200 pt-3">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Applied Business Rules:</p>
+                    <ul className="space-y-1">
+                      {pricingResult.appliedRules.map((rule, index) => (
+                        <li key={index} className="flex items-center text-sm">
+                          <CheckIcon className="h-4 w-4 text-green-500 mr-2" />
+                          <span>{rule.name}</span>
+                          <span className="ml-1 text-gray-500">
+                            ({rule.adjustment > 0 ? '+' : ''}{rule.adjustment}%)
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
