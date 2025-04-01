@@ -1,8 +1,8 @@
 """initial_schema
 
-Revision ID: 82add2bdbf51
+Revision ID: 3e6524a67ae8
 Revises: 
-Create Date: 2025-04-01 08:50:41.511807
+Create Date: 2025-04-01 15:17:06.893337
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '82add2bdbf51'
+revision = '3e6524a67ae8'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -44,6 +44,15 @@ def upgrade():
     sa.Column('list_of_goods', sa.ARRAY(sa.String()), nullable=True),
     sa.PrimaryKeyConstraint('transaction_id')
     )
+    op.create_table('entity_limit',
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('entity_id', sa.Integer(), nullable=True),
+    sa.Column('product_id', sa.Integer(), nullable=True),
+    sa.Column('approved_limit', sa.Float(), nullable=True),
+    sa.Column('used_limit', sa.Float(), nullable=True),
+    sa.ForeignKeyConstraint(['entity_id'], ['entity.entity_id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('event',
     sa.Column('event_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('transaction_id', sa.Integer(), nullable=True),
@@ -56,15 +65,6 @@ def upgrade():
     sa.ForeignKeyConstraint(['entity_id'], ['entity.entity_id'], ),
     sa.ForeignKeyConstraint(['transaction_id'], ['transaction.transaction_id'], ),
     sa.PrimaryKeyConstraint('event_id')
-    )
-    op.create_table('limit',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('entity_id', sa.Integer(), nullable=True),
-    sa.Column('product_id', sa.Integer(), nullable=True),
-    sa.Column('approved_limit', sa.Float(), nullable=True),
-    sa.Column('used_limit', sa.Float(), nullable=True),
-    sa.ForeignKeyConstraint(['entity_id'], ['entity.entity_id'], ),
-    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('transaction_entity',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -114,8 +114,8 @@ def downgrade():
     op.drop_table('exposure_check')
     op.drop_table('eligibility_check')
     op.drop_table('transaction_entity')
-    op.drop_table('limit')
     op.drop_table('event')
+    op.drop_table('entity_limit')
     op.drop_table('transaction')
     op.drop_table('entity')
     # ### end Alembic commands ### 
