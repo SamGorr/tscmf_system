@@ -74,7 +74,7 @@ class TransactionEntity(Base):
 
 
 class Limit(Base):
-    __tablename__ = "limit"
+    __tablename__ = "entity_limit"  # Changed from "limit" to avoid PostgreSQL reserved keyword
 
     id = Column(Integer, primary_key=True, autoincrement=True)  # Adding an ID as primary key
     entity_id = Column(Integer, ForeignKey("entity.entity_id"))

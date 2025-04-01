@@ -14,6 +14,12 @@ else
     alembic upgrade head
 fi
 
+# Check if DATABASE_SEED environment variable is set
+if [ "$DATABASE_SEED" = "true" ]; then
+    echo "Populating database with mock data..."
+    python /app/create_mock_data.py
+fi
+
 # Start the application
 echo "Starting application..."
 uvicorn src.main:app --host 0.0.0.0 --port 5000 --reload 

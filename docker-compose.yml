@@ -11,6 +11,7 @@ services:
       - ./backend:/app
     environment:
       - DATABASE_URL=postgresql://sam:test123@db:5432/tscmf_db
+      - DATABASE_SEED=true
     depends_on:
       - db
     restart: unless-stopped
