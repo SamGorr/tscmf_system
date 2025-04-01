@@ -17,7 +17,7 @@ fi
 # Check if DATABASE_SEED environment variable is set
 if [ "$DATABASE_SEED" = "true" ]; then
     echo "Populating database with mock data..."
-    python /app/create_mock_data.py
+    python /app/populate_db.py
 fi
 
 # Start the application
