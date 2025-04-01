@@ -1,47 +1,25 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: tscmf-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tscmf_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - tscmf-network
 
   backend:
     build: ./backend
     container_name: tscmf-backend
-    restart: always
     ports:
-      - "8000:8000"
+      - 5000:5000
     volumes:
       - ./backend:/app
     environment:
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=postgres
-      - DATABASE_NAME=tscmf_db
-      - CORS_ORIGINS=*
+      - DATABASE_URL=postgres://sam:test123@db:5432/tscmf_db
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 5000
     depends_on:
-      - postgres
-    networks:
-      - tscmf-network
+      - db
 
   frontend:
     build: ./frontend
     container_name: tscmf-frontend
-    restart: always
     ports:
-      - "3000:3000"
+      - 3000:3000
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -52,16 +30,20 @@ services:
       - WDS_SOCKET_PORT=0
       - HOST=0.0.0.0
       - PUBLIC_URL=http://localhost:3000
-    stdin_open: true
-    tty: true
     depends_on:
       - backend
-    networks:
-      - tscmf-network
-
-networks:
-  tscmf-network:
-    driver: bridge
+      
+  db:
+    image: postgres:15
+    expose:
+      - 5432
+    container_name: tscmf-postgres
+    environment:
+      - POSTGRES_USER=sam
+      - POSTGRES_PASSWORD=test123
+      - POSTGRES_DB=tscmf_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data: 
+  postgres_data:
