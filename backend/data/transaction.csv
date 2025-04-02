@@ -1,0 +1,11 @@
+created_at,transaction_id,entity_id,product_id,product_name,industry,amount,currency,country,location,beneficiary,tenor,maturity_date,price
+1-Apr-24,10001,1,1,Credit Guarantee,Manufacturing,500000,USD,USA,"New York, NY",Global Steel Corp,90,30-Jun-24,5.25
+1-Apr-24,10002,2,1,Credit Guarantee,Agriculture,750000,EUR,Germany,Hamburg,European Grains GmbH,120,30-Jul-24,4.75
+1-Apr-24,10003,3,1,Credit Guarantee,Energy,1200000,USD,UAE,Dubai,Solar Solutions LLC,180,28-Sep-24,6
+1-Apr-24,10004,1,1,Credit Guarantee,Automotive,300000,JPY,Japan,Tokyo,Toyota Suppliers Co,60,31-May-24,4.5
+2-Apr-24,10005,4,1,Credit Guarantee,Technology,850000,USD,Singapore,Singapore,Tech Components Pte,45,17-May-24,5
+2-Apr-24,10006,2,1,Credit Guarantee,Textiles,600000,CNY,China,Shanghai,Silk Road Textiles,150,30-Aug-24,5.75
+2-Apr-24,10007,5,1,Credit Guarantee,Pharmaceuticals,950000,USD,Switzerland,Basel,MediCare AG,90,1-Jul-24,4.25
+2-Apr-24,10008,3,1,Credit Guarantee,Construction,400000,AED,UAE,Abu Dhabi,Desert Builders LLC,365,2-Apr-25,6.5
+3-Apr-24,10009,1,1,Credit Guarantee,Electronics,700000,USD,Taiwan,Taipei,Circuit Systems Co,75,17-Jun-24,5.15
+3-Apr-24,10010,4,1,Credit Guarantee,Retail,550000,GBP,UK,London,British Retail Group,30,3-May-24,4.8

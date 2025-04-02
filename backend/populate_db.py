@@ -48,32 +48,45 @@ def populate_database():
                 "onboard_date": entity[6]
             })
         
-        # Create transactions (for IDs referenced in CSV)
-        print("Creating transactions...")
-        # Create a set of transactions for all IDs in the CSV
-        transaction_ids = [10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011]
+        # Now import transaction from CSV file
+        print("Importing transaction from CSV...")
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "transaction.csv")
         
-        for tx_id in transaction_ids:
+        with open(csv_path, 'r') as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                # Parse the date from the CSV format (DD-MMM-YY) to a datetime object
+                date_str = row['created_at']
+                maturity_date_str = row['maturity_date']
+                try:
+                    created_at = datetime.strptime(date_str, '%d-%b-%y')
+                    maturity_date = datetime.strptime(maturity_date_str, '%d-%b-%y')
+                except ValueError:
+                    print(f"Warning: Could not parse date {date_str}, using current date")
+                    created_at = datetime.utcnow()
+                    maturity_date = datetime.utcnow()
+            
             # Default values for all transactions
             session.execute(text("""
-                INSERT INTO transaction (transaction_id, product_id, created_at, amount, currency, country, location, 
-                                        beneficiary, product, tenor, price, industry, list_of_goods)
-                VALUES (:transaction_id, :product_id, :created_at, :amount, :currency, :country, :location, 
-                       :beneficiary, :product, :tenor, :price, :industry, :list_of_goods)
+                INSERT INTO transaction (created_at, transaction_id, entity_id, product_id, product_name, industry, amount, currency, country, location, 
+                                        beneficiary, tenor, maturity_date, price)
+                VALUES (:created_at, :transaction_id, :entity_id, :product_id, :product_name, :industry, :amount, :currency, :country, :location, 
+                       :beneficiary, :tenor, :industry, :maturity_date, :price)
             """), {
-                "transaction_id": tx_id,
-                "product_id": 1,  # Default product ID
-                "created_at": datetime.utcnow(),
-                "amount": 100000,
-                "currency": "USD",
-                "country": "USA",
-                "location": "New York",
-                "beneficiary": "Sample Beneficiary",
-                "product": "Trade Finance",
-                "tenor": 180,
-                "price": 5.0,
-                "industry": "General",
-                "list_of_goods": "{Sample Goods}"
+                "created_at": created_at,
+                "transaction_id": int(row['transaction_id']),
+                "entity_id": int(row['entity_id']),
+                "product_id": int(row['product_id']),
+                "product_name": row['product_name'],
+                "industry": row['industry'],
+                "amount": float(row['amount']),
+                "currency": row['currency'],
+                "country": row['country'],
+                "location": row['location'],
+                "beneficiary": row['beneficiary'],
+                "tenor": int(row['tenor']),
+                "maturity_date": maturity_date,
+                "price": float(row['price'])
             })
         
         # Now import events from CSV file

@@ -22,23 +22,24 @@ class Entity(Base):
 class Transaction(Base):
     __tablename__ = "transaction"
 
-    transaction_id = Column(Integer, primary_key=True, autoincrement=True)
-    product_id = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
+    transaction_id = Column(Integer, primary_key=True, autoincrement=True)
+    entity_id = Column(Integer, primary_key=True, autoincrement=True)
+    product_id = Column(Integer)
+    product_name = Column(String)
+    industry = Column(String)
     amount = Column(Float)
     currency = Column(String)
     country = Column(String)
     location = Column(String)
     beneficiary = Column(String)
-    product = Column(String)
     tenor = Column(Integer)
+    maturity_date = Column(DateTime)
     price = Column(Float)
-    industry = Column(String)
-    list_of_goods = Column(ARRAY(String))
-
+    
     events = relationship("Event", back_populates="transaction")
     transaction_entities = relationship("TransactionEntity", back_populates="transaction")
-
+    entity = relationship("Entity", back_populates="transactions")
 
 class Event(Base):
     __tablename__ = "event"
