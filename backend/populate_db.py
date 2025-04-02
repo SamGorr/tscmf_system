@@ -42,29 +42,28 @@ def populate_database():
                     created_at = datetime.utcnow()
                     maturity_date = datetime.utcnow()
             
-            # Default values for all transactions
-            session.execute(text("""
-                INSERT INTO transaction (created_at, transaction_id, entity_id, product_id, product_name, industry, amount, currency, country, location, 
-                                        beneficiary, tenor, maturity_date, price)
-                VALUES (:created_at, :transaction_id, :entity_id, :product_id, :product_name, :industry, :amount, :currency, :country, :location, 
-                       :beneficiary, :tenor, :maturity_date, :price)
-            """), {
-                "created_at": created_at,
-                "transaction_id": int(row['transaction_id']),
-                "entity_id": int(row['entity_id']),
-                "product_id": int(row['product_id']),
-                "product_name": row['product_name'],
-                "industry": row['industry'],
-                "amount": float(row['amount']),
-                "currency": row['currency'],
-                "country": row['country'],
-                "location": row['location'],
-                "beneficiary": row['beneficiary'],
-                "tenor": int(row['tenor']),
-                "maturity_date": maturity_date,
-                "price": float(row['price'])
-            })
-
+                # Default values for all transactions
+                session.execute(text("""
+                    INSERT INTO transaction (created_at, transaction_id, entity_id, product_id, product_name, industry, amount, currency, country, location, 
+                                            beneficiary, tenor, maturity_date, price)
+                    VALUES (:created_at, :transaction_id, :entity_id, :product_id, :product_name, :industry, :amount, :currency, :country, :location, 
+                        :beneficiary, :tenor, :maturity_date, :price)
+                """), {
+                    "created_at": created_at,
+                    "transaction_id": int(row['transaction_id']),
+                    "entity_id": int(row['entity_id']),
+                    "product_id": int(row['product_id']),
+                    "product_name": row['product_name'],
+                    "industry": row['industry'],
+                    "amount": float(row['amount']),
+                    "currency": row['currency'],
+                    "country": row['country'],
+                    "location": row['location'],
+                    "beneficiary": row['beneficiary'],
+                    "tenor": int(row['tenor']),
+                    "maturity_date": maturity_date,
+                    "price": float(row['price'])
+                })
 
         # Now import events from CSV file
         print("Importing events from CSV...")
