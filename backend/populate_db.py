@@ -23,6 +23,35 @@ def populate_database():
         # Drop existing data
         print("Clearing existing data...")
         session.execute(text("TRUNCATE transaction, event CASCADE"))
+
+        # Now import entities from CSV file
+        print("Importing entity from CSV...")
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "entity.csv")
+        
+        with open(csv_path, 'r') as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                # Parse the date from the CSV format (DD-MMM-YY) to a datetime object
+                date_str = row['onboard_date']
+                try:
+                    onboard_date = datetime.strptime(date_str, '%d-%b-%y')
+                except ValueError:
+                    print(f"Warning: Could not parse date {date_str}, using current date")
+                    onboard_date = datetime.utcnow()
+                
+                # Insert the event into the database
+                session.execute(text("""
+                    INSERT INTO entity (entity_id, entity_name, entity_address, country, client_type, risk_rating, onboard_date)
+                    VALUES (:entity_id, :entity_name, :entity_address, :country, :client_type, :risk_rating, :onboard_date)
+                """), {
+                    "entity_id": int(row['entity_id']),
+                    "entity_name": row['entity_name'],
+                    "entity_address": row['entity_address'],
+                    "country": row['country'],
+                    "client_type": row['client_type'],
+                    "risk_rating": row['risk_rating'],
+                    "onboard_date": onboard_date
+                })
         
         # Now import transaction from CSV file
         print("Importing transaction from CSV...")
@@ -94,7 +123,7 @@ def populate_database():
                     "created_at": created_at,
                     "status": row['status']
                 })
-        
+
         # Commit the transaction
         session.commit()
         print("Database population completed successfully!")

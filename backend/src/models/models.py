@@ -9,7 +9,7 @@ class Transaction(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     transaction_id = Column(Integer, primary_key=True, autoincrement=True)
-    entity_id = Column(Integer)
+    entity_id = Column(Integer, ForeignKey("entity.entity_id"))
     product_id = Column(Integer)
     product_name = Column(String)
     industry = Column(String)
@@ -29,9 +29,24 @@ class Event(Base):
 
     event_id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(Integer, ForeignKey("transaction.transaction_id"))
-    entity_id = Column(Integer)
+    entity_id = Column(Integer, ForeignKey("entity.entity_id"))
     source = Column(String)
     source_content = Column(String)
     type = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String)
+
+class Entity(Base):
+    __tablename__ = "entity"
+
+    entity_id = Column(Integer, primary_key=True, autoincrement=True)
+    entity_name = Column(String)
+    entity_address = Column(String)
+    country = Column(String)
+    client_type = Column(String)
+    risk_rating = Column(String)
+    onboard_date = Column(DateTime)
+    
+    transactions = relationship("Transaction", backref="entity")
+    events = relationship("Event", backref="entity")
+
