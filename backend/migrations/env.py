@@ -15,9 +15,7 @@ from src.database.database import Base
 
 # Import all models to ensure they're registered with the metadata
 from src.models.models import (
-    Entity, Transaction, Event, TransactionEntity, 
-    Limit, SanctionCheck, EligibilityCheck, 
-    LimitsCheck, ExposureCheck
+    Transaction, Event
 )
 
 # this is the Alembic Config object, which provides

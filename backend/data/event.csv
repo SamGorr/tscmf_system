@@ -2,11 +2,10 @@ event_id,transaction_id,entity_id,source,source_content,type,created_at,status
 1,10001,1,Email,Request for trade finance facility,Request,15-Jan-23,Pending Review
 2,10002,2,System,Automated sanction screening completed,Sanction Check,16-Jan-23,Completed
 3,10003,3,API,Limit check performed,Limit Check,17-Jan-23,In Progress
-4,10004,4,Manual,Document verification required,Document Check,18-Jan-23,Pending Review
-5,10005,1,Email,Additional information requested,Information Request,19-Jan-23,Awaiting Response
-6,10006,5,System,Exposure calculation completed,Exposure Check,20-Jan-23,Completed
-7,10007,2,API,Eligibility verification,Eligibility Check,21-Jan-23,Approved
+4,10004,1,Manual,Document verification required,Document Check,18-Jan-23,Pending Review
+5,10005,4,Email,Additional information requested,Information Request,19-Jan-23,Awaiting Response
+6,10006,2,System,Exposure calculation completed,Exposure Check,20-Jan-23,Completed
+7,10007,5,API,Eligibility verification,Eligibility Check,21-Jan-23,Approved
 8,10008,3,Manual,Risk assessment update,Risk Assessment,22-Jan-23,In Review
-9,10009,4,Email,Compliance review initiated,Compliance Check,23-Jan-23,In Progress
-10,10010,5,System,Automated credit check,Credit Check,24-Jan-23,Completed
-11,10011,1,API,Trade finance limit update,Limit Update,25-Jan-23,Approved
+9,10009,1,Email,Compliance review initiated,Compliance Check,23-Jan-23,In Progress
+10,10010,4,System,Automated credit check,Credit Check,24-Jan-23,Completed

@@ -22,31 +22,7 @@ def populate_database():
         
         # Drop existing data
         print("Clearing existing data...")
-        session.execute(text("TRUNCATE entity, transaction, event, transaction_entity, eligibility_check, exposure_check, limits_check, sanction_check CASCADE"))
-        
-        # Create entities (needed for foreign key constraints)
-        print("Creating entities...")
-        entities = [
-            (1, "Global Traders Inc.", "123 Trade Avenue, New York, NY 10001", "USA", "CORPORATE", "A", datetime.utcnow()),
-            (2, "Eastern Suppliers Ltd.", "88 Manufacturing Blvd, Shanghai, China", "China", "CORPORATE", "A-", datetime.utcnow()),
-            (3, "African Farmers Cooperative", "45 Agriculture Road, Nairobi, Kenya", "Kenya", "SME", "B", datetime.utcnow()),
-            (4, "South American Exporters", "237 Export Avenue, São Paulo, Brazil", "Brazil", "CORPORATE", "B+", datetime.utcnow()),
-            (5, "European Distribution Network", "36 Logistics Park, Hamburg, Germany", "Germany", "CORPORATE", "AA", datetime.utcnow())
-        ]
-        
-        for entity in entities:
-            session.execute(text("""
-                INSERT INTO entity (entity_id, entity_name, entity_address, country, client_type, risk_rating, onboard_date)
-                VALUES (:entity_id, :entity_name, :entity_address, :country, :client_type, :risk_rating, :onboard_date)
-            """), {
-                "entity_id": entity[0],
-                "entity_name": entity[1],
-                "entity_address": entity[2],
-                "country": entity[3],
-                "client_type": entity[4],
-                "risk_rating": entity[5],
-                "onboard_date": entity[6]
-            })
+        session.execute(text("TRUNCATE transaction, event CASCADE"))
         
         # Now import transaction from CSV file
         print("Importing transaction from CSV...")
@@ -71,7 +47,7 @@ def populate_database():
                 INSERT INTO transaction (created_at, transaction_id, entity_id, product_id, product_name, industry, amount, currency, country, location, 
                                         beneficiary, tenor, maturity_date, price)
                 VALUES (:created_at, :transaction_id, :entity_id, :product_id, :product_name, :industry, :amount, :currency, :country, :location, 
-                       :beneficiary, :tenor, :industry, :maturity_date, :price)
+                       :beneficiary, :tenor, :maturity_date, :price)
             """), {
                 "created_at": created_at,
                 "transaction_id": int(row['transaction_id']),
@@ -88,7 +64,8 @@ def populate_database():
                 "maturity_date": maturity_date,
                 "price": float(row['price'])
             })
-        
+
+
         # Now import events from CSV file
         print("Importing events from CSV...")
         csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "event.csv")
