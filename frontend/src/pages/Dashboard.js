@@ -7,11 +7,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   AreaChart, Area
 } from 'recharts';
-import { MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
 import { formatGoodsList, formatCurrency, formatDate } from '../utils/dataUtils';
 
-// Set this to true to force using mock data instead of API
-const FORCE_MOCK_DATA = true;
+// Set this to false to use the API instead of mock data
+const FORCE_MOCK_DATA = false;
 
 // Mock data for testing when API is not available
 const MOCK_DATA = {
@@ -29,7 +28,53 @@ const MOCK_DATA = {
     { id: 4, name: 'Import Loan', code: 'IL', category: 'FINANCING', interest_rate: 7.0 },
     { id: 5, name: 'Supply Chain Finance', code: 'SCF', category: 'FINANCING', interest_rate: 5.5 }
   ],
-  transactions: MOCK_TRANSACTION_DATA
+  transactions: [
+    {
+      id: 10001,
+      reference_number: 'TXN-10001',
+      client_name: 'Global Traders Inc.',
+      client_type: 'CORPORATE',
+      type: 'Request',
+      amount: 500000,
+      currency: 'USD',
+      source: 'Email',
+      industry: 'Manufacturing',
+      goods_list: ['Manufacturing'],
+      status: 'Transaction Booked',
+      created_at: '2024-04-01T00:00:00Z',
+      maturity_date: '2024-06-30T00:00:00Z'
+    },
+    {
+      id: 10002,
+      reference_number: 'TXN-10002',
+      client_name: 'Eastern Suppliers Ltd.',
+      client_type: 'CORPORATE',
+      type: 'Inquiry',
+      amount: 750000,
+      currency: 'EUR',
+      source: 'System',
+      industry: 'Agriculture',
+      goods_list: ['Agriculture'],
+      status: 'Pending Review',
+      created_at: '2024-04-01T00:00:00Z',
+      maturity_date: '2024-07-30T00:00:00Z'
+    },
+    {
+      id: 10003,
+      reference_number: 'TXN-10003',
+      client_name: 'African Farmers Cooperative',
+      client_type: 'SME',
+      type: 'Request',
+      amount: 1200000,
+      currency: 'USD',
+      source: 'Email',
+      industry: 'Energy',
+      goods_list: ['Energy'],
+      status: 'Viability Check Failed - Limit',
+      created_at: '2024-04-01T00:00:00Z',
+      maturity_date: '2024-09-28T00:00:00Z'
+    }
+  ]
 };
 
 // Enhanced tooltip component with better styling
@@ -179,36 +224,51 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (FORCE_MOCK_DATA) {
-          // Use mock data
-          const clientsData = MOCK_DATA.clients;
-          const productsData = MOCK_DATA.products;
-          const transactionsData = MOCK_DATA.transactions.map(t => ({
-            ...t,
-            type: t.type || transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
-            status: t.status || transactionStatuses[Math.floor(Math.random() * transactionStatuses.length)]
-          }));
+        // Get the API URL from environment variable or default to localhost
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        
+        try {
+          // Fetch data from the API endpoints
+          const [dashboardStatsRes, transactionsRes, eventsRes] = await Promise.all([
+            axios.get(`${apiUrl}/api/dashboard/stats`),
+            axios.get(`${apiUrl}/api/transactions`),
+            axios.get(`${apiUrl}/api/events`)
+          ]);
           
-          // Count transactions by status
-          const approved = transactionsData.filter(t => 
-            t.status === 'Transaction Booked' || t.status === 'Viability Check Successes'
-          ).length;
-          const processing = transactionsData.filter(t => 
-            t.status === 'Pending Review'
-          ).length;
-          const declined = transactionsData.filter(t => 
-            t.status.includes('Failed') || t.status === 'Transaction Rejected'
-          ).length;
+          // Extract dashboard stats
+          const dashboardStats = dashboardStatsRes.data;
           
-          setStats({
-            clients: clientsData.length,
-            products: productsData.length,
-            transactions: {
-              total: transactionsData.length,
-              approved,
-              processing,
-              declined
+          // Extract and process transactions
+          const transactionsData = transactionsRes.data.map(t => {
+            // Associate events with transactions to get status and type
+            const transactionEvents = eventsRes.data.filter(e => e.transaction_id === t.transaction_id);
+            let status = 'Pending Review'; // Default status
+            let type = 'Request'; // Default type
+            
+            // If there are events for this transaction, use the latest one's status and type
+            if (transactionEvents.length > 0) {
+              const latestEvent = transactionEvents.sort((a, b) => 
+                new Date(b.created_at) - new Date(a.created_at)
+              )[0];
+              
+              status = latestEvent.status;
+              type = latestEvent.type;
             }
+            
+            return {
+              ...t,
+              status,
+              type,
+              source: transactionEvents.length > 0 ? transactionEvents[0].source : 'System',
+              goods_list: t.industry ? [t.industry] : [],
+            };
+          });
+          
+          // Set stats from API
+          setStats({
+            clients: dashboardStats.clients,
+            products: dashboardStats.products,
+            transactions: dashboardStats.transactions
           });
           
           setTransactions(transactionsData);
@@ -216,111 +276,14 @@ const Dashboard = () => {
           
           // Get 5 most recent transactions
           const sorted = [...transactionsData].sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at)
-          ).slice(0, 5);
-          
-          setRecentTransactions(sorted);
-          setLoading(false);
-          return;
-        }
-        
-        // If not using mock data, try the API...
-        // Get the API URL from environment variable
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://backend:8000';
-        
-        try {
-          // In a real app, you'd likely have a dedicated endpoint for dashboard stats
-          // For demo purposes, we'll make multiple calls
-          const [clientsRes, productsRes, transactionsRes] = await Promise.all([
-            axios.get(`${apiUrl}/api/clients`),
-            axios.get(`${apiUrl}/api/products`),
-            axios.get(`${apiUrl}/api/transactions`)
-          ]);
-          
-          // Process API data
-          const enhancedTransactions = transactionsRes.data.map(t => ({
-            ...t,
-            type: transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
-            status: transactionStatuses[Math.floor(Math.random() * transactionStatuses.length)],
-            source: ['Email', 'File', 'Manual'][Math.floor(Math.random() * 3)]
-          }));
-          
-          // Count transactions by status
-          const approved = enhancedTransactions.filter(t => 
-            t.status === 'Transaction Booked' || t.status === 'Viability Check Successes'
-          ).length;
-          const processing = enhancedTransactions.filter(t => 
-            t.status === 'Pending Review'
-          ).length;
-          const declined = enhancedTransactions.filter(t => 
-            t.status.includes('Failed') || t.status === 'Transaction Rejected'
-          ).length;
-          
-          setStats({
-            clients: clientsRes.data.length,
-            products: productsRes.data.length,
-            transactions: {
-              total: enhancedTransactions.length,
-              approved,
-              processing,
-              declined
-            }
-          });
-          
-          setTransactions(enhancedTransactions);
-          setFilteredTransactions(enhancedTransactions);
-          
-          // Get 5 most recent transactions
-          const sorted = [...enhancedTransactions].sort((a, b) => 
             new Date(b.created_at) - new Date(a.created_at)
           ).slice(0, 5);
           
           setRecentTransactions(sorted);
           setLoading(false);
         } catch (apiError) {
-          // API failed, use mock data anyway
-          console.error('API error, falling back to mock data:', apiError);
-          
-          // Use mock data
-          const clientsData = MOCK_DATA.clients;
-          const productsData = MOCK_DATA.products;
-          const transactionsData = MOCK_DATA.transactions.map(t => ({
-            ...t,
-            type: t.type || transactionTypes[Math.floor(Math.random() * transactionTypes.length)],
-            status: t.status || transactionStatuses[Math.floor(Math.random() * transactionStatuses.length)]
-          }));
-          
-          // Count transactions by status
-          const approved = transactionsData.filter(t => 
-            t.status === 'Transaction Booked' || t.status === 'Viability Check Successes'
-          ).length;
-          const processing = transactionsData.filter(t => 
-            t.status === 'Pending Review'
-          ).length;
-          const declined = transactionsData.filter(t => 
-            t.status.includes('Failed') || t.status === 'Transaction Rejected'
-          ).length;
-          
-          setStats({
-            clients: clientsData.length,
-            products: productsData.length,
-            transactions: {
-              total: transactionsData.length,
-              approved,
-              processing,
-              declined
-            }
-          });
-          
-          setTransactions(transactionsData);
-          setFilteredTransactions(transactionsData);
-          
-          // Get 5 most recent transactions
-          const sorted = [...transactionsData].sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at)
-          ).slice(0, 5);
-          
-          setRecentTransactions(sorted);
+          console.error('API error:', apiError);
+          setError('Failed to load data from API: ' + (apiError.message || 'Unknown error'));
           setLoading(false);
         }
       } catch (err) {

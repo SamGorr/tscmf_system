@@ -144,3 +144,145 @@ def get_events_simple(db: Session = Depends(get_db)):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error retrieving simple events: {str(e)}")
+
+@app.get("/api/entities")
+def get_entities(db: Session = Depends(get_db)):
+    """
+    Retrieve all entities (clients)
+    """
+    try:
+        print("Starting entities API endpoint request...")
+        entities = db.query(Entity).all()
+        print(f"Found {len(entities)} entities in the database")
+        
+        result = []
+        for entity in entities:
+            entity_data = {
+                "entity_id": entity.entity_id,
+                "entity_name": entity.entity_name,
+                "entity_address": entity.entity_address,
+                "country": entity.country,
+                "client_type": entity.client_type,
+                "risk_rating": entity.risk_rating,
+                "onboard_date": entity.onboard_date.isoformat() if entity.onboard_date else None,
+            }
+            result.append(entity_data)
+        
+        print(f"Returning {len(result)} entities in response")
+        return result
+    except Exception as e:
+        print(f"Error retrieving entities: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving entities: {str(e)}")
+
+@app.get("/api/transactions")
+def get_transactions(db: Session = Depends(get_db)):
+    """
+    Retrieve all transactions with related entity information
+    """
+    try:
+        print("Starting transactions API endpoint request...")
+        transactions = db.query(Transaction).order_by(desc(Transaction.created_at)).all()
+        print(f"Found {len(transactions)} transactions in the database")
+        
+        result = []
+        for transaction in transactions:
+            # Get entity info if available
+            entity_info = {}
+            if transaction.entity_id:
+                entity = transaction.entity
+                if entity:
+                    entity_info = {
+                        "entity_id": entity.entity_id,
+                        "entity_name": entity.entity_name,
+                        "country": entity.country,
+                        "client_type": entity.client_type,
+                        "risk_rating": entity.risk_rating,
+                    }
+            
+            # Format transaction
+            transaction_data = {
+                "id": transaction.transaction_id,
+                "transaction_id": transaction.transaction_id,
+                "entity_id": transaction.entity_id,
+                "product_id": transaction.product_id,
+                "product_name": transaction.product_name,
+                "industry": transaction.industry,
+                "amount": float(transaction.amount) if transaction.amount else None,
+                "currency": transaction.currency,
+                "country": transaction.country,
+                "location": transaction.location,
+                "beneficiary": transaction.beneficiary,
+                "tenor": transaction.tenor,
+                "maturity_date": transaction.maturity_date.isoformat() if transaction.maturity_date else None,
+                "price": float(transaction.price) if transaction.price else None,
+                "created_at": transaction.created_at.isoformat() if transaction.created_at else None,
+                "reference_number": f"TXN-{transaction.transaction_id:05d}",
+                "client_name": entity_info.get("entity_name", ""),
+                "client_type": entity_info.get("client_type", ""),
+                "entity": entity_info
+            }
+            result.append(transaction_data)
+        
+        print(f"Returning {len(result)} transactions in response")
+        return result
+    except Exception as e:
+        print(f"Error retrieving transactions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving transactions: {str(e)}")
+
+@app.get("/api/dashboard/stats")
+def get_dashboard_stats(db: Session = Depends(get_db)):
+    """
+    Retrieve summary statistics for the dashboard
+    """
+    try:
+        print("Starting dashboard stats API endpoint request...")
+        
+        # Get counts
+        entity_count = db.query(Entity).count()
+        transaction_count = db.query(Transaction).count()
+        event_count = db.query(Event).count()
+        
+        # Get unique product count
+        product_count = db.query(Transaction.product_name).distinct().count()
+        
+        # Get events by status
+        events = db.query(Event).all()
+        status_counts = {}
+        for event in events:
+            status_counts[event.status] = status_counts.get(event.status, 0) + 1
+        
+        # Approximate status categories for transactions based on events
+        approved_count = sum(count for status, count in status_counts.items() 
+                          if 'Success' in status or 'Booked' in status)
+        processing_count = sum(count for status, count in status_counts.items() 
+                            if 'Pending' in status or 'In Progress' in status)
+        declined_count = sum(count for status, count in status_counts.items() 
+                          if 'Failed' in status or 'Rejected' in status)
+        
+        # Create response
+        result = {
+            "clients": entity_count,
+            "products": product_count,
+            "transactions": {
+                "total": transaction_count,
+                "approved": approved_count,
+                "processing": processing_count,
+                "declined": declined_count
+            },
+            "events": {
+                "total": event_count,
+                "by_status": status_counts
+            }
+        }
+        
+        print(f"Returning dashboard stats")
+        return result
+    except Exception as e:
+        print(f"Error retrieving dashboard stats: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving dashboard stats: {str(e)}")
