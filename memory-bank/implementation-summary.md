@@ -20,7 +20,7 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
 ### Frontend Changes
 
 1. **Updated Dashboard Component:**
-   - Removed the `FORCE_MOCK_DATA` flag (set to `false`)
+   - Changed `FORCE_MOCK_DATA` flag from `true` to `false`
    - Removed import of `MOCK_TRANSACTION_DATA`
    - Updated mock data to be self-contained for fallback purposes
    - Implemented API request handling with proper error handling
@@ -35,6 +35,13 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
    - Maintained the same UI layout and design
    - Updated data sources while preserving component functionality
    - Maintained filtering, sorting, and visualization features
+
+4. **UI Updates:**
+   - Updated transaction table to display currency instead of goods
+   - Removed the goods column from the table header and rows
+   - Added a dedicated currency column for better financial data presentation
+   - Modified the amount display to show numbers without currency symbols
+   - Updated the transaction tooltip to display amount and currency as separate fields
 
 ## How It Works
 
@@ -67,6 +74,13 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
    - System is now ready for additional data-driven features
    - Backend can be extended with new endpoints as needed
    - Frontend can consume additional API data with minimal changes
+
+4. **Better Data Representation:**
+   - More focused data presentation with currency information emphasized
+   - Cleaner table layout showing only the most relevant transaction information
+   - Improved financial data clarity for users
+   - Separated amount and currency display for easier data interpretation and comparison
+   - Consistent number formatting across the application
 
 ## Next Steps
 

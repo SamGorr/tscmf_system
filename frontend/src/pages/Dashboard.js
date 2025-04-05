@@ -104,7 +104,10 @@ const TransactionTooltip = ({ transaction }) => {
         <div>{transaction.industry || 'Not specified'}</div>
         
         <div className="text-gray-500">Amount:</div>
-        <div className="font-medium">{formatCurrency(transaction.amount, transaction.currency)}</div>
+        <div className="font-medium">{Number(transaction.amount).toLocaleString()}</div>
+        
+        <div className="text-gray-500">Currency:</div>
+        <div className="font-medium">{transaction.currency}</div>
         
         <div className="text-gray-500">Product:</div>
         <div>{transaction.product_name || 'Not specified'}</div>
@@ -156,8 +159,8 @@ const TransactionRow = ({ transaction }) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.source}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.client_name || transaction.client_id}</td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.type}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(transaction.amount, transaction.currency)}</td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatGoodsList(transaction.goods_list)}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{Number(transaction.amount).toLocaleString()}</td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.currency}</td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
           ${transaction.status.includes('Success') || transaction.status.includes('Booked') ? 'bg-green-100 text-green-800' : 
@@ -702,7 +705,7 @@ const Dashboard = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goods</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
