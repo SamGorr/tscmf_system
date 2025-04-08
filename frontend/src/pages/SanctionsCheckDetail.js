@@ -32,8 +32,11 @@ const SanctionsCheckDetail = () => {
   useEffect(() => {
     const fetchTransactionDetails = async () => {
       try {
+        // Get the API URL from environment variable or default to localhost:5000
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        
         // Try fetching from API first
-        const response = await axios.get(`http://localhost:8000/api/transactions/${id}`);
+        const response = await axios.get(`${apiUrl}/api/transactions/${id}`);
         setTransaction(response.data);
         
         // If there are entities, set the first one as selected

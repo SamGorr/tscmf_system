@@ -14,7 +14,10 @@ const Transactions = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        let url = 'http://localhost:8000/api/transactions';
+        // Get the API URL from environment variable or default to localhost:5000
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        
+        let url = `${apiUrl}/api/transactions`;
         const params = new URLSearchParams();
         
         if (filters.status) params.append('status', filters.status);

@@ -97,3 +97,70 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
    - Add more robust error handling and recovery
    - Implement retry mechanisms for API failures
    - Add loading states and skeleton loaders 
+
+## Backend API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/transactions` | GET | Returns a list of all transactions |
+| `/api/transactions/{transaction_id}` | GET | Returns details for a single transaction |
+| `/api/entities` | GET | Returns a list of all entities (clients) |
+| `/api/events` | GET | Returns a list of all events with related transaction and entity information |
+| `/api/events-simple` | GET | Returns a simplified list of events (for testing) |
+| `/api/dashboard/stats` | GET | Returns summary statistics for the dashboard |
+
+## Frontend Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Dashboard | `/` | Main dashboard with statistics and recent transactions |
+| Transactions | `/transactions` | List of all transactions |
+| Transaction Detail | `/transactions/:id` | Detailed view of a single transaction |
+| Clients | `/clients` | List of all clients |
+| Products | `/products` | List of all products |
+| Pricing Matrix | `/pricing-matrix` | Pricing configuration for different products |
+| Eligibility Check Config | `/eligibility-check-config` | Configuration for eligibility checks |
+| Sanctions Check Detail | `/sanctions-check-detail/:id` | Detailed view of sanctions checks |
+
+## Recent Implementations
+
+### Transaction Detail API Integration
+
+- Added a new `/api/transactions/{transaction_id}` endpoint in the backend that retrieves a single transaction by ID along with its related entity and event information.
+- The endpoint returns detailed transaction data including:
+  - Basic transaction information (ID, amount, currency, etc.)
+  - Client/entity details (name, country, address, risk rating)
+  - Related events with status information
+  - Product details
+  - Trading goods information
+
+- Updated the frontend TransactionDetail component to:
+  - Connect to the new API endpoint
+  - Display real transaction data from the database
+  - Maintain fallback to mock data when API is unavailable or in development
+
+- Fixed API URL inconsistencies across the application:
+  - Updated all frontend components to use the environment variable REACT_APP_API_URL or default to 'http://localhost:5000'
+  - Ensured consistent API access in TransactionDetail, Transactions, and SanctionsCheckDetail components
+
+- The transaction detail now shows accurate information about:
+  - Transaction reference number and status
+  - Client details
+  - Financial information (amount, currency, pricing)
+  - Product details
+  - Related entities
+  - Trade goods
+
+### Dashboard Recent Transactions
+
+- The Dashboard page displays recent transactions from the database
+- Each transaction shows:
+  - Reference number
+  - Source
+  - Client name
+  - Type
+  - Amount/Currency
+  - Status
+  - Date
+  - Link to transaction detail page
+- Clicking "View" navigates to the transaction detail page with real data 

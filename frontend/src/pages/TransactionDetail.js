@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { mockTransactionData, MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
+import { MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
 import { 
   normalizeTransaction, 
   normalizeGoodsList, 
@@ -155,87 +155,101 @@ const TransactionDetail = () => {
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
-        // First attempt to fetch from API
-        const response = await axios.get(`http://localhost:8000/api/transactions/${id}`);
-        const normalizedData = normalizeTransaction(response.data);
-        setTransaction(normalizedData);
+        setLoading(true);
         
-        // Set entities from normalized response
-        setEntities(normalizedData.entities);
+        // Get the API URL from environment variable or default to localhost:5000
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
         
-        // Set trade goods from normalized response
-        setTradeGoods(normalizedData.goods_list);
-        
-        // Initialize form data from transaction
-        if (normalizedData) {
-          setFormData({
-            goodsList: normalizedData.goods_list,
-            industry: normalizedData.industry || ''
-          });
+        try {
+          // Fetch transaction from the API
+          const response = await axios.get(`${apiUrl}/api/transactions/${id}`);
+          const data = response.data;
+          
+          // Normalize the transaction data
+          const normalizedData = normalizeTransaction(data);
+          setTransaction(normalizedData);
+          
+          // Set entities from response
+          setEntities(normalizedData.entities || []);
+          
+          // Set trade goods from response
+          setTradeGoods(normalizedData.goods_list || []);
+          
+          // Initialize form data from transaction
+          if (normalizedData) {
+            setFormData({
+              goodsList: normalizedData.goods_list,
+              industry: normalizedData.industry || ''
+            });
+          }
+          
+          // Initialize pricing data from transaction
+          if (normalizedData) {
+            // Extract pricing-related data from the transaction
+            setPricingData({
+              country: normalizedData.client_country || '',
+              location: normalizedData.client_location || normalizedData.location || '',
+              bank: normalizedData.bank || normalizedData.client_name || '',
+              beneficiary: normalizedData.beneficiary || '',
+              product: normalizedData.product_name || '',
+              tenor: normalizedData.tenor || 
+                     (normalizedData.maturity_date ? 
+                      `${Math.ceil((new Date(normalizedData.maturity_date) - new Date(normalizedData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
+                      '90 days'),
+              paymentFrequency: normalizedData.payment_frequency || 'Monthly',
+              localCurrency: normalizedData.currency || 'USD',
+              requestedPrice: normalizedData.price || normalizedData.pricing_rate || 0
+            });
+          }
+          
+          setLoading(false);
+        } catch (apiErr) {
+          console.error('API error:', apiErr);
+          console.log('Falling back to mock data due to API error');
+          
+          // Fallback to mock data when API fails or in development
+          const mockTransaction = MOCK_TRANSACTION_DATA.find(t => t.id.toString() === id.toString());
+          
+          if (mockTransaction) {
+            const normalizedMockData = normalizeTransaction(mockTransaction);
+            setTransaction(normalizedMockData);
+            
+            // Set entities from mock data
+            setEntities(normalizedMockData.entities || []);
+            
+            // Set trade goods from mock data
+            setTradeGoods(normalizedMockData.goods_list || []);
+            
+            // Initialize form data from transaction
+            setFormData({
+              goodsList: normalizedMockData.goods_list,
+              industry: normalizedMockData.industry || ''
+            });
+            
+            // Initialize pricing data
+            setPricingData({
+              country: normalizedMockData.client_country || '',
+              location: normalizedMockData.client_location || '',
+              bank: normalizedMockData.bank || normalizedMockData.client_name || '',
+              beneficiary: normalizedMockData.beneficiary || '',
+              product: normalizedMockData.product_name || '',
+              tenor: normalizedMockData.tenor || 
+                     (normalizedMockData.maturity_date ? 
+                      `${Math.ceil((new Date(normalizedMockData.maturity_date) - new Date(normalizedMockData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
+                      '90 days'),
+              paymentFrequency: normalizedMockData.payment_frequency || 'Monthly',
+              localCurrency: normalizedMockData.currency || 'USD',
+              requestedPrice: normalizedMockData.pricing_rate || 0
+            });
+          } else {
+            setError(`Transaction with ID ${id} not found in mock data`);
+          }
+          
+          setLoading(false);
         }
-        
-        // Initialize pricing data from transaction
-        if (normalizedData) {
-          // Extract pricing-related data from the transaction
-          setPricingData({
-            country: normalizedData.client_country || '',
-            location: normalizedData.client_location || '',
-            bank: normalizedData.bank || normalizedData.client_name || '',
-            beneficiary: normalizedData.beneficiary || '',
-            product: normalizedData.product_name || '',
-            tenor: normalizedData.tenor || 
-                   (normalizedData.maturity_date ? 
-                    `${Math.ceil((new Date(normalizedData.maturity_date) - new Date(normalizedData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
-                    '90 days'),
-            paymentFrequency: normalizedData.payment_frequency || 'Monthly',
-            localCurrency: normalizedData.currency || 'USD',
-            requestedPrice: normalizedData.pricing_rate || 0
-          });
-        }
-        
-        setLoading(false);
       } catch (err) {
-        console.error('Error fetching transaction details:', err);
-        
-        // If API fails, use mock data instead of showing error
-        console.log('Using mock data for demonstration');
-        
-        // First try to find the transaction in our MOCK_TRANSACTION_DATA array
-        const foundTransaction = MOCK_TRANSACTION_DATA.find(t => t.id.toString() === id);
-        
-        // If found, use that transaction data, otherwise use the default mockTransactionData with updated ID
-        const mockData = foundTransaction || {...mockTransactionData, id};
-        const normalizedData = normalizeTransaction(mockData);
-        
-        setTransaction(normalizedData);
-        setEntities(normalizedData.entities);
-        setTradeGoods(normalizedData.goods_list);
-        
-        // Initialize form data from mock transaction
-        setFormData({
-          goodsList: normalizedData.goods_list,
-          industry: normalizedData.industry || ''
-        });
-        
-        // Initialize pricing data from transaction
-        if (normalizedData) {
-          // Extract pricing-related data from the transaction
-          setPricingData({
-            country: normalizedData.client_country || '',
-            location: normalizedData.client_location || '',
-            bank: normalizedData.bank || normalizedData.client_name || '',
-            beneficiary: normalizedData.beneficiary || '',
-            product: normalizedData.product_name || '',
-            tenor: normalizedData.tenor || 
-                   (normalizedData.maturity_date ? 
-                    `${Math.ceil((new Date(normalizedData.maturity_date) - new Date(normalizedData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
-                    '90 days'),
-            paymentFrequency: normalizedData.payment_frequency || 'Monthly',
-            localCurrency: normalizedData.currency || 'USD',
-            requestedPrice: normalizedData.pricing_rate || 0
-          });
-        }
-        
+        console.error('Error in transaction detail:', err);
+        setError(`Failed to load transaction: ${err.message || 'Unknown error'}`);
         setLoading(false);
       }
     };
@@ -1327,7 +1341,7 @@ const TransactionDetail = () => {
             <button
               onClick={handleCheckPricing}
               disabled={checkingPrice}
-              className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50 mr-2"
             >
               {checkingPrice ? (
                 <>
