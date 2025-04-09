@@ -164,3 +164,35 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
   - Date
   - Link to transaction detail page
 - Clicking "View" navigates to the transaction detail page with real data 
+
+### Dashboard Component Refactoring
+
+- Completely refactored the Dashboard component to improve code organization and maintainability:
+  - Removed unused legacy mock data and the `FORCE_MOCK_DATA` flag that were no longer needed
+  - Extracted component logic into separate modular files following a component-based architecture
+  - Created a dedicated service for data fetching and processing
+
+- Created the following component files:
+  - `TransactionTooltip.js` - Displays detailed transaction information on hover
+  - `TransactionRow.js` - Renders a single transaction row with tooltip functionality
+  - `DashboardCharts.js` - Contains all chart visualizations for transaction analytics
+  - `StatsCard.js` - Reusable component for displaying statistics with icons
+  - `TransactionTable.js` - Manages the transactions table with filtering capabilities
+
+- Created a dedicated service file:
+  - `dashboardService.js` - Centralizes API calls and data processing functions
+
+- Benefits of the refactoring:
+  - Improved code maintainability with smaller, focused components
+  - Better separation of concerns (UI components vs. data fetching logic)
+  - Enhanced testability of individual components
+  - Reduced complexity in the main Dashboard component
+  - Proper organization of related functionality
+  - Easier future development and extension of dashboard features
+
+- The new architecture follows modern React best practices:
+  - Each component has a single responsibility
+  - Services handle data fetching and processing
+  - State management is simplified and localized
+  - Components are more reusable
+  - Code is more readable and better organized 

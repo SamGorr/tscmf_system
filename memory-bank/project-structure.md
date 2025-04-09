@@ -30,6 +30,14 @@ The Trade, Supply Chain, and Microfinance Management Platform (TSCMF) is a compr
 - **Main Components**:
   - `App.js`: Main React component with routing
   - `components/Navbar.js`: Navigation component
+  - `components/dashboard/`:
+    - `TransactionTooltip.js`: Tooltip for transaction details
+    - `TransactionRow.js`: Row component for transaction table
+    - `DashboardCharts.js`: Chart visualizations for analytics
+    - `StatsCard.js`: Card component for statistics display
+    - `TransactionTable.js`: Table with filtering for transactions
+  - `services/`:
+    - `dashboardService.js`: Service for dashboard data fetching and processing
 
 - **Pages**:
   - `Dashboard.js`: Main dashboard with transaction overview and statistics

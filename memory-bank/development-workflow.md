@@ -111,3 +111,39 @@
    - Implement proper authentication
    - Add rate limiting
    - Configure HTTPS 
+
+## Component Organization and Best Practices
+
+Based on the recent Dashboard refactoring, the following best practices should be followed for frontend development:
+
+1. **Component Structure**:
+   - Create small, focused components with single responsibilities
+   - Organize related components in dedicated directories (e.g., `/components/dashboard/`)
+   - Use consistent naming conventions (e.g., `ComponentName.js`)
+   - Extract reusable UI elements into shared components
+
+2. **Service Pattern**:
+   - Separate data fetching and processing logic into dedicated service files
+   - Place services in a `/services` directory
+   - Each service should focus on a specific domain (e.g., `dashboardService.js`)
+   - Services should handle API calls, data transformations, and business logic
+
+3. **State Management**:
+   - Keep state management simple and localized when possible
+   - Use React hooks effectively (useState, useEffect, useMemo)
+   - Avoid prop drilling by extracting components when necessary
+   - Consider context API for more complex state requirements
+
+4. **Code Organization**:
+   - Use meaningful comments to document code sections
+   - Group related functionality together
+   - Follow consistent formatting and code style
+   - Remove unused code and avoid commented-out code blocks
+
+5. **Performance Considerations**:
+   - Avoid unnecessary re-renders
+   - Use memoization for expensive calculations
+   - Implement proper loading states and error handling
+   - Consider lazy loading for larger components
+
+These practices help create a maintainable, scalable, and developer-friendly codebase. 
