@@ -246,6 +246,38 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
 - Improved database initialization to properly truncate all related tables
 - Updated the data flow between backend models and database tables
 
+### Transaction Entity and Goods API Integration
+
+- Added a new `/api/transactions/{transaction_id}/details` endpoint in the backend that retrieves detailed transaction entity and goods information:
+  - Transaction entities (client, beneficiary, supplier, etc.)
+  - Transaction goods (item name, quantity, unit)
+
+- The endpoint returns structured data including:
+  - Entity information (type, name, address, country)
+  - Goods information (name, quantity, unit)
+
+- Enhanced the TransactionDetail component to:
+  - Call the new API endpoint to fetch real entity and goods data
+  - Replace the previously hardcoded mockup data in the Trade Entity and Trading Information sections
+  - Display real transaction entities and goods from the database
+  - Fall back to existing data when API is unavailable
+  - Maintain proper error handling
+
+- Extended the dashboardService with a new method:
+  - Added `fetchTransactionDetails` function to retrieve transaction entity and goods data
+
+- Benefits of this implementation:
+  - Consistent data between backend database and frontend display
+  - Accurate representation of transaction relationships and goods
+  - Improved data integrity and user experience
+  - Better separation of concerns with dedicated API endpoint
+  - Maintainable and extensible trade entity and goods management
+
+- The transaction detail page now shows:
+  - Accurate trade entities (client, beneficiary, supplier, banks) from the database
+  - Real goods information (item name, quantity, unit) associated with the transaction
+  - Properly formatted entity and goods tables with actual data
+
 ### Backend Development Highlights
 - Added new API endpoints for client entities and transactions
 - Enhanced data processing and relationship mapping

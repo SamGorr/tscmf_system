@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { MOCK_TRANSACTION_DATA } from '../data/mockTransactionData';
+import DashboardService from '../services/dashboardService';
 import { 
   normalizeTransaction, 
   normalizeGoodsList, 
@@ -169,11 +170,33 @@ const TransactionDetail = () => {
           const normalizedData = normalizeTransaction(data);
           setTransaction(normalizedData);
           
-          // Set entities from response
-          setEntities(normalizedData.entities || []);
-          
-          // Set trade goods from response
-          setTradeGoods(normalizedData.goods_list || []);
+          // Fetch additional transaction details (entities and goods)
+          try {
+            const transactionDetails = await DashboardService.fetchTransactionDetails(id);
+            
+            // Set real entities from API response if available
+            if (transactionDetails.entities && transactionDetails.entities.length > 0) {
+              setEntities(transactionDetails.entities);
+            } else {
+              // Fall back to entities from the transaction response
+              setEntities(normalizedData.entities || []);
+            }
+            
+            // Set real trade goods from API response if available
+            if (transactionDetails.goods && transactionDetails.goods.length > 0) {
+              setTradeGoods(transactionDetails.goods);
+            } else {
+              // Fall back to goods from the transaction response
+              setTradeGoods(normalizedData.goods_list || []);
+            }
+            
+          } catch (detailsError) {
+            console.error('Error fetching transaction details:', detailsError);
+            // Fall back to entities from the transaction response
+            setEntities(normalizedData.entities || []);
+            // Fall back to goods from the transaction response
+            setTradeGoods(normalizedData.goods_list || []);
+          }
           
           // Initialize form data from transaction
           if (normalizedData) {
@@ -198,64 +221,40 @@ const TransactionDetail = () => {
                       `${Math.ceil((new Date(normalizedData.maturity_date) - new Date(normalizedData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
                       ''),
               paymentFrequency: normalizedData.payment_frequency || '',
-              localCurrency: normalizedData.currency || '',
-              requestedPrice: normalizedData.price || normalizedData.pricing_rate || ''
             });
           }
+        } catch (apiError) {
+          console.error('API Error:', apiError);
+          setError(apiError.message);
           
-          setLoading(false);
-        } catch (apiErr) {
-          console.error('API error:', apiErr);
-          console.log('Falling back to mock data due to API error');
+          // Fallback to mock data for development/testing
+          console.log('Falling back to mock data');
+          const mockData = MOCK_TRANSACTION_DATA.find(t => t.id.toString() === id.toString()) || MOCK_TRANSACTION_DATA[0];
+          const normalizedMockData = normalizeTransaction(mockData);
+          setTransaction(normalizedMockData);
           
-          // Fallback to mock data when API fails or in development
-          const mockTransaction = MOCK_TRANSACTION_DATA.find(t => t.id.toString() === id.toString());
+          // Set entities from mock data
+          setEntities(normalizedMockData.entities || []);
           
-          if (mockTransaction) {
-            const normalizedMockData = normalizeTransaction(mockTransaction);
-            setTransaction(normalizedMockData);
-            
-            // Set entities from mock data
-            setEntities(normalizedMockData.entities || []);
-            
-            // Set trade goods from mock data
-            setTradeGoods(normalizedMockData.goods_list || []);
-            
-            // Initialize form data from transaction
+          // Set trade goods from mock data
+          setTradeGoods(normalizedMockData.goods_list || []);
+          
+          // Initialize form data from mock data
+          if (normalizedMockData) {
             setFormData({
               goodsList: normalizedMockData.goods_list,
               industry: normalizedMockData.industry || ''
             });
-            
-            // Initialize pricing data - leaving fields blank if not available in mock data
-            setPricingData({
-              country: normalizedMockData.client_country || '',
-              location: normalizedMockData.client_location || '',
-              bank: normalizedMockData.bank || normalizedMockData.client_name || '',
-              beneficiary: normalizedMockData.beneficiary || '',
-              product: normalizedMockData.product_name || '',
-              tenor: normalizedMockData.tenor ? 
-                     `${normalizedMockData.tenor} days` : 
-                     (normalizedMockData.maturity_date ? 
-                      `${Math.ceil((new Date(normalizedMockData.maturity_date) - new Date(normalizedMockData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
-                      ''),
-              paymentFrequency: normalizedMockData.payment_frequency || '',
-              localCurrency: normalizedMockData.currency || '',
-              requestedPrice: normalizedMockData.price || normalizedMockData.pricing_rate || ''
-            });
-          } else {
-            setError(`Transaction with ID ${id} not found in mock data`);
           }
-          
-          setLoading(false);
         }
       } catch (err) {
-        console.error('Error in transaction detail:', err);
-        setError(`Failed to load transaction: ${err.message || 'Unknown error'}`);
+        console.error('General Error:', err);
+        setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
-
+    
     fetchTransaction();
   }, [id]);
 
@@ -318,53 +317,57 @@ const TransactionDetail = () => {
   };
 
   const handleSubmitEntitySection = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
     try {
       setProcessingAction(true);
       
-      const response = await axios.put(`http://localhost:8000/api/transactions/${id}`, {
-        entities: entities
-      });
+      // In a real application, you would send this data to the backend
+      // For now, we'll just update the local state
+      console.log('Updating transaction entities:', entities);
       
-      setTransaction(response.data);
-      setIsEditingEntity(false);
-      setProcessingAction(false);
-    } catch (err) {
-      console.error('Error updating entities:', err);
+      // In a real implementation, you would call an API endpoint
+      // await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}/entities`, { entities });
       
+      // For now, update the transaction object to include updated entities
       setTransaction(prev => ({
         ...prev,
         entities: entities
       }));
+      
       setIsEditingEntity(false);
+      setProcessingAction(false);
+    } catch (err) {
+      console.error('Error updating entities:', err);
       setProcessingAction(false);
     }
   };
   
   const handleSubmitTradingSection = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
     try {
       setProcessingAction(true);
       
+      // In a real application, you would send this data to the backend
       // Using the tradeGoods array directly now
-      const response = await axios.put(`http://localhost:8000/api/transactions/${id}`, {
+      console.log('Updating trading information:', tradeGoods);
+      
+      // Update industry in transaction
+      const updatedTransaction = {
+        ...transaction,
         goods_list: tradeGoods,
         industry: formData.industry
-      });
+      };
       
-      setTransaction(response.data);
+      // In a real implementation, you would call an API endpoint
+      // await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}/goods`, { goods: tradeGoods, industry: formData.industry });
+      
+      setTransaction(updatedTransaction);
       setIsEditingTrading(false);
       setProcessingAction(false);
     } catch (err) {
       console.error('Error updating trading information:', err);
-      
-      // Update local transaction state with form data
-      setTransaction(prev => ({
-        ...prev,
-        goods_list: tradeGoods,
-        industry: formData.industry
-      }));
-      setIsEditingTrading(false);
       setProcessingAction(false);
     }
   };

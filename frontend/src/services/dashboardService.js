@@ -101,6 +101,18 @@ const DashboardService = {
         const [bMonth, bYear] = b.name.split(' ');
         return new Date(`${aMonth} 1, ${aYear}`) - new Date(`${bMonth} 1, ${bYear}`);
       });
+  },
+  
+  // Fetch transaction details (entities and goods)
+  fetchTransactionDetails: async (transactionId) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.get(`${apiUrl}/api/transactions/${transactionId}/details`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching transaction details:', error);
+      throw error;
+    }
   }
 };
 

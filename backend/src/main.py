@@ -6,7 +6,7 @@ from sqlalchemy import desc
 import datetime
 
 from .database.database import get_db, engine
-from .models.models import Transaction, Event, Entity
+from .models.models import Transaction, Event, Entity, Transaction_Entity, Transaction_Goods
 # Create the tables if they don't exist
 # Note: In production, use Alembic migrations instead
 # Base.metadata.create_all(bind=engine)
@@ -386,3 +386,65 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error retrieving dashboard stats: {str(e)}")
+
+@app.get("/api/transactions/{transaction_id}/details")
+def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieve transaction entity and goods information by transaction ID
+    """
+    try:
+        print(f"Starting transaction details API endpoint request for ID: {transaction_id}...")
+        
+        # Query transaction entities
+        transaction_entities = db.query(Transaction_Entity).filter(
+            Transaction_Entity.transaction_id == transaction_id
+        ).all()
+        
+        # Query transaction goods
+        transaction_goods = db.query(Transaction_Goods).filter(
+            Transaction_Goods.transaction_id == transaction_id
+        ).all()
+        
+        if not transaction_entities and not transaction_goods:
+            print(f"No details found for transaction ID: {transaction_id}")
+        else:
+            print(f"Found {len(transaction_entities)} entities and {len(transaction_goods)} goods for transaction ID: {transaction_id}")
+        
+        # Format the entities data
+        entities_data = []
+        for entity in transaction_entities:
+            entity_data = {
+                "id": entity.id,
+                "type": entity.type,
+                "address": entity.address,
+                "country": entity.country,
+                # Add a default name field based on the entity type
+                "name": f"{entity.type} Entity" 
+            }
+            entities_data.append(entity_data)
+        
+        # Format the goods data
+        goods_data = []
+        for good in transaction_goods:
+            good_data = {
+                "id": good.id,
+                "name": good.item_name,
+                "quantity": good.quantity,
+                "unit": good.unit
+            }
+            goods_data.append(good_data)
+        
+        # Combine all data
+        transaction_details = {
+            "transaction_id": transaction_id,
+            "entities": entities_data,
+            "goods": goods_data
+        }
+        
+        print(f"Returning transaction details for ID: {transaction_id}")
+        return transaction_details
+    except Exception as e:
+        print(f"Error retrieving transaction details: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving transaction details: {str(e)}")

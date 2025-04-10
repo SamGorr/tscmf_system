@@ -100,4 +100,18 @@ The Dashboard component was updated to fetch data from the backend API:
 - Consistent data format across the application
 - Single source of truth for application state
 - Better scalability for future features
-- Proper separation of concerns between frontend and backend 
+- Proper separation of concerns between frontend and backend
+
+## API Endpoints
+
+### Backend → Frontend
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/transactions` | GET | Returns a list of all transactions |
+| `/api/transactions/{transaction_id}` | GET | Returns details for a single transaction |
+| `/api/transactions/{transaction_id}/details` | GET | Returns transaction entity and goods data for a specific transaction |
+| `/api/entities` | GET | Returns a list of all entities (clients) |
+| `/api/events` | GET | Returns a list of all events with related transaction and entity information |
+| `/api/events-simple` | GET | Returns a simplified list of events (for testing) |
+| `/api/dashboard/stats` | GET | Returns summary statistics for the dashboard | 

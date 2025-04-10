@@ -87,3 +87,41 @@ The frontend connects to these API endpoints to display:
 - Event details
 
 The application appears to use mock data when the API is not available by setting the `FORCE_MOCK_DATA` flag to true in various components. 
+
+#### Transaction Details API Response Model
+
+```json
+{
+  "transaction_id": 10001,
+  "entities": [
+    {
+      "id": 1,
+      "type": "Client",
+      "name": "Client Entity",
+      "address": "123 Trade Avenue, New York, NY 10001",
+      "country": "USA"
+    },
+    {
+      "id": 2,
+      "type": "Beneficiary",
+      "name": "Beneficiary Entity",
+      "address": "456 Steel Boulevard, Pittsburgh, PA 15212",
+      "country": "USA"
+    }
+  ],
+  "goods": [
+    {
+      "id": 1,
+      "name": "Industrial Machinery",
+      "quantity": 15,
+      "unit": "units"
+    },
+    {
+      "id": 2,
+      "name": "Steel Components",
+      "quantity": 250,
+      "unit": "tons"
+    }
+  ]
+}
+``` 
