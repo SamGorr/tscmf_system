@@ -55,6 +55,7 @@ class Entity(Base):
 class Transaction_Entity(Base):
     __tablename__ = "transaction_entity"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(Integer, ForeignKey("transaction.transaction_id"))
     type = Column(String)
     address = Column(String)
@@ -63,6 +64,7 @@ class Transaction_Entity(Base):
 class Transaction_Goods(Base):
     __tablename__ = "transaction_goods"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(Integer, ForeignKey("transaction.transaction_id"))
     item_name = Column(String)
     quantity = Column(Integer)

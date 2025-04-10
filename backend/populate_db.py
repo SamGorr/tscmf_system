@@ -22,7 +22,7 @@ def populate_database():
         
         # Drop existing data
         print("Clearing existing data...")
-        session.execute(text("TRUNCATE transaction, event CASCADE"))
+        session.execute(text("TRUNCATE transaction, event, transaction_entity, transaction_goods CASCADE"))
 
         # Now import entities from CSV file
         print("Importing entity from CSV...")
@@ -122,6 +122,49 @@ def populate_database():
                     "type": row['type'],
                     "created_at": created_at,
                     "status": row['status']
+                })
+                
+        # Import transaction_entity from CSV file
+        print("Importing transaction_entity from CSV...")
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "transaction_entity.csv")
+        
+        with open(csv_path, 'r') as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                # Insert the transaction_entity into the database
+                session.execute(text("""
+                    INSERT INTO transaction_entity (transaction_id, type, address, country)
+                    VALUES (:transaction_id, :type, :address, :country)
+                """), {
+                    "transaction_id": int(row['transaction_id']),
+                    "type": row['type'],
+                    "address": row['address'],
+                    "country": row['country']
+                })
+
+        # Import transaction_goods from CSV file
+        print("Importing transaction_goods from CSV...")
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "transaction_goods.csv")
+        
+        with open(csv_path, 'r') as file:
+            csv_reader = csv.DictReader(file)
+            for row in csv_reader:
+                # Convert quantity to integer with error handling
+                try:
+                    quantity = int(row['quantity']) if row['quantity'] else 0
+                except ValueError:
+                    print(f"Warning: Could not convert quantity '{row['quantity']}' to integer, using 0")
+                    quantity = 0
+                
+                # Insert the transaction_goods into the database
+                session.execute(text("""
+                    INSERT INTO transaction_goods (transaction_id, item_name, quantity, unit)
+                    VALUES (:transaction_id, :item_name, :quantity, :unit)
+                """), {
+                    "transaction_id": int(row['transaction_id']),
+                    "item_name": row['item_name'],
+                    "quantity": quantity,
+                    "unit": row['unit']
                 })
 
         # Commit the transaction

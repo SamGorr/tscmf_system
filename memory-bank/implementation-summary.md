@@ -229,6 +229,23 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
 - Improved data consistency across all CSV files
 - Enhanced mock data to better represent real-world trade finance scenarios
 
+### 2023-06-05: Backend Transaction Relations Implementation
+- Updated database models for transaction relationships:
+  - Added proper primary key (id) column to Transaction_Entity model
+  - Added proper primary key (id) column to Transaction_Goods model
+  - Enhanced relationship mappings between Transaction and related models
+- Modified populate_db.py script to:
+  - Import transaction_entity data from CSV files
+  - Import transaction_goods data from CSV files
+  - Handle data validation and type conversion for imported data
+  - Add proper error handling for data import process
+- Added new database migration script creation functionality:
+  - Created dedicated function for transaction relations migration
+  - Enhanced create_migration.py to support targeted migrations
+  - Ensured database schema stays in sync with model changes
+- Improved database initialization to properly truncate all related tables
+- Updated the data flow between backend models and database tables
+
 ### Backend Development Highlights
 - Added new API endpoints for client entities and transactions
 - Enhanced data processing and relationship mapping

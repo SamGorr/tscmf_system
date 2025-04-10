@@ -104,4 +104,46 @@ The application includes the following data models:
 - SanctionCheck
 - EligibilityCheck
 - LimitsCheck
-- ExposureCheck 
+- ExposureCheck
+
+## Transaction Relationship Data
+
+The system now supports detailed transaction relationship data through two new tables:
+
+1. **Transaction_Entity**: Links transactions to multiple related entities (client, beneficiary, supplier, etc.)
+   - Contains entity type, address, and country information
+   - Each transaction can have multiple related entities
+
+2. **Transaction_Goods**: Stores details of goods/items associated with each transaction
+   - Includes item name, quantity, and unit information
+   - Each transaction can have multiple goods items
+
+### Applying the Transaction Relations Migration
+
+1. To create a migration for the transaction relations tables:
+   ```
+   python create_migration.py transaction_relations
+   ```
+
+2. To apply the migration:
+   ```
+   alembic upgrade head
+   ```
+
+### Populating the Transaction Relations Data
+
+The updated `populate_db.py` script now imports data from:
+- `data/transaction_entity.csv` - Contains entity relationships
+- `data/transaction_goods.csv` - Contains goods information
+
+To populate all database tables including transaction relations:
+```
+python populate_db.py
+```
+
+### Data Model Structure
+
+The system now uses the following relationships:
+- `Transaction` model has one-to-many relationships with `Transaction_Entity` and `Transaction_Goods`
+- Each `Transaction_Entity` record represents a specific role an entity plays in a transaction
+- Each `Transaction_Goods` record represents a specific item involved in a transaction 
