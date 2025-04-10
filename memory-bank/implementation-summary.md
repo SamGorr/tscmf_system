@@ -214,6 +214,21 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
 - Updated the pricingData state initialization to prioritize API data
 - Improved handleSubmitPricingSection to properly update transaction pricing data via API
 
+### 2023-06-01: Transaction Relationship Data Update
+- Enhanced transaction_entity.csv with detailed entity relationship data for all transactions:
+  - Added proper client addresses and countries
+  - Added beneficiary entities with complete location information
+  - Added supplier entities with addresses
+  - Added confirming banks where applicable
+  - Ensured data consistency with entity.csv reference data
+- Updated transaction_goods.csv with comprehensive goods information:
+  - Added specific product items based on transaction industry
+  - Included realistic quantities and units for each item
+  - Ensured each transaction has multiple goods items
+  - Aligned goods data with transaction industry types
+- Improved data consistency across all CSV files
+- Enhanced mock data to better represent real-world trade finance scenarios
+
 ### Backend Development Highlights
 - Added new API endpoints for client entities and transactions
 - Enhanced data processing and relationship mapping

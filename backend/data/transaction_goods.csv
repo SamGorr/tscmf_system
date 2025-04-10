@@ -1,0 +1,33 @@
+transaction_id,item_name,quantity,unit
+10001,Industrial Machinery,15,units
+10001,Steel Components,250,tons
+10001,Manufacturing Equipment,8,units
+10001,Quality Control Systems,3,sets
+10002,Organic Wheat,500,tons
+10002,Corn Seeds,1200,kg
+10002,Agricultural Equipment,7,units
+10003,Solar Panels,350,units
+10003,Energy Storage Systems,25,units
+10003,Inverters,75,units
+10003,Mounting Hardware,150,sets
+10004,Automotive Electronics,1000,units
+10004,Chassis Components,120,sets
+10004,Transmission Parts,300,units
+10005,Microprocessors,5000,units
+10005,Circuit Boards,2500,units
+10005,Display Panels,1000,units
+10006,Raw Silk,300,kg
+10006,Cotton Textiles,450,rolls
+10006,Textile Manufacturing Equipment,5,units
+10007,Pharmaceutical Ingredients,750,kg
+10007,Medical Equipment,50,units
+10007,Laboratory Supplies,200,sets
+10008,Construction Machinery,12,units
+10008,Building Materials,1500,tons
+10008,Prefabricated Components,35,units
+10009,Semiconductor Components,10000,units
+10009,Electronic Assemblies,2500,units
+10009,Testing Equipment,15,sets
+10010,Retail Display Systems,75,units
+10010,Inventory Management Software,10,licenses
+10010,Premium Merchandise,1500,units
