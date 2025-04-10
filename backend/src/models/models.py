@@ -23,6 +23,8 @@ class Transaction(Base):
     price = Column(Float)
     
     events = relationship("Event", backref="transaction")
+    transaction_entities = relationship("Transaction_Entity", backref="transaction")
+    transaction_goods = relationship("Transaction_Goods", backref="transaction")
 
 class Event(Base):
     __tablename__ = "event"
@@ -50,3 +52,18 @@ class Entity(Base):
     transactions = relationship("Transaction", backref="entity")
     events = relationship("Event", backref="entity")
 
+class Transaction_Entity(Base):
+    __tablename__ = "transaction_entity"
+
+    transaction_id = Column(Integer, ForeignKey("transaction.transaction_id"))
+    type = Column(String)
+    address = Column(String)
+    country = Column(String)
+
+class Transaction_Goods(Base):
+    __tablename__ = "transaction_goods"
+
+    transaction_id = Column(Integer, ForeignKey("transaction.transaction_id"))
+    item_name = Column(String)
+    quantity = Column(Integer)
+    unit = Column(String)
