@@ -1010,7 +1010,7 @@ const TransactionDetail = () => {
               <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Event Type</h3>
-                <p className="text-base font-medium">{transaction.event_type}</p>
+                <p className="text-base font-medium">{transaction.type}</p>
               </div>
             </div>
             
@@ -1023,20 +1023,12 @@ const TransactionDetail = () => {
                 </p>
               </div>
             </div>
-            
-            <div className="flex items-start">
-              <BuildingOfficeIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Client ID</h3>
-                <p className="text-base">{transaction.client_id}</p>
-              </div>
-            </div>
-            
+                       
             <div className="flex items-start">
               <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Product ID</h3>
-                <p className="text-base">{transaction.product_id}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Product</h3>
+                <p className="text-base">{transaction.product_name}</p>
               </div>
             </div>
             
