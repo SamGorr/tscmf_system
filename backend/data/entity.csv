@@ -1,6 +1,4 @@
-entity_id,entity_name,entity_address,country,client_type,risk_rating,onboard_date
-1,Global Traders Inc.,"123 Trade Avenue, New York, NY 10001",USA,CORPORATE,A,1-Jan-23
-2,Eastern Suppliers Ltd.,"88 Manufacturing Blvd, Shanghai",China,CORPORATE,A-,15-Feb-23
-3,African Farmers Cooperative,"45 Agriculture Road, Nairobi",Kenya,SME,B,3-Mar-23
-4,South American Exporters,"237 Export Avenue, S??o Paulo",Brazil,CORPORATE,B+,22-Mar-23
-5,European Distribution Network,"36 Logistics Park, Hamburg",Germany,CORPORATE,AA,10-Apr-23
+entity_id,entity_name,swift,entity_address,country,signing_office_branch,agreement_date
+1,BANK AL HABIB LIMITED,BAHLPKKAXXX,"2ND FLOOR, MACKINNONS BUILDING I.I. CHUNDRIGAR ROAD  KARACHI  PAKISTAN /BAHLPKKAXXX/",PAKISTAN,,5/15/2009
+2,BNP PARIBAS APAC TRADE,BNPAFRPPXXX,85 93 RUE DES 3 FONTANOT 92000 NANTERRE     FRANCE /BNPAFRPPXXX/,FRANCE,"BNP PARIBAS SA, FRANCE",5/31/2004
+3,"JPMORGAN CHASE BANK, NATIONAL ASSOCIATION",CHASUS33,"575 WASHINGTON BLVD, FLOOR 18,  JERSEY CITY 07310-1616 UNITED STATES OF AMERICA /CHASUS33/",UNITED STATES OF AMERICA,"JPMORGAN CHASE BANK, NATIONAL ASSOCIATION, UNITED STATES OF AMERICA",10/19/2009

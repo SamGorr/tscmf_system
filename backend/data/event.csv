@@ -1,11 +1,11 @@
-event_id,transaction_id,entity_id,source,source_content,type,created_at,status
-1,10001,1,Email,Request for trade finance facility,Request,15-Jan-23,Pending Review
-2,10002,2,Email,Automated sanction screening completed,Request,16-Jan-23,Pending Review
-3,10003,3,Email,Limit check performed,Request,17-Feb-23,Viability Check Successes
-4,10004,1,Manual,Document verification required,Cancel,18-Mar-23,Viability Check Failed - Sanction
-5,10005,4,Manual,Additional information requested,Closure,19-Mar-23,Viability Check Failed - Limit
-6,10006,2,Email,Exposure calculation completed,Request,20-May-23,Viability Check Failed - Exposure
-7,10007,5,Email,Eligibility verification,Request,21-Jun-23,Viability Check Failed - Eligibility
-8,10008,3,Manual,Cancellation,Cancellation,22-Jun-23,Transaction Booked
-9,10009,1,Email,Compliance review initiated,Inquiry,23-Aug-23,Transaction Booked
-10,10010,4,Email,Automated credit check,Inquiry,24-Sep-23,Transaction Rejected
+event_id,transaction_id,source,source_content,type,created_at,status
+1,10001,Email,Request for trade finance facility,Request,15-Jan-23,Pending Review
+2,10002,Email,Automated sanction screening completed,Request,16-Jan-23,Pending Review
+3,10003,Email,Limit check performed,Request,17-Feb-23,Viability Check Successes
+4,10004,Manual,Document verification required,Cancel,18-Mar-23,Viability Check Failed - Sanction
+5,10005,Manual,Additional information requested,Closure,19-Mar-23,Viability Check Failed - Limit
+6,10006,Email,Exposure calculation completed,Request,20-May-23,Viability Check Failed - Exposure
+7,10007,Email,Eligibility verification,Request,21-Jun-23,Viability Check Failed - Eligibility
+8,10008,Manual,Cancellation,Cancellation,22-Jun-23,Transaction Booked
+9,10009,Email,Compliance review initiated,Inquiry,23-Aug-23,Transaction Booked
+10,10010,Email,Automated credit check,Inquiry,24-Sep-23,Transaction Rejected

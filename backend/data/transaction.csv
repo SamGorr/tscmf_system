@@ -1,11 +1,3 @@
-created_at,transaction_id,entity_id,product_id,product_name,industry,amount,currency,country,location,beneficiary,tenor,maturity_date,price
-15-Jan-23,10001,1,1,Credit Guarantee,Manufacturing,500000,USD,USA,"New York, NY",Global Steel Corp,90,30-Jun-24,5.25
-16-Jan-23,10002,2,1,Credit Guarantee,Agriculture,750000,EUR,Germany,Hamburg,European Grains GmbH,120,30-Jul-24,4.75
-17-Feb-23,10003,3,1,Credit Guarantee,Energy,1200000,USD,UAE,Dubai,Solar Solutions LLC,180,28-Sep-24,6
-18-Mar-23,10004,1,1,Credit Guarantee,Automotive,300000,JPY,Japan,Tokyo,Toyota Suppliers Co,60,31-May-24,4.5
-19-Mar-23,10005,4,1,Credit Guarantee,Technology,850000,USD,Singapore,Singapore,Tech Components Pte,45,17-May-24,5
-20-May-23,10006,2,1,Credit Guarantee,Textiles,600000,CNY,China,Shanghai,Silk Road Textiles,150,30-Aug-24,5.75
-21-Jun-23,10007,5,1,Credit Guarantee,Pharmaceuticals,950000,USD,Switzerland,Basel,MediCare AG,90,1-Jul-24,4.25
-22-Jun-23,10008,3,1,Credit Guarantee,Construction,400000,AED,UAE,Abu Dhabi,Desert Builders LLC,365,2-Apr-25,6.5
-23-Aug-23,10009,1,1,Credit Guarantee,Electronics,700000,USD,Taiwan,Taipei,Circuit Systems Co,75,17-Jun-24,5.15
-24-Sep-23,10010,4,1,Credit Guarantee,Retail,550000,GBP,UK,London,British Retail Group,30,3-May-24,4.8
+transaction_id,country,issuing_bank,confirming_bank,requesting_bank,adb_guarantee_trn,confirming_bank_reference_trn,issuing_bank_reference_trn,form_of_eligible_instrument,face_amount,date_of_issue,expiry_date,terms_of_payment,currency,local_currency_amount,usd_equivalent_amount,book_rate,cover,local_currency_amount_cover,usd_equivalent_amount_cover,sub_limit_type,value_date_of_adb_guarantee,end_of_risk_period,tenor,expiry_date_of_adb_guarantee,tenor_of_adb_guarantee,guarantee_fee_rate,,source_content
+10001,PAKISTAN,BANK AL HABIB LIMITED,BNP PARIBAS APAC TRADE,BNP PARIBAS APAC TRADE,GU2033-017-663,R799180339102574,0007LC58671/2025,LETTER OF CREDIT REF NO. 0007LC58671/2025,92000,3/7/2025,4/27/2025,BY NEGOTIATION SIGHT,EUR,92000,100307.57,92%,100%,92000,100307.57,CG,3/24/2025,4/27/2025,34 days,5/12/2025,49 days,2.60%,,
+10002,PAKISTAN,BANK AL HABIB LIMITED,"JPMORGAN CHASE BANK, NATIONAL ASSOCIATION","JPMORGAN CHASE BANK, NATIONAL ASSOCIATION",GU2033-017-664,ASGSGL012033,TTTM 250101,TRADE LOAN REF NO. TTTM 250101,45000000,1/21/2025,7/18/2025,PAYABLE AT SIGHT ON THE EXPIRY / MATURITY DATE: 18 JULY 2025,USD,45000000,45000000,100%,90%,40500000,40500000,CG - LONG,,,,,,,,
