@@ -192,13 +192,14 @@ const TransactionDetail = () => {
               bank: normalizedData.bank || normalizedData.client_name || '',
               beneficiary: normalizedData.beneficiary || '',
               product: normalizedData.product_name || '',
-              tenor: normalizedData.tenor || 
+              tenor: normalizedData.tenor ? 
+                     `${normalizedData.tenor} days` : 
                      (normalizedData.maturity_date ? 
                       `${Math.ceil((new Date(normalizedData.maturity_date) - new Date(normalizedData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
-                      '90 days'),
-              paymentFrequency: normalizedData.payment_frequency || 'Monthly',
-              localCurrency: normalizedData.currency || 'USD',
-              requestedPrice: normalizedData.price || normalizedData.pricing_rate || 0
+                      ''),
+              paymentFrequency: normalizedData.payment_frequency || '',
+              localCurrency: normalizedData.currency || '',
+              requestedPrice: normalizedData.price || normalizedData.pricing_rate || ''
             });
           }
           
@@ -226,20 +227,21 @@ const TransactionDetail = () => {
               industry: normalizedMockData.industry || ''
             });
             
-            // Initialize pricing data
+            // Initialize pricing data - leaving fields blank if not available in mock data
             setPricingData({
               country: normalizedMockData.client_country || '',
               location: normalizedMockData.client_location || '',
               bank: normalizedMockData.bank || normalizedMockData.client_name || '',
               beneficiary: normalizedMockData.beneficiary || '',
               product: normalizedMockData.product_name || '',
-              tenor: normalizedMockData.tenor || 
+              tenor: normalizedMockData.tenor ? 
+                     `${normalizedMockData.tenor} days` : 
                      (normalizedMockData.maturity_date ? 
                       `${Math.ceil((new Date(normalizedMockData.maturity_date) - new Date(normalizedMockData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
-                      '90 days'),
-              paymentFrequency: normalizedMockData.payment_frequency || 'Monthly',
-              localCurrency: normalizedMockData.currency || 'USD',
-              requestedPrice: normalizedMockData.pricing_rate || 0
+                      ''),
+              paymentFrequency: normalizedMockData.payment_frequency || '',
+              localCurrency: normalizedMockData.currency || '',
+              requestedPrice: normalizedMockData.price || normalizedMockData.pricing_rate || ''
             });
           } else {
             setError(`Transaction with ID ${id} not found in mock data`);
@@ -523,22 +525,53 @@ const TransactionDetail = () => {
   // Add a function to handle saving pricing data
   const handleSubmitPricingSection = async (e) => {
     e.preventDefault();
-    
-    // In a real application, this would update the transaction's pricing information via API
-    setTransaction(prevTransaction => ({
-      ...prevTransaction,
-      client_country: pricingData.country,
-      client_location: pricingData.location,
-      bank: pricingData.bank,
-      beneficiary: pricingData.beneficiary,
-      product_name: pricingData.product,
-      tenor: pricingData.tenor,
-      payment_frequency: pricingData.paymentFrequency,
-      currency: pricingData.localCurrency,
-      pricing_rate: pricingData.requestedPrice
-    }));
-    
-    setIsEditingPricing(false);
+    try {
+      setProcessingAction(true);
+      
+      // Get the API URL from environment variable or default to localhost:5000
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      
+      // Try to update via API
+      try {
+        const response = await axios.put(`${apiUrl}/api/transactions/${id}`, {
+          client_country: pricingData.country,
+          client_location: pricingData.location,
+          bank: pricingData.bank,
+          beneficiary: pricingData.beneficiary,
+          product_name: pricingData.product,
+          tenor: pricingData.tenor ? pricingData.tenor.replace(' days', '') : null,
+          payment_frequency: pricingData.paymentFrequency,
+          currency: pricingData.localCurrency,
+          price: pricingData.requestedPrice ? parseFloat(pricingData.requestedPrice) : null
+        });
+        
+        // Update local state with the response data
+        const normalizedData = normalizeTransaction(response.data);
+        setTransaction(normalizedData);
+      } catch (apiErr) {
+        console.error('API error when updating pricing:', apiErr);
+        
+        // Fallback to just updating the local state when API fails
+        setTransaction(prevTransaction => ({
+          ...prevTransaction,
+          client_country: pricingData.country,
+          client_location: pricingData.location,
+          bank: pricingData.bank,
+          beneficiary: pricingData.beneficiary,
+          product_name: pricingData.product,
+          tenor: pricingData.tenor,
+          payment_frequency: pricingData.paymentFrequency,
+          currency: pricingData.localCurrency,
+          pricing_rate: pricingData.requestedPrice ? parseFloat(pricingData.requestedPrice) : null
+        }));
+      }
+      
+      setIsEditingPricing(false);
+      setProcessingAction(false);
+    } catch (err) {
+      console.error('Error updating pricing information:', err);
+      setProcessingAction(false);
+    }
   };
 
   // Add a function to check pricing against matrix
@@ -548,6 +581,21 @@ const TransactionDetail = () => {
     // In a real application, this would make an API call to the pricing service
     // For demo purposes, simulate a pricing check result after a delay
     setTimeout(() => {
+      // If no requested price is set, show appropriate message
+      if (!pricingData.requestedPrice) {
+        setPricingResult({
+          status: 'info',
+          message: 'No pricing information available from transaction data',
+          indicativePrice: '0.00',
+          requestedPrice: '0.00',
+          difference: 0,
+          priceRange: { min: '0.00', max: '0.00' },
+          appliedRules: []
+        });
+        setCheckingPrice(false);
+        return;
+      }
+      
       // Simulate calling the pricing matrix API
       // These would normally come from the Pricing Matrix configuration
       const mockPricingMatrix = {
@@ -608,20 +656,23 @@ const TransactionDetail = () => {
       };
       
       // Extract the country data or use default
-      const countryData = mockPricingMatrix.countries[pricingData.country] || 
-                          mockPricingMatrix.countries['default'];
+      const countryData = pricingData.country && mockPricingMatrix.countries[pricingData.country] 
+                          ? mockPricingMatrix.countries[pricingData.country] 
+                          : mockPricingMatrix.countries['default'];
       
       // Get base rate from matrix
       let matrixRate = countryData.baseRate;
       
       // Apply product adjustment if it exists
-      const productAdjustment = mockPricingMatrix.products[pricingData.product] || 
-                                mockPricingMatrix.products['default'];
+      const productAdjustment = pricingData.product && mockPricingMatrix.products[pricingData.product] 
+                                ? mockPricingMatrix.products[pricingData.product] 
+                                : mockPricingMatrix.products['default'];
       matrixRate += productAdjustment;
       
       // Apply tenor adjustment if it exists
-      const tenorAdjustment = mockPricingMatrix.tenors[pricingData.tenor] || 
-                              mockPricingMatrix.tenors['default'];
+      const tenorAdjustment = pricingData.tenor && mockPricingMatrix.tenors[pricingData.tenor] 
+                              ? mockPricingMatrix.tenors[pricingData.tenor] 
+                              : mockPricingMatrix.tenors['default'];
       matrixRate += tenorAdjustment;
       
       // Apply any business rules
@@ -659,7 +710,7 @@ const TransactionDetail = () => {
       };
       
       // Calculate the difference between requested and matrix price
-      const requestedPrice = parseFloat(pricingData.requestedPrice);
+      const requestedPrice = parseFloat(pricingData.requestedPrice) || 0;
       const priceDiff = requestedPrice - matrixRate;
       
       // Create result based on comparison
@@ -1251,14 +1302,20 @@ const TransactionDetail = () => {
               <div className="w-full">
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
                 {isEditingPricing ? (
-                  <input
-                    type="text"
+                  <select
                     name="tenor"
                     value={pricingData.tenor}
                     onChange={handlePricingInputChange}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                    placeholder="e.g. 90 days"
-                  />
+                  >
+                    <option value="">Select Tenor</option>
+                    <option value="30 days">30 days</option>
+                    <option value="60 days">60 days</option>
+                    <option value="90 days">90 days</option>
+                    <option value="180 days">180 days</option>
+                    <option value="270 days">270 days</option>
+                    <option value="365 days">365 days</option>
+                  </select>
                 ) : (
                   <p className="text-base">{pricingData.tenor || 'Not specified'}</p>
                 )}
@@ -1296,6 +1353,7 @@ const TransactionDetail = () => {
                     onChange={handlePricingInputChange}
                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                   >
+                    <option value="">Select Frequency</option>
                     <option value="Daily">Daily</option>
                     <option value="Weekly">Weekly</option>
                     <option value="Monthly">Monthly</option>
@@ -1310,7 +1368,7 @@ const TransactionDetail = () => {
             </div>
             
             <div className="flex items-start">
-              <BanknotesIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <BuildingLibraryIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div className="w-full">
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Local Currency</h3>
                 {isEditingPricing ? (

@@ -196,3 +196,26 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
   - State management is simplified and localized
   - Components are more reusable
   - Code is more readable and better organized 
+
+## Updates and Improvements
+
+### 2023-05-15: Improved Mobile Responsiveness
+- Enhanced mobile layouts for TransactionList and TransactionDetail views
+- Added responsive design for data tables
+- Improved navigation experience on smaller screens
+
+### 2023-05-22: Pricing Data API Integration
+- Modified frontend code to source pricing information from API transaction data
+- Updated TransactionDetail.js to properly handle pricing information from the API
+- Implemented fallback to blank values when data points aren't available in transaction data
+- Enhanced error handling for pricing data API calls
+- Updated UI components to properly display empty/missing pricing values
+- Modified tenor selection to use a dropdown with standard tenor options
+- Updated the pricingData state initialization to prioritize API data
+- Improved handleSubmitPricingSection to properly update transaction pricing data via API
+
+### Backend Development Highlights
+- Added new API endpoints for client entities and transactions
+- Enhanced data processing and relationship mapping
+- Implemented summary statistics calculation
+- Implemented sorting of results 
