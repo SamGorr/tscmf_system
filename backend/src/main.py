@@ -155,9 +155,9 @@ def get_entities(db: Session = Depends(get_db)):
                 "entity_name": entity.entity_name,
                 "entity_address": entity.entity_address,
                 "country": entity.country,
-                "client_type": entity.client_type,
-                "risk_rating": entity.risk_rating,
-                "onboard_date": entity.onboard_date.isoformat() if entity.onboard_date else None,
+                "swift": entity.swift,
+                "signing_office_branch": entity.signing_office_branch,
+                "agreement_date": entity.agreement_date.isoformat() if entity.agreement_date else None,
             }
             result.append(entity_data)
         

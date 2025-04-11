@@ -122,6 +122,13 @@ const TransactionDetail = () => {
     unit: ''
   });
 
+  // Add state for entity search modal
+  const [showEntitySearchModal, setShowEntitySearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+
   // First add a new state for the trading information modal
   const [showTradeInfoModal, setShowTradeInfoModal] = useState(false);
 
@@ -154,6 +161,29 @@ const TransactionDetail = () => {
   });
 
   const [activeTab, setActiveTab] = useState('issuing'); // New state for tabs
+  
+  // Local formatDate function to ensure consistent date formatting
+  const formatDateLocal = (dateString, includeTime = false) => {
+    if (!dateString) return 'Not specified';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      
+      const options = includeTime 
+        ? { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+        : { year: 'numeric', month: 'short', day: 'numeric' };
+      
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Date error';
+    }
+  };
+  
+  // Add useEffect to handle transaction changes
+  useEffect(() => {
+    console.log("Transaction state changed:", transaction);
+  }, [transaction]);
 
   useEffect(() => {
     const fetchTransaction = async () => {
@@ -820,36 +850,230 @@ const TransactionDetail = () => {
 
   // Function to get entity data based on type
   const getEntityData = (type) => {
-    switch(type) {
-      case 'issuing':
-        return {
-          name: transaction.issuing_bank || 'Not specified',
-          country: transaction.issuing_bank_country || transaction.country || 'Not specified',
-          address: transaction.issuing_bank_entity_address || transaction.entity_address || 'Not specified',
-          swift: transaction.issuing_bank_swift || transaction.swift || 'Not specified',
-          signing_office_branch: transaction.issuing_bank_signing_office_branch || transaction.signing_office_branch || 'Not specified',
-          agreement_date: transaction.issuing_bank_agreement_date ? formatDate(transaction.issuing_bank_agreement_date) : 'Not specified'
-        };
-      case 'confirming':
-        return {
-          name: transaction.confirming_bank || 'Not specified',
-          country: transaction.confirming_bank_country || transaction.country || 'Not specified',
-          address: transaction.confirming_bank_entity_address || transaction.entity_address || 'Not specified',
-          swift: transaction.confirming_bank_swift || transaction.swift || 'Not specified',
-          signing_office_branch: transaction.confirming_bank_signing_office_branch || transaction.signing_office_branch || 'Not specified',
-          agreement_date: transaction.confirming_bank_agreement_date ? formatDate(transaction.confirming_bank_agreement_date) : 'Not specified'
-        };
-      case 'requesting':
-        return {
-          name: transaction.requesting_bank || 'Not specified',
-          country: transaction.requesting_bank_country || transaction.country || 'Not specified',
-          address: transaction.requesting_bank_entity_address || transaction.entity_address || 'Not specified',
-          swift: transaction.requesting_bank_swift || transaction.swift || 'Not specified',
-          signing_office_branch: transaction.requesting_bank_signing_office_branch || transaction.signing_office_branch || 'Not specified',
-          agreement_date: transaction.requesting_bank_agreement_date ? formatDate(transaction.requesting_bank_agreement_date) : 'Not specified'
-        };
-      default:
-        return {};
+    console.log("Getting entity data for type:", type);
+    console.log("Current transaction state:", transaction);
+    
+    let result;
+    
+    // Safely access fields with nullish coalescing operator
+    try {
+      switch(type) {
+        case 'issuing':
+          result = {
+            name: transaction?.issuing_bank ?? 'Not specified',
+            country: transaction?.issuing_bank_country ?? transaction?.country ?? 'Not specified',
+            address: transaction?.issuing_bank_entity_address ?? transaction?.entity_address ?? 'Not specified',
+            swift: transaction?.issuing_bank_swift ?? transaction?.swift ?? 'Not specified',
+            signing_office_branch: transaction?.issuing_bank_signing_office_branch ?? transaction?.signing_office_branch ?? 'Not specified',
+            agreement_date: transaction?.issuing_bank_agreement_date ? formatDateLocal(transaction.issuing_bank_agreement_date) : 'Not specified'
+          };
+          break;
+        case 'confirming':
+          result = {
+            name: transaction?.confirming_bank ?? 'Not specified',
+            country: transaction?.confirming_bank_country ?? transaction?.country ?? 'Not specified',
+            address: transaction?.confirming_bank_entity_address ?? transaction?.entity_address ?? 'Not specified',
+            swift: transaction?.confirming_bank_swift ?? transaction?.swift ?? 'Not specified',
+            signing_office_branch: transaction?.confirming_bank_signing_office_branch ?? transaction?.signing_office_branch ?? 'Not specified',
+            agreement_date: transaction?.confirming_bank_agreement_date ? formatDateLocal(transaction.confirming_bank_agreement_date) : 'Not specified'
+          };
+          break;
+        case 'requesting':
+          result = {
+            name: transaction?.requesting_bank ?? 'Not specified',
+            country: transaction?.requesting_bank_country ?? transaction?.country ?? 'Not specified',
+            address: transaction?.requesting_bank_entity_address ?? transaction?.entity_address ?? 'Not specified',
+            swift: transaction?.requesting_bank_swift ?? transaction?.swift ?? 'Not specified',
+            signing_office_branch: transaction?.requesting_bank_signing_office_branch ?? transaction?.signing_office_branch ?? 'Not specified',
+            agreement_date: transaction?.requesting_bank_agreement_date ? formatDateLocal(transaction.requesting_bank_agreement_date) : 'Not specified'
+          };
+          break;
+        default:
+          result = {
+            name: 'Not specified',
+            country: 'Not specified',
+            address: 'Not specified',
+            swift: 'Not specified',
+            signing_office_branch: 'Not specified',
+            agreement_date: 'Not specified'
+          };
+      }
+    } catch (error) {
+      console.error(`Error getting entity data for type ${type}:`, error);
+      // Provide default values in case of error
+      result = {
+        name: 'Error retrieving data',
+        country: 'Not available',
+        address: 'Not available',
+        swift: 'Not available',
+        signing_office_branch: 'Not available',
+        agreement_date: 'Not available'
+      };
+    }
+    
+    console.log("Returning entity data:", result);
+    return result;
+  };
+
+  // Handle opening the entity search modal based on active tab
+  const openEntitySearchModal = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchError(null);
+    setShowEntitySearchModal(true);
+  };
+
+  // Handle search query input change
+  const handleSearchQueryChange = (e) => {
+    setSearchQuery(e.target.value);
+    
+    // Auto-search after a short delay when typing
+    if (e.target.value.trim().length >= 2) {
+      // Clear any existing timeout
+      if (window.searchTimeout) {
+        clearTimeout(window.searchTimeout);
+      }
+      
+      // Set a new timeout to search after typing stops
+      window.searchTimeout = setTimeout(() => {
+        searchEntities();
+      }, 300); // 300ms delay
+    }
+  };
+
+  // Search entities based on user input
+  const searchEntities = async () => {
+    if (!searchQuery.trim()) return;
+    
+    try {
+      setSearchLoading(true);
+      setSearchError(null);
+      
+      // Get the API URL from environment variable or default to localhost:5000
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      
+      // Fetch entities from the API
+      const response = await axios.get(`${apiUrl}/api/entities`);
+      console.log("All entities from API:", response.data.length);
+      
+      // Improved search: Case-insensitive search across multiple fields
+      const searchLower = searchQuery.toLowerCase();
+      const filteredResults = response.data.filter(entity => {
+        // Check if any of these fields match the search query
+        return (
+          // Use optional chaining and ensure strings for comparison
+          String(entity.entity_name || '').toLowerCase().includes(searchLower) ||
+          String(entity.country || '').toLowerCase().includes(searchLower) ||
+          String(entity.swift || '').toLowerCase().includes(searchLower)
+        );
+      });
+      
+      console.log(`Found ${filteredResults.length} entities matching "${searchQuery}"`);
+      
+      // Add unique keys if missing
+      const resultsWithKeys = filteredResults.map((entity, index) => {
+        if (!entity.entity_id) {
+          return { ...entity, entity_id: `temp-id-${index}` };
+        }
+        return entity;
+      });
+      
+      setSearchResults(resultsWithKeys);
+      
+      if (filteredResults.length === 0) {
+        setSearchError(`No entities found matching "${searchQuery}"`);
+      }
+    } catch (error) {
+      console.error("Error searching entities:", error);
+      setSearchError(`Failed to search entities: ${error.message || 'Unknown error'}`);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Handle entity selection from search results
+  const handleEntitySelect = (entity) => {
+    if (!entity) {
+      console.error("No entity selected");
+      return;
+    }
+    
+    console.log("Entity selected:", entity);
+    console.log("Entity name length:", entity.entity_name?.length || 0);
+    console.log("Current tab:", activeTab);
+    
+    try {
+      // Create a copy of the transaction object
+      const updatedTransaction = { ...transaction };
+      
+      // Ensure all entity fields exist, even if empty - prevent undefined errors
+      const safeEntity = {
+        entity_name: entity.entity_name || '',
+        country: entity.country || '',
+        entity_address: entity.entity_address || '',
+        swift: entity.swift || '',
+        signing_office_branch: entity.signing_office_branch || '',
+        agreement_date: entity.agreement_date || null
+      };
+      
+      // Update the appropriate fields based on the active tab
+      if (activeTab === 'issuing') {
+        updatedTransaction.issuing_bank = safeEntity.entity_name;
+        updatedTransaction.issuing_bank_country = safeEntity.country;
+        updatedTransaction.issuing_bank_entity_address = safeEntity.entity_address;
+        updatedTransaction.issuing_bank_swift = safeEntity.swift;
+        updatedTransaction.issuing_bank_signing_office_branch = safeEntity.signing_office_branch;
+        updatedTransaction.issuing_bank_agreement_date = safeEntity.agreement_date;
+      } else if (activeTab === 'confirming') {
+        updatedTransaction.confirming_bank = safeEntity.entity_name;
+        updatedTransaction.confirming_bank_country = safeEntity.country;
+        updatedTransaction.confirming_bank_entity_address = safeEntity.entity_address;
+        updatedTransaction.confirming_bank_swift = safeEntity.swift;
+        updatedTransaction.confirming_bank_signing_office_branch = safeEntity.signing_office_branch;
+        updatedTransaction.confirming_bank_agreement_date = safeEntity.agreement_date;
+      } else if (activeTab === 'requesting') {
+        updatedTransaction.requesting_bank = safeEntity.entity_name;
+        updatedTransaction.requesting_bank_country = safeEntity.country;
+        updatedTransaction.requesting_bank_entity_address = safeEntity.entity_address;
+        updatedTransaction.requesting_bank_swift = safeEntity.swift;
+        updatedTransaction.requesting_bank_signing_office_branch = safeEntity.signing_office_branch;
+        updatedTransaction.requesting_bank_agreement_date = safeEntity.agreement_date;
+      } else {
+        console.error("Invalid active tab:", activeTab);
+        return;
+      }
+      
+      console.log("About to update transaction state");
+      
+      // Update the transaction state with a reliable functional update pattern
+      setTransaction(prevTransaction => {
+        console.log("Previous transaction state:", prevTransaction);
+        const newState = { ...prevTransaction, ...updatedTransaction };
+        console.log("New transaction state:", newState);
+        return newState;
+      });
+      
+      // Close the search modal first to prevent any UI conflicts
+      setShowEntitySearchModal(false);
+      
+      // Wait a moment before forcing re-render to ensure state has updated
+      setTimeout(() => {
+        // Force a re-render of the tab content by toggling the activeTab
+        const currentTab = activeTab;
+        console.log("About to reset tab, currently:", currentTab);
+        
+        // First clear the tab to force re-render
+        setActiveTab('');
+        
+        // Then set it back after a short delay
+        setTimeout(() => {
+          setActiveTab(currentTab);
+          console.log("Reset tab to:", currentTab);
+        }, 100);
+      }, 100);
+    } catch (error) {
+      console.error("Error updating entity data:", error);
+      alert("There was an error selecting this entity. Please try again.");
     }
   };
 
@@ -1030,12 +1254,23 @@ const TransactionDetail = () => {
         {/* Tab Content */}
         <div className="px-6 py-4">
           {activeTab && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" key={`${activeTab}-${transaction?.transaction_id || ''}-${Date.now()}`}>
               <div className="flex items-start">
                 <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                <div>
+                <div className="flex-grow">
                   <h3 className="text-sm font-medium text-gray-500 mb-1">Institution Name</h3>
-                  <p className="text-base font-medium">{getEntityData(activeTab).name}</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-base font-medium">{getEntityData(activeTab).name}</p>
+                    <button 
+                      onClick={openEntitySearchModal}
+                      type="button"
+                      className="inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex items-start">
@@ -1090,7 +1325,7 @@ const TransactionDetail = () => {
                 </h2>
                 <div className="flex items-center text-sm text-gray-500">
                   <CalendarIcon className="h-4 w-4 mr-1" />
-                  Created on {formatDate(transaction.created_at, true)}
+                  Created on {formatDateLocal(transaction.created_at, true)}
                 </div>
               </div>
             </div>
@@ -1155,7 +1390,7 @@ const TransactionDetail = () => {
               <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date</h3>
-                <p className="text-base">{transaction.expiry_date ? formatDate(transaction.expiry_date) : (transaction.maturity_date ? formatDate(transaction.maturity_date) : 'Not specified')}</p>
+                <p className="text-base">{transaction.expiry_date ? formatDateLocal(transaction.expiry_date) : (transaction.maturity_date ? formatDateLocal(transaction.maturity_date) : 'Not specified')}</p>
               </div>
             </div>
             
@@ -2117,7 +2352,7 @@ const TransactionDetail = () => {
                   <div className="col-span-10 font-semibold">Transaction Request: {transaction.reference_number}</div>
                   
                   <div className="col-span-2 text-gray-500 font-medium">Date:</div>
-                  <div className="col-span-10">{formatDate(transaction.created_at, true)}</div>
+                  <div className="col-span-10">{formatDateLocal(transaction.created_at, true)}</div>
                 </div>
               </div>
               
@@ -2211,7 +2446,7 @@ const TransactionDetail = () => {
                   <div className="col-span-3 text-gray-500 font-medium">Uploaded:</div>
                   <div className="col-span-9 flex items-center">
                     <CalendarIcon className="h-4 w-4 mr-1.5 text-gray-400" />
-                    {formatDate(transaction.created_at, true)}
+                    {formatDateLocal(transaction.created_at, true)}
                   </div>
                   
                   <div className="col-span-3 text-gray-500 font-medium">Size:</div>
@@ -2273,6 +2508,144 @@ notes,${transaction.notes ? transaction.notes.replace(/\n/g, ' ') : 'N/A'}
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Download File
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Entity Search Modal */}
+      {showEntitySearchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fadeIn">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-800">Search Entities</h3>
+              <button
+                onClick={() => setShowEntitySearchModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XCircleIcon className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 flex-1 overflow-hidden flex flex-col">
+              <div className="mb-4">
+                <label htmlFor="entity-search" className="block text-sm font-medium text-gray-700 mb-1">
+                  Search by Institution Name
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    id="entity-search"
+                    value={searchQuery}
+                    onChange={handleSearchQueryChange}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchEntities();
+                      }
+                    }}
+                    className="flex-grow shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                    placeholder="Enter institution name"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={searchEntities}
+                    disabled={searchLoading}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
+                    {searchLoading ? (
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    )}
+                    {searchLoading ? 'Searching...' : 'Search'}
+                  </button>
+                </div>
+              </div>
+              
+              {searchError && (
+                <div className="bg-red-50 p-4 rounded-md mb-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <XCircleIcon className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">{searchError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex-1 overflow-auto">
+                {searchResults.length > 0 ? (
+                  <div className="border border-gray-200 rounded-md">
+                    <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/2">
+                            Institution Name
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Country
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            SWIFT Code
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {searchResults.map((entity) => (
+                          <tr key={entity.entity_id || Math.random().toString()} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 break-words">
+                              {entity.entity_name}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-500">
+                              {entity.country}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-500">
+                              {entity.swift || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 text-sm font-medium">
+                              <button
+                                onClick={() => handleEntitySelect(entity)}
+                                className="bg-primary text-white hover:bg-blue-700 px-3 py-1 rounded-md transition-colors duration-200"
+                              >
+                                Select
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : searchQuery && !searchLoading ? (
+                  <div className="text-center py-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="mt-2 text-gray-500">No results found. Try a different search term.</p>
+                  </div>
+                ) : !searchQuery ? (
+                  <div className="text-center py-6 text-gray-500">
+                    Enter a search term to find entities
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 flex justify-end">
+              <button
+                onClick={() => setShowEntitySearchModal(false)}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                Cancel
               </button>
             </div>
           </div>

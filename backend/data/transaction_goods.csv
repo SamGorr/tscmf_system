@@ -1,8 +1,8 @@
-transaction_id,item_name,quantity,unit
-10001,Industrial Machinery,15,units
-10001,Steel Components,250,tons
-10001,Manufacturing Equipment,8,units
-10001,Quality Control Systems,3,sets
-10002,Organic Wheat,500,tons
-10002,Corn Seeds,1200,kg
-10002,Agricultural Equipment,7,units
+transaction_id,goods_classification,goods,quantity,unit,price
+10001,,SELF CLEANING MAGNET OVBAP 260/100 NEA,1,unit,EUR 76460.00
+10001,,RECTIFIER BRIDGE TRC 26,1,unit,EUR 7370.00
+10002,"Food, agricultural and related goods",MIXTURES OF NATURAL RUBBER SVR3L AND SBR1502,,,
+10002,Consumer Goods,AIR CONDITIONER,,,
+10002,"Food, agricultural and related goods",MIXTURES OF NATURAL RUBBER SVR10 AND SBR1502,,,
+10002,Automotive  and Auto Parts,TIRES,,,
+10002,Construction and Building Materials,ASBESTOS,,,

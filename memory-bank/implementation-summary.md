@@ -399,3 +399,33 @@ The backend API and frontend components were updated to properly display entity 
    - Ensured all bank entities (issuing, confirming, requesting) include their respective data
 
 This implementation ensures that the ADB Client Profile section displays accurate entity data from the database instead of showing "Not specified" placeholders. 
+
+### ADB Client Profile Entity Search
+
+- Added an entity search feature to the ADB Client Profile section of the Transaction Detail page:
+  - Implemented a search button next to the Institution Name field for each bank type
+  - Created a modal dialog for searching entities by name
+  - Connected the search functionality to the `/api/entities` backend endpoint
+  - Added real-time filtering of entities based on user input
+  - Implemented entity selection to update the client profile information
+
+- The search functionality includes:
+  - User-friendly search interface with error handling
+  - Clear display of search results in a well-organized table
+  - Live updates to the client profile when an entity is selected
+  - Proper handling of different bank types (Issuing, Confirming, Requesting)
+  - Responsive UI with loading indicators during API calls
+
+- The implementation provides the following benefits:
+  - Easier association of transactions with correct client entities
+  - Reduced data entry errors by selecting from existing entities
+  - Improved user workflow by eliminating manual data entry
+  - Better data consistency across the application
+  - Enhanced user experience with modern UI elements
+
+- Technical implementation details:
+  - Added state variables for managing the search modal and results
+  - Created functions for opening the modal, searching entities, and handling selection
+  - Added a search input with a search button that triggers the API call
+  - Implemented results display with proper error and empty states
+  - Connected the selected entity data to update the transaction state
