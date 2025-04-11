@@ -6,28 +6,3 @@ transaction_id,type,address,country
 10002,Client,"36 Logistics Park, Hamburg",Germany
 10002,Beneficiary,"24 Agriculture Strasse, Berlin, 10115",Germany
 10002,Supplier,"88 Grain Road, Munich, 80331",Germany
-10003,Client,"45 Agriculture Road, Nairobi",Kenya
-10003,Beneficiary,"78 Energy Towers, Dubai",UAE
-10003,Supplier,"23 Solar Avenue, Abu Dhabi",UAE
-10003,Confirming Bank,"1 Finance Boulevard, Dubai",UAE
-10004,Client,"123 Trade Avenue, New York, NY 10001",USA
-10004,Beneficiary,"2-1-1 Marunouchi, Tokyo",Japan
-10004,Supplier,"3-5-7 Automotive District, Osaka",Japan
-10005,Client,"237 Export Avenue, São Paulo",Brazil
-10005,Beneficiary,"42 Tech Avenue, Singapore",Singapore
-10005,Supplier,"77 Component Street, Singapore",Singapore
-10006,Client,"36 Logistics Park, Hamburg",Germany
-10006,Beneficiary,"101 Textile Road, Shanghai",China
-10006,Supplier,"55 Silk Street, Beijing",China
-10007,Client,"8 Health Boulevard, Zurich",Switzerland
-10007,Beneficiary,"45 Pharma Avenue, Basel",Switzerland
-10007,Supplier,"33 Medical Street, Geneva",Switzerland
-10008,Client,"45 Agriculture Road, Nairobi",Kenya
-10008,Beneficiary,"90 Construction Road, Abu Dhabi",UAE
-10008,Supplier,"17 Building Materials Street, Dubai",UAE
-10009,Client,"123 Trade Avenue, New York, NY 10001",USA
-10009,Beneficiary,"65 Electronics Drive, Taipei",Taiwan
-10009,Supplier,"36 Circuit Road, Hsinchu",Taiwan
-10010,Client,"237 Export Avenue, São Paulo",Brazil
-10010,Beneficiary,"25 Retail Street, London",UK
-10010,Supplier,"87 Commerce Way, Manchester",UK

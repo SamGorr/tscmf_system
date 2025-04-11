@@ -38,6 +38,9 @@ class Transaction(Base):
     events = relationship("Event", backref="transaction")
     transaction_entities = relationship("Transaction_Entity", backref="transaction")
     transaction_goods = relationship("Transaction_Goods", backref="transaction")
+    issuing_entity = relationship("Entity", foreign_keys=[issuing_bank], backref="issued_transactions")
+    confirming_entity = relationship("Entity", foreign_keys=[confirming_bank], backref="confirmed_transactions")
+    requesting_entity = relationship("Entity", foreign_keys=[requesting_bank], backref="requested_transactions")
 
 class Event(Base):
     __tablename__ = "event"
@@ -64,8 +67,6 @@ class Entity(Base):
     country = Column(String)
     signing_office_branch = Column(String)
     agreement_date = Column(DateTime)
-    
-    transactions = relationship("Transaction", backref="entity")
 
 class Transaction_Entity(Base):
     __tablename__ = "transaction_entity"
