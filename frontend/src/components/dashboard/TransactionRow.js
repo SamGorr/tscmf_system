@@ -7,10 +7,10 @@ const TransactionRow = ({ transaction }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   
   // Create reference number if not exists
-  const referenceNumber = transaction.adb_guarantee_trn || `TXN-${transaction.transaction_id}`;
+  const referenceNumber = `TXN-${transaction.transaction_id}`;
   
   // Get client name from issuing bank or requesting bank
-  const clientName = transaction.issuing_bank || transaction.requesting_bank || '';
+  const clientName = transaction.requesting_bank;
   
   return (
     <tr 
