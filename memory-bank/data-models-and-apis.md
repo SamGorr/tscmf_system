@@ -83,6 +83,66 @@ Event {
 }
 ```
 
+### Transaction_Entity
+
+The Transaction_Entity model represents the entities associated with a transaction, such as issuers, beneficiaries, etc.
+
+| Field         | Type    | Description                            |
+|---------------|---------|----------------------------------------|
+| id            | Integer | Primary key                            |
+| transaction_id| Integer | Foreign key to Transaction             |
+| name          | String  | Name of the entity                     |
+| type          | String  | Type of entity (issuer, beneficiary, etc.) |
+| address       | String  | Address of the entity                  |
+| country       | String  | Country of the entity                  |
+
+### Transaction_Goods
+
+The Transaction_Goods model represents the goods associated with a transaction.
+
+| Field               | Type    | Description                        |
+|---------------------|---------|------------------------------------|
+| id                  | Integer | Primary key                        |
+| transaction_id      | Integer | Foreign key to Transaction         |
+| goods_classification| String  | Classification of goods            |
+| item_name           | String  | Name of the goods                  |
+| quantity            | Integer | Quantity of goods                  |
+| unit                | String  | Unit of measurement                |
+| price               | String  | Price of the goods                 |
+
+### Underlying_Transaction
+
+The Underlying_Transaction model represents underlying transactions associated with a main transaction.
+
+| Field                              | Type    | Description                                 |
+|------------------------------------|---------|---------------------------------------------|
+| id                                 | Integer | Primary key                                 |
+| transaction_id                     | Integer | Foreign key to Transaction                  |
+| issuing_bank                       | String  | Name of the issuing bank                    |
+| sequence_no                        | Integer | Sequence number                             |
+| transaction_ref_no                 | String  | Transaction reference number                |
+| issue_date                         | DateTime| Issue date                                  |
+| maturity_date                      | DateTime| Maturity date                               |
+| currency                           | String  | Currency                                    |
+| amount_in_local_currency           | String  | Amount in local currency                    |
+| applicant_name                     | String  | Name of the applicant                       |
+| applicant_address                  | String  | Address of the applicant                    |
+| applicant_country                  | String  | Country of the applicant                    |
+| beneficiary_name                   | String  | Name of the beneficiary                     |
+| beneficiary_address                | String  | Address of the beneficiary                  |
+| beneficiary_country                | String  | Country of the beneficiary                  |
+| loading_port                       | String  | Loading port                                |
+| discharging_port                   | String  | Discharging port                            |
+| country_of_origin                  | String  | Country of origin                           |
+| country_of_final_destination       | String  | Country of final destination                |
+| goods                              | String  | Description of goods                        |
+| goods_classification               | String  | Classification of goods                     |
+| goods_eligible                     | String  | Whether goods are eligible                  |
+| es_classification                  | String  | ES classification                           |
+| capital_goods                      | Boolean | Whether goods are capital goods             |
+| ee_replacement_of_an_old_equipment | Boolean | Whether goods are replacement equipment     |
+| sustainable_goods                  | Boolean | Whether goods are sustainable               |
+
 ## API Endpoints
 
 ### Base Endpoints

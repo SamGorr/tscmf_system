@@ -22,7 +22,7 @@ def populate_database():
         
         # Drop existing data
         print("Clearing existing data...")
-        session.execute(text("TRUNCATE transaction, event, transaction_entity, transaction_goods CASCADE"))
+        session.execute(text("TRUNCATE transaction, event, transaction_entity, transaction_goods, underlying_transaction CASCADE"))
 
         # Now import entities from CSV file
         print("Importing entity from CSV...")
@@ -173,25 +173,29 @@ def populate_database():
                     "status": row.get('status', '')
                 })
                 
-        # Import transaction_entity from CSV file if it exists
+        # Import transaction_entity from CSV file
         transaction_entity_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "transaction_entity.csv")
         if os.path.exists(transaction_entity_path):
             print("Importing transaction_entity from CSV...")
             with open(transaction_entity_path, 'r') as file:
                 csv_reader = csv.DictReader(file)
                 for row in csv_reader:
+                    if not row.get('transaction_id'):
+                        continue
+                        
                     # Insert the transaction_entity into the database
                     session.execute(text("""
-                        INSERT INTO transaction_entity (transaction_id, type, address, country)
-                        VALUES (:transaction_id, :type, :address, :country)
+                        INSERT INTO transaction_entity (transaction_id, name, type, address, country)
+                        VALUES (:transaction_id, :name, :type, :address, :country)
                     """), {
                         "transaction_id": int(row['transaction_id']),
+                        "name": row.get('name', ''),
                         "type": row.get('type', ''),
                         "address": row.get('address', ''),
                         "country": row.get('country', '')
                     })
 
-        # Import transaction_goods from CSV file if it exists
+        # Import transaction_goods from CSV file
         transaction_goods_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "transaction_goods.csv")
         if os.path.exists(transaction_goods_path):
             print("Importing transaction_goods from CSV...")
@@ -207,13 +211,94 @@ def populate_database():
                     
                     # Insert the transaction_goods into the database
                     session.execute(text("""
-                        INSERT INTO transaction_goods (transaction_id, item_name, quantity, unit)
-                        VALUES (:transaction_id, :item_name, :quantity, :unit)
+                        INSERT INTO transaction_goods (transaction_id, goods_classification, item_name, quantity, unit, price)
+                        VALUES (:transaction_id, :goods_classification, :item_name, :quantity, :unit, :price)
                     """), {
                         "transaction_id": int(row['transaction_id']),
-                        "item_name": row.get('item_name', ''),
+                        "goods_classification": row.get('goods_classification', ''),
+                        "item_name": row.get('goods', ''),
                         "quantity": quantity,
-                        "unit": row.get('unit', '')
+                        "unit": row.get('unit', ''),
+                        "price": row.get('price', '')
+                    })
+                    
+        # Import underlying_transactions from CSV file
+        underlying_transactions_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "underlying_transactions.csv")
+        if os.path.exists(underlying_transactions_path):
+            print("Importing underlying_transactions from CSV...")
+            with open(underlying_transactions_path, 'r', encoding='utf-8-sig') as file:
+                csv_reader = csv.DictReader(file)
+                for row in csv_reader:
+                    # Parse the dates from the CSV
+                    issue_date_str = row.get('issue_date', '')
+                    maturity_date_str = row.get('maturity_date', '')
+                    
+                    try:
+                        issue_date = datetime.strptime(issue_date_str, '%d-%b-%y') if issue_date_str else None
+                        maturity_date = datetime.strptime(maturity_date_str, '%d-%b-%y') if maturity_date_str else None
+                    except ValueError as e:
+                        print(f"Warning: Could not parse date - {e}, using current date")
+                        issue_date = datetime.utcnow() if issue_date_str else None
+                        maturity_date = datetime.utcnow() if maturity_date_str else None
+                    
+                    # Parse boolean fields
+                    capital_goods = row.get('capital_goods', '').lower() == 'yes'
+                    ee_replacement = row.get('ee_replacement_of_an_old_equipment', '').lower() == 'yes'
+                    sustainable_goods = row.get('sustainable_goods', '').lower() == 'yes'
+                    
+                    # Try to convert sequence_no to integer
+                    try:
+                        sequence_no = int(row.get('sequence_no', 0))
+                    except ValueError:
+                        print(f"Warning: Could not convert sequence_no '{row.get('sequence_no', '')}' to integer, using 0")
+                        sequence_no = 0
+                        
+                    # Insert the underlying_transaction into the database
+                    session.execute(text("""
+                        INSERT INTO underlying_transaction (
+                            transaction_id, issuing_bank, sequence_no, transaction_ref_no, 
+                            issue_date, maturity_date, currency, amount_in_local_currency,
+                            applicant_name, applicant_address, applicant_country,
+                            beneficiary_name, beneficiary_address, beneficiary_country,
+                            loading_port, discharging_port, country_of_origin, country_of_final_destination,
+                            goods, goods_classification, goods_eligible, es_classification,
+                            capital_goods, ee_replacement_of_an_old_equipment, sustainable_goods
+                        )
+                        VALUES (
+                            :transaction_id, :issuing_bank, :sequence_no, :transaction_ref_no,
+                            :issue_date, :maturity_date, :currency, :amount_in_local_currency,
+                            :applicant_name, :applicant_address, :applicant_country,
+                            :beneficiary_name, :beneficiary_address, :beneficiary_country,
+                            :loading_port, :discharging_port, :country_of_origin, :country_of_final_destination,
+                            :goods, :goods_classification, :goods_eligible, :es_classification,
+                            :capital_goods, :ee_replacement, :sustainable_goods
+                        )
+                    """), {
+                        "transaction_id": int(row['transaction_id']),
+                        "issuing_bank": row.get('issuing_bank', ''),
+                        "sequence_no": sequence_no,
+                        "transaction_ref_no": row.get('transaction_ref_no', ''),
+                        "issue_date": issue_date,
+                        "maturity_date": maturity_date,
+                        "currency": row.get('currency', ''),
+                        "amount_in_local_currency": row.get('amount_in_local_currency', ''),
+                        "applicant_name": row.get('applicant_name', ''),
+                        "applicant_address": row.get('applicant_address', ''),
+                        "applicant_country": row.get('applicant_country', ''),
+                        "beneficiary_name": row.get('beneficiary_name', ''),
+                        "beneficiary_address": row.get('beneficiary_address', ''),
+                        "beneficiary_country": row.get('beneficiary_country', ''),
+                        "loading_port": row.get('loading_port', ''),
+                        "discharging_port": row.get('discharging_port', ''),
+                        "country_of_origin": row.get('country_of_origin', ''),
+                        "country_of_final_destination": row.get('country_of_final_destination', ''),
+                        "goods": row.get('goods', ''),
+                        "goods_classification": row.get('goods_classification', ''),
+                        "goods_eligible": row.get('goods_eligible', ''),
+                        "es_classification": row.get('es_classification', ''),
+                        "capital_goods": capital_goods,
+                        "ee_replacement": ee_replacement,
+                        "sustainable_goods": sustainable_goods
                     })
 
         # Commit the transaction

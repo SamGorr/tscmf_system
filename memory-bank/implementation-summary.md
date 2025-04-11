@@ -429,3 +429,36 @@ This implementation ensures that the ADB Client Profile section displays accurat
   - Added a search input with a search button that triggers the API call
   - Implemented results display with proper error and empty states
   - Connected the selected entity data to update the transaction state
+
+## Recent Updates
+
+### Data Model Enhancements (Added on [current date])
+
+1. **Updated Existing Models**:
+   - Enhanced `Transaction_Entity` model with additional field:
+     - Added `name` field to store the entity name
+   - Enhanced `Transaction_Goods` model with additional fields:
+     - Added `goods_classification` field to categorize goods
+     - Updated `item_name` to be populated from the `goods` field in CSV
+     - Added `price` field to store goods pricing information
+
+2. **New Model: Underlying_Transaction**:
+   - Created a new model to store underlying transaction details with the following key fields:
+     - Reference information (transaction_id, issuing_bank, sequence_no, transaction_ref_no)
+     - Date information (issue_date, maturity_date)
+     - Financial details (currency, amount_in_local_currency)
+     - Party information (applicant and beneficiary details)
+     - Shipping details (ports, countries of origin/destination)
+     - Goods information (description, classification)
+     - Compliance flags (capital_goods, sustainability, etc.)
+   - Established a one-to-many relationship with the Transaction model
+
+3. **CSV Import Enhancements**:
+   - Modified `populate_db.py` to handle the new CSV files:
+     - Updated transaction_entity import to handle the new name field
+     - Updated transaction_goods import to handle goods_classification and price
+     - Added new import logic for underlying_transactions.csv with proper data parsing
+     - Added special UTF-8 BOM handling for the underlying_transactions.csv file
+     - Improved error handling for date parsing and numeric field conversions
+
+These enhancements provide more comprehensive data storage and relationships between transactions and their associated entities, goods, and underlying transactions, enabling more detailed reporting and analysis capabilities.
