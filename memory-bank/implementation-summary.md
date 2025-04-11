@@ -356,18 +356,46 @@ The Transaction Detail page was updated to display different bank entities in a 
 
 2. **Entity Data Display**:
    - Created a helper function `getEntityData()` to retrieve specific entity data based on the active tab
-   - Displays the following properties for each bank entity:
+   - Sources entity data directly from the entity table fields:
      - Institution Name
      - Country
-     - Address
-     - Bank Reference
-     - Bank Type
-     - Risk Rating
+     - Address (from entity_address field)
+     - Swift Code (from swift field)
+     - Signing Office Branch (from signing_office_branch field)
+     - Agreement Date (from agreement_date field)
 
 3. **Implementation Details**:
    - Added state management for active tab using `activeTab` state
    - Created tab switching functionality
    - Used conditional styling to highlight the active tab
+   - Updated field labels to match the new data sources
+   - Used appropriate icons for each data field (CalendarIcon for dates, IdentificationIcon for codes, etc.)
    - Maintained consistent UI styling with the rest of the application
 
 This implementation provides a cleaner, more organized view of the different banks involved in the transaction, focusing specifically on entity data rather than mixing it with transaction data. 
+
+## ADB Client Profile API Integration
+
+The backend API and frontend components were updated to properly display entity data in the ADB Client Profile section:
+
+1. **API Enhancements**:
+   - Enhanced the `/api/transactions/{transaction_id}` endpoint to fetch entity data from the Entity table
+   - Added explicit queries to retrieve issuing, confirming, and requesting bank entity information
+   - Added the following entity fields to the API response:
+     - `entity_address` - From the entity_address field
+     - `swift` - SWIFT code for each bank
+     - `signing_office_branch` - Office branch information
+     - `agreement_date` - The date when agreements were signed
+
+2. **Data Retrieval Flow**:
+   - Transaction API now queries the related Entity records based on bank names
+   - Entity data is properly formatted and included in the API response
+   - Date fields are properly formatted as ISO strings
+   - Added fallbacks to transaction data when entity-specific fields are not available
+
+3. **Entity Relationship Handling**:
+   - Improved entity relationship handling in the API to provide complete bank information
+   - Updated the entities array with actual data from the Entity table
+   - Ensured all bank entities (issuing, confirming, requesting) include their respective data
+
+This implementation ensures that the ADB Client Profile section displays accurate entity data from the database instead of showing "Not specified" placeholders. 

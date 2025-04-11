@@ -234,7 +234,7 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
     try:
         print(f"Starting transaction detail API endpoint request for ID: {transaction_id}...")
         
-        # Query for the specific transaction
+        # Query for the specific transaction with joined entity data
         transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
         
         if not transaction:
@@ -242,6 +242,20 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
         
         # Get related events
         events = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).all()
+        
+        # Get entity data
+        issuing_entity = None
+        confirming_entity = None
+        requesting_entity = None
+        
+        if transaction.issuing_bank:
+            issuing_entity = db.query(Entity).filter(Entity.entity_name == transaction.issuing_bank).first()
+            
+        if transaction.confirming_bank:
+            confirming_entity = db.query(Entity).filter(Entity.entity_name == transaction.confirming_bank).first()
+            
+        if transaction.requesting_bank:
+            requesting_entity = db.query(Entity).filter(Entity.entity_name == transaction.requesting_bank).first()
         
         events_data = []
         for event in events:
@@ -308,28 +322,52 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
             "source": events[0].source if events else "System",
             "events": events_data,
             
+            # Entity data from relationships
+            "entity_address": issuing_entity.entity_address if issuing_entity else "",
+            
+            # Issuing bank entity data
+            "issuing_bank_swift": issuing_entity.swift if issuing_entity else None,
+            "issuing_bank_entity_address": issuing_entity.entity_address if issuing_entity else None,
+            "issuing_bank_signing_office_branch": issuing_entity.signing_office_branch if issuing_entity else None,
+            "issuing_bank_agreement_date": issuing_entity.agreement_date.isoformat() if issuing_entity and issuing_entity.agreement_date else None,
+            "issuing_bank_country": issuing_entity.country if issuing_entity else transaction.country,
+            
+            # Confirming bank entity data
+            "confirming_bank_swift": confirming_entity.swift if confirming_entity else None,
+            "confirming_bank_entity_address": confirming_entity.entity_address if confirming_entity else None,
+            "confirming_bank_signing_office_branch": confirming_entity.signing_office_branch if confirming_entity else None,
+            "confirming_bank_agreement_date": confirming_entity.agreement_date.isoformat() if confirming_entity and confirming_entity.agreement_date else None,
+            "confirming_bank_country": confirming_entity.country if confirming_entity else transaction.country,
+            
+            # Requesting bank entity data
+            "requesting_bank_swift": requesting_entity.swift if requesting_entity else None,
+            "requesting_bank_entity_address": requesting_entity.entity_address if requesting_entity else None,
+            "requesting_bank_signing_office_branch": requesting_entity.signing_office_branch if requesting_entity else None,
+            "requesting_bank_agreement_date": requesting_entity.agreement_date.isoformat() if requesting_entity and requesting_entity.agreement_date else None,
+            "requesting_bank_country": requesting_entity.country if requesting_entity else transaction.country,
+            
             # Additional entities information derived from the transaction model
             "entities": [
                 {
                     "id": "1", 
                     "type": "Issuing Bank",
                     "name": transaction.issuing_bank,
-                    "country": transaction.country,
-                    "address": ""
+                    "country": issuing_entity.country if issuing_entity else transaction.country,
+                    "address": issuing_entity.entity_address if issuing_entity else ""
                 },
                 {
                     "id": "2", 
                     "type": "Confirming Bank",
                     "name": transaction.confirming_bank,
-                    "country": transaction.country, 
-                    "address": ""
+                    "country": confirming_entity.country if confirming_entity else transaction.country, 
+                    "address": confirming_entity.entity_address if confirming_entity else ""
                 },
                 {
                     "id": "3", 
                     "type": "Requesting Bank",
                     "name": transaction.requesting_bank,
-                    "country": transaction.country,
-                    "address": ""
+                    "country": requesting_entity.country if requesting_entity else transaction.country,
+                    "address": requesting_entity.entity_address if requesting_entity else ""
                 }
             ] if transaction.issuing_bank else []
         }

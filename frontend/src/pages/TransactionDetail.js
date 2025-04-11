@@ -825,31 +825,28 @@ const TransactionDetail = () => {
         return {
           name: transaction.issuing_bank || 'Not specified',
           country: transaction.issuing_bank_country || transaction.country || 'Not specified',
-          address: transaction.issuing_bank_address || transaction.client_address || 'Not specified',
-          type: 'Issuing Bank',
-          code: transaction.issuing_bank_code || 'Not specified',
-          reference: transaction.issuing_bank_reference_trn || 'Not specified',
-          risk_rating: transaction.issuing_bank_risk_rating || 'Not specified'
+          address: transaction.issuing_bank_entity_address || transaction.entity_address || 'Not specified',
+          swift: transaction.issuing_bank_swift || transaction.swift || 'Not specified',
+          signing_office_branch: transaction.issuing_bank_signing_office_branch || transaction.signing_office_branch || 'Not specified',
+          agreement_date: transaction.issuing_bank_agreement_date ? formatDate(transaction.issuing_bank_agreement_date) : 'Not specified'
         };
       case 'confirming':
         return {
           name: transaction.confirming_bank || 'Not specified',
           country: transaction.confirming_bank_country || transaction.country || 'Not specified',
-          address: transaction.confirming_bank_address || transaction.client_address || 'Not specified',
-          type: 'Confirming Bank',
-          code: transaction.confirming_bank_code || 'Not specified',
-          reference: transaction.confirming_bank_reference_trn || 'Not specified',
-          risk_rating: transaction.confirming_bank_risk_rating || 'Not specified'
+          address: transaction.confirming_bank_entity_address || transaction.entity_address || 'Not specified',
+          swift: transaction.confirming_bank_swift || transaction.swift || 'Not specified',
+          signing_office_branch: transaction.confirming_bank_signing_office_branch || transaction.signing_office_branch || 'Not specified',
+          agreement_date: transaction.confirming_bank_agreement_date ? formatDate(transaction.confirming_bank_agreement_date) : 'Not specified'
         };
       case 'requesting':
         return {
           name: transaction.requesting_bank || 'Not specified',
           country: transaction.requesting_bank_country || transaction.country || 'Not specified',
-          address: transaction.requesting_bank_address || transaction.client_address || 'Not specified',
-          type: 'Requesting Bank',
-          code: transaction.requesting_bank_code || 'Not specified',
-          reference: transaction.requesting_bank_reference_trn || 'Not specified',
-          risk_rating: transaction.requesting_bank_risk_rating || 'Not specified'
+          address: transaction.requesting_bank_entity_address || transaction.entity_address || 'Not specified',
+          swift: transaction.requesting_bank_swift || transaction.swift || 'Not specified',
+          signing_office_branch: transaction.requesting_bank_signing_office_branch || transaction.signing_office_branch || 'Not specified',
+          agreement_date: transaction.requesting_bank_agreement_date ? formatDate(transaction.requesting_bank_agreement_date) : 'Not specified'
         };
       default:
         return {};
@@ -1058,22 +1055,22 @@ const TransactionDetail = () => {
               <div className="flex items-start">
                 <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Bank Reference</h3>
-                  <p className="text-base">{getEntityData(activeTab).reference}</p>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Swift Code</h3>
+                  <p className="text-base">{getEntityData(activeTab).swift}</p>
                 </div>
               </div>
               <div className="flex items-start">
                 <InformationCircleIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Bank Type</h3>
-                  <p className="text-base">{getEntityData(activeTab).type}</p>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Signing Office Branch</h3>
+                  <p className="text-base">{getEntityData(activeTab).signing_office_branch}</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Rating</h3>
-                  <p className="text-base">{getEntityData(activeTab).risk_rating}</p>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Agreement Date</h3>
+                  <p className="text-base">{getEntityData(activeTab).agreement_date}</p>
                 </div>
               </div>
             </div>
