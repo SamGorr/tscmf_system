@@ -26,23 +26,41 @@ Represents financial transactions:
 
 ```
 Transaction {
-    created_at: DateTime
     transaction_id: Integer (PK)
-    entity_id: Integer (FK to Entity)
-    product_id: Integer
-    product_name: String
-    industry: String
-    amount: Float
-    currency: String
     country: String
-    location: String
-    beneficiary: String
-    tenor: Integer
-    maturity_date: DateTime
-    price: Float
+    issuing_bank: String (FK to Entity)
+    confirming_bank: String (FK to Entity)
+    requesting_bank: String (FK to Entity)
+    adb_guarantee_trn: String
+    confirming_bank_reference_trn: String
+    issuing_bank_reference_trn: String
+    form_of_eligible_instrument: String
+    face_amount: Float
+    date_of_issue: DateTime
+    expiry_date: DateTime
+    terms_of_payment: String
+    currency: String
+    local_currency_amount: Float
+    usd_equivalent_amount: Float
+    book_rate: Float
+    cover: Float
+    local_currency_amount_cover: Float
+    usd_equivalent_amount_cover: Float
+    sub_limit_type: String
+    value_date_of_adb_guarantee: DateTime
+    end_of_risk_period: DateTime
+    tenor: String
+    expiry_date_of_adb_guarantee: DateTime
+    tenor_of_adb_guarantee: String
+    guarantee_fee_rate: Float
     
     # Relationships
     events: relationship to Event
+    transaction_entities: relationship to Transaction_Entity
+    transaction_goods: relationship to Transaction_Goods
+    issuing_entity: relationship to Entity
+    confirming_entity: relationship to Entity
+    requesting_entity: relationship to Entity
 }
 ```
 
@@ -53,9 +71,12 @@ Represents events associated with transactions:
 Event {
     event_id: Integer (PK)
     transaction_id: Integer (FK to Transaction)
-    entity_id: Integer (FK to Entity)
     source: String
-    source_content: String
+    email_from: String
+    email_to: String
+    email_subject: String
+    email_body: String
+    email_date: DateTime
     type: String
     created_at: DateTime
     status: String
@@ -70,13 +91,76 @@ Event {
 - `GET /db-check`: Database connection test
 
 ### Event Endpoints
-- `GET /api/events`: Retrieves all events with related transaction and entity information
-  - Returns detailed information including transaction details and entity information
+- `GET /api/events`: Retrieves all events with related transaction information
+  - Returns detailed information including transaction details from the updated data model
   - Data is ordered by creation date (newest first)
+  - Format:
+    ```json
+    [
+      {
+        "event_id": 1,
+        "transaction_id": 10001,
+        "source": "Email",
+        "email_from": "example@bank.com",
+        "email_to": "tradefinance@adb.org",
+        "email_subject": "Transaction Request",
+        "email_date": "2025-03-11T18:10:00",
+        "email_body": "",
+        "type": "Request",
+        "created_at": "2025-03-11T00:00:00",
+        "status": "Pending Review",
+        "transaction": {
+          "transaction_id": 10001,
+          "country": "PAKISTAN",
+          "issuing_bank": "BANK AL HABIB LIMITED",
+          "confirming_bank": "BNP PARIBAS APAC TRADE",
+          "requesting_bank": "BNP PARIBAS APAC TRADE",
+          "adb_guarantee_trn": "GU2033-017-663",
+          "form_of_eligible_instrument": "LETTER OF CREDIT REF NO. 0007LC58671/2025",
+          "face_amount": 92000.0,
+          "currency": "EUR",
+          "usd_equivalent_amount": 100307.57,
+          "date_of_issue": "2025-03-07T00:00:00",
+          "expiry_date": "2025-04-27T00:00:00",
+          "tenor": "34 days"
+        }
+      }
+    ]
+    ```
 
 - `GET /api/events-simple`: Simplified endpoint for testing event retrieval
   - Returns basic event information without detailed transaction or entity data
   - Useful for debugging or performance testing
+
+### Dashboard Statistics API
+- `GET /api/dashboard/stats`: Retrieves summary statistics for the dashboard based on events data
+  - Returns aggregated statistics from events and associated transactions
+  - Format:
+    ```json
+    {
+      "clients": 15,
+      "products": 8,
+      "transactions": {
+        "total": 25,
+        "approved": 12,
+        "processing": 10,
+        "declined": 3
+      },
+      "events": {
+        "total": 40,
+        "by_status": {
+          "Pending Review": 10,
+          "Transaction Booked": 12,
+          "Transaction Rejected": 3
+        },
+        "by_type": {
+          "Request": 25,
+          "Inquiry": 10,
+          "Cancellation": 5
+        }
+      }
+    }
+    ```
 
 ## Frontend API Integration
 

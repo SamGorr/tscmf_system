@@ -65,41 +65,34 @@ def get_events(db: Session = Depends(get_db)):
                 if transaction:
                     transaction_info = {
                         "transaction_id": transaction.transaction_id,
-                        "product_name": transaction.product_name,
-                        "industry": transaction.industry,
-                        "amount": float(transaction.amount) if transaction.amount else None,
-                        "currency": transaction.currency,
                         "country": transaction.country,
-                        "location": transaction.location,
-                        "beneficiary": transaction.beneficiary,
-                        "maturity_date": transaction.maturity_date.isoformat() if transaction.maturity_date else None,
-                    }
-            
-            # Get entity info if available
-            entity_info = {}
-            if event.entity_id:
-                entity = event.entity
-                if entity:
-                    entity_info = {
-                        "entity_name": entity.entity_name,
-                        "entity_address": entity.entity_address,
-                        "country": entity.country,
-                        "client_type": entity.client_type,
-                        "risk_rating": entity.risk_rating,
+                        "issuing_bank": transaction.issuing_bank,
+                        "confirming_bank": transaction.confirming_bank,
+                        "requesting_bank": transaction.requesting_bank,
+                        "adb_guarantee_trn": transaction.adb_guarantee_trn,
+                        "form_of_eligible_instrument": transaction.form_of_eligible_instrument,
+                        "face_amount": float(transaction.face_amount) if transaction.face_amount else None,
+                        "currency": transaction.currency,
+                        "usd_equivalent_amount": float(transaction.usd_equivalent_amount) if transaction.usd_equivalent_amount else None,
+                        "date_of_issue": transaction.date_of_issue.isoformat() if transaction.date_of_issue else None,
+                        "expiry_date": transaction.expiry_date.isoformat() if transaction.expiry_date else None,
+                        "tenor": transaction.tenor,
                     }
             
             # Combine all data
             event_data = {
                 "event_id": event.event_id,
                 "transaction_id": event.transaction_id,
-                "entity_id": event.entity_id,
                 "source": event.source,
-                "source_content": event.source_content,
+                "email_from": event.email_from,
+                "email_to": event.email_to,
+                "email_subject": event.email_subject,
+                "email_date": event.email_date.isoformat() if event.email_date else None,
+                "email_body": event.email_body,
                 "type": event.type,
-                "created_at": event.created_at.isoformat(),
+                "created_at": event.created_at.isoformat() if event.created_at else None,
                 "status": event.status,
                 "transaction": transaction_info,
-                "entity": entity_info,
             }
             
             result.append(event_data)
@@ -336,26 +329,46 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
 @app.get("/api/dashboard/stats")
 def get_dashboard_stats(db: Session = Depends(get_db)):
     """
-    Retrieve summary statistics for the dashboard
+    Retrieve summary statistics for the dashboard based on events data
     """
     try:
         print("Starting dashboard stats API endpoint request...")
         
-        # Get counts
-        entity_count = db.query(Entity).count()
-        transaction_count = db.query(Transaction).count()
-        event_count = db.query(Event).count()
-        
-        # Get unique product count
-        product_count = db.query(Transaction.product_name).distinct().count()
-        
-        # Get events by status
+        # Get events
         events = db.query(Event).all()
-        status_counts = {}
-        for event in events:
-            status_counts[event.status] = status_counts.get(event.status, 0) + 1
         
-        # Approximate status categories for transactions based on events
+        # Count unique transactions and entities from events
+        unique_transactions = set()
+        banks = set()
+        countries = set()
+        
+        # Get events by status and type
+        status_counts = {}
+        type_counts = {}
+        
+        for event in events:
+            if event.transaction_id:
+                unique_transactions.add(event.transaction_id)
+                
+                # Get transaction details to extract banks and countries
+                transaction = event.transaction
+                if transaction:
+                    if transaction.issuing_bank:
+                        banks.add(transaction.issuing_bank)
+                    if transaction.confirming_bank:
+                        banks.add(transaction.confirming_bank)
+                    if transaction.requesting_bank:
+                        banks.add(transaction.requesting_bank)
+                    if transaction.country:
+                        countries.add(transaction.country)
+            
+            # Count by status
+            status_counts[event.status] = status_counts.get(event.status, 0) + 1
+            
+            # Count by type
+            type_counts[event.type] = type_counts.get(event.type, 0) + 1
+        
+        # Categorize for transaction summary
         approved_count = sum(count for status, count in status_counts.items() 
                           if 'Success' in status or 'Booked' in status)
         processing_count = sum(count for status, count in status_counts.items() 
@@ -365,17 +378,18 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         
         # Create response
         result = {
-            "clients": entity_count,
-            "products": product_count,
+            "clients": len(banks),
+            "products": len(countries),
             "transactions": {
-                "total": transaction_count,
+                "total": len(unique_transactions),
                 "approved": approved_count,
                 "processing": processing_count,
                 "declined": declined_count
             },
             "events": {
-                "total": event_count,
-                "by_status": status_counts
+                "total": len(events),
+                "by_status": status_counts,
+                "by_type": type_counts
             }
         }
         

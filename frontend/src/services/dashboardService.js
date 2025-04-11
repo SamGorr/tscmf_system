@@ -11,39 +11,43 @@ const DashboardService = {
       const apiUrl = DashboardService.getApiUrl();
       
       // Fetch data from the API endpoints
-      const [dashboardStatsRes, transactionsRes, eventsRes] = await Promise.all([
+      const [dashboardStatsRes, eventsRes] = await Promise.all([
         axios.get(`${apiUrl}/api/dashboard/stats`),
-        axios.get(`${apiUrl}/api/transactions`),
         axios.get(`${apiUrl}/api/events`)
       ]);
       
       // Extract dashboard stats
       const dashboardStats = dashboardStatsRes.data;
       
-      // Extract and process transactions
-      const transactionsData = transactionsRes.data.map(t => {
-        // Associate events with transactions to get status and type
-        const transactionEvents = eventsRes.data.filter(e => e.transaction_id === t.transaction_id);
-        let status = 'Pending Review'; // Default status
-        let type = 'Request'; // Default type
-        
-        // If there are events for this transaction, use the latest one's status and type
-        if (transactionEvents.length > 0) {
-          const latestEvent = transactionEvents.sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at)
-          )[0];
+      // Extract and process transactions from events data
+      const transactionsData = [];
+      const processedTransactionIds = new Set();
+      
+      eventsRes.data.forEach(event => {
+        if (event.transaction_id && event.transaction && !processedTransactionIds.has(event.transaction_id)) {
+          const transaction = event.transaction;
+          processedTransactionIds.add(event.transaction_id);
           
-          status = latestEvent.status;
-          type = latestEvent.type;
+          transactionsData.push({
+            transaction_id: transaction.transaction_id,
+            created_at: event.created_at,
+            status: event.status,
+            type: event.type,
+            source: event.source,
+            country: transaction.country,
+            issuing_bank: transaction.issuing_bank,
+            confirming_bank: transaction.confirming_bank,
+            requesting_bank: transaction.requesting_bank,
+            face_amount: transaction.face_amount,
+            currency: transaction.currency,
+            usd_equivalent_amount: transaction.usd_equivalent_amount,
+            date_of_issue: transaction.date_of_issue,
+            expiry_date: transaction.expiry_date,
+            tenor: transaction.tenor,
+            adb_guarantee_trn: transaction.adb_guarantee_trn,
+            form_of_eligible_instrument: transaction.form_of_eligible_instrument,
+          });
         }
-        
-        return {
-          ...t,
-          status,
-          type,
-          source: transactionEvents.length > 0 ? transactionEvents[0].source : 'System',
-          goods_list: t.industry ? [t.industry] : [],
-        };
       });
       
       // Get 5 most recent transactions
@@ -53,54 +57,83 @@ const DashboardService = {
       
       return {
         stats: dashboardStats,
-        transactions: transactionsData,
-        recentTransactions
+        transactions: recentTransactions
       };
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      throw error;
+      
+      // Return empty data on error
+      return {
+        stats: {
+          clients: 0,
+          products: 0,
+          transactions: {
+            total: 0,
+            approved: 0,
+            processing: 0,
+            declined: 0
+          }
+        },
+        transactions: []
+      };
     }
   },
-  
-  // Prepare chart data - by status
+
+  // Prepare data for status chart
   prepareStatusChartData: (transactions) => {
-    const statusCounts = {};
-    transactions.forEach(t => {
-      statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
+    const statusMap = {};
+    
+    transactions.forEach(transaction => {
+      const status = transaction.status || 'Unknown';
+      statusMap[status] = (statusMap[status] || 0) + 1;
     });
     
-    return Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+    return Object.keys(statusMap).map(key => ({
+      name: key,
+      value: statusMap[key]
+    }));
   },
   
-  // Prepare chart data - by type
+  // Prepare data for type chart
   prepareTypeChartData: (transactions) => {
-    const typeCounts = {};
-    transactions.forEach(t => {
-      typeCounts[t.type] = (typeCounts[t.type] || 0) + 1;
+    const typeMap = {};
+    
+    transactions.forEach(transaction => {
+      const type = transaction.type || 'Unknown';
+      typeMap[type] = (typeMap[type] || 0) + 1;
     });
     
-    return Object.entries(typeCounts).map(([name, value]) => ({ name, value }));
+    return Object.keys(typeMap).map(key => ({
+      name: key,
+      value: typeMap[key]
+    }));
   },
   
-  // Prepare chart data - monthly trend
+  // Prepare data for monthly chart
   prepareMonthlyChartData: (transactions) => {
-    const monthlyCounts = {};
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthMap = {};
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    transactions.forEach(t => {
-      const date = new Date(t.created_at);
-      const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-      monthlyCounts[monthKey] = (monthlyCounts[monthKey] || 0) + 1;
+    transactions.forEach(transaction => {
+      if (transaction.created_at) {
+        const date = new Date(transaction.created_at);
+        const monthYearKey = `${months[date.getMonth()]} ${date.getFullYear()}`;
+        monthMap[monthYearKey] = (monthMap[monthYearKey] || 0) + 1;
+      }
     });
     
-    // Sort by month chronologically
-    return Object.entries(monthlyCounts)
-      .map(([name, value]) => ({ name, value }))
+    // Sort by date
+    const sortedData = Object.keys(monthMap)
+      .map(key => ({ name: key, value: monthMap[key] }))
       .sort((a, b) => {
         const [aMonth, aYear] = a.name.split(' ');
         const [bMonth, bYear] = b.name.split(' ');
-        return new Date(`${aMonth} 1, ${aYear}`) - new Date(`${bMonth} 1, ${bYear}`);
+        
+        if (aYear !== bYear) return aYear - bYear;
+        return months.indexOf(aMonth) - months.indexOf(bMonth);
       });
+    
+    return sortedData;
   },
   
   // Fetch transaction details (entities and goods)

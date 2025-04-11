@@ -113,11 +113,11 @@ const Dashboard = () => {
     }
     
     if (filters.amountMin) {
-      result = result.filter(t => parseFloat(t.amount) >= parseFloat(filters.amountMin));
+      result = result.filter(t => parseFloat(t.face_amount || 0) >= parseFloat(filters.amountMin));
     }
     
     if (filters.amountMax) {
-      result = result.filter(t => parseFloat(t.amount) <= parseFloat(filters.amountMax));
+      result = result.filter(t => parseFloat(t.face_amount || 0) <= parseFloat(filters.amountMax));
     }
     
     setFilteredTransactions(result);

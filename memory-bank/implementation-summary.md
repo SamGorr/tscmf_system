@@ -283,3 +283,28 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
 - Enhanced data processing and relationship mapping
 - Implemented summary statistics calculation
 - Implemented sorting of results 
+
+## Dashboard Page and API Integration Updates
+
+### Backend API Changes
+- Updated the `/api/events` endpoint to match the new data model with fields like `email_from`, `email_to`, `email_subject`, etc.
+- Modified the transaction information included in event responses to match the updated transaction model with fields like `issuing_bank`, `confirming_bank`, `face_amount`, etc.
+- Updated the `/api/dashboard/stats` endpoint to only use data from events, extracting relevant information for dashboard statistics
+- The dashboard stats now calculate counts for unique banks and countries from transaction data associated with events
+
+### Frontend Dashboard Changes
+- Modified the dashboard service to only fetch data from the events API endpoint and dashboard stats endpoint
+- Updated the transaction data processing to extract transaction details from event data
+- Modified the transaction table to display the updated fields:
+  - Using `adb_guarantee_trn` as reference number when available
+  - Displaying issuing bank as client name
+  - Using `face_amount` instead of `amount`
+  - Updated all relevant links and references to use `transaction_id`
+- Updated the transaction tooltip to show the new fields relevant to the updated data model:
+  - ADB Reference
+  - Issuing and Confirming Banks
+  - Face Amount and USD Equivalent
+  - Instrument details
+  - Issue and Expiry dates
+
+These changes ensure the Dashboard page exclusively relies on data from the events endpoint while maintaining the existing dashboard UI structure. 
