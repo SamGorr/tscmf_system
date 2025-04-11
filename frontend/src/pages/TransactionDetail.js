@@ -210,17 +210,13 @@ const TransactionDetail = () => {
           if (normalizedData) {
             // Extract pricing-related data from the transaction
             setPricingData({
-              country: normalizedData.client_country || '',
-              location: normalizedData.client_location || normalizedData.location || '',
-              bank: normalizedData.bank || normalizedData.client_name || '',
-              beneficiary: normalizedData.beneficiary || '',
-              product: normalizedData.product_name || '',
-              tenor: normalizedData.tenor ? 
-                     `${normalizedData.tenor} days` : 
-                     (normalizedData.maturity_date ? 
-                      `${Math.ceil((new Date(normalizedData.maturity_date) - new Date(normalizedData.created_at)) / (1000 * 60 * 60 * 24))} days` : 
-                      ''),
-              paymentFrequency: normalizedData.payment_frequency || '',
+              country: normalizedData.country || normalizedData.client_country || '',
+              location: normalizedData.location || normalizedData.client_location || '',
+              bank: normalizedData.issuing_bank || normalizedData.bank || normalizedData.client_name || '',
+              beneficiary: normalizedData.requesting_bank || normalizedData.beneficiary || '',
+              product: normalizedData.form_of_eligible_instrument || normalizedData.product_name || '',
+              tenor: normalizedData.tenor || '',
+              paymentFrequency: normalizedData.payment_frequency || normalizedData.terms_of_payment || '',
             });
           }
         } catch (apiError) {
@@ -965,14 +961,14 @@ const TransactionDetail = () => {
               <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Institution Name</h3>
-                <p className="text-base font-medium">{transaction.client_name || 'Not specified'}</p>
+                <p className="text-base font-medium">{transaction.issuing_bank || transaction.client_name || 'Not specified'}</p>
               </div>
             </div>
             <div className="flex items-start">
               <GlobeAmericasIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Country</h3>
-                <p className="text-base">{transaction.client_country || 'Not specified'}</p>
+                <p className="text-base">{transaction.country || transaction.client_country || 'Not specified'}</p>
               </div>
             </div>
             <div className="flex items-start">
@@ -985,36 +981,36 @@ const TransactionDetail = () => {
             <div className="flex items-start">
               <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Used Limit</h3>
-                <p className="text-base">{transaction.used_limit ? `${transaction.used_limit} ${transaction.currency}` : 'Not specified'}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Trade Amount</h3>
+                <p className="text-base">{transaction.face_amount ? `${Number(transaction.face_amount).toLocaleString()} ${transaction.currency}` : 'Not specified'}</p>
               </div>
             </div>
             <div className="flex items-start">
               <BanknotesIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Approved Limit</h3>
-                <p className="text-base">{transaction.approved_limit ? `${transaction.approved_limit} ${transaction.currency}` : 'Not specified'}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">USD Equivalent</h3>
+                <p className="text-base">{transaction.usd_equivalent_amount ? `${Number(transaction.usd_equivalent_amount).toLocaleString()} USD` : 'Not specified'}</p>
               </div>
             </div>
             <div className="flex items-start">
               <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Onboard Date</h3>
-                <p className="text-base">{transaction.onboard_date ? new Date(transaction.onboard_date).toLocaleDateString() : 'Not specified'}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Date of Issue</h3>
+                <p className="text-base">{transaction.date_of_issue ? formatDate(transaction.date_of_issue) : 'Not specified'}</p>
               </div>
             </div>
             <div className="flex items-start">
               <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Client Type</h3>
-                <p className="text-base">{transaction.client_type || 'Not specified'}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Reference</h3>
+                <p className="text-base">{transaction.adb_guarantee_trn || 'Not specified'}</p>
               </div>
             </div>
             <div className="flex items-start">
               <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Rating</h3>
-                <p className="text-base">{transaction.risk_rating || 'Not specified'}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Instrument Type</h3>
+                <p className="text-base">{transaction.form_of_eligible_instrument || 'Not specified'}</p>
               </div>
             </div>
           </div>
@@ -1073,7 +1069,7 @@ const TransactionDetail = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Amount</h3>
                 <p className="text-lg text-gray-800 font-semibold">
-                  {formatCurrency(transaction.amount, transaction.currency)}
+                  {formatCurrency(transaction.face_amount || transaction.amount, transaction.currency)}
                 </p>
               </div>
             </div>
@@ -1081,50 +1077,50 @@ const TransactionDetail = () => {
             <div className="flex items-start">
               <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Product</h3>
-                <p className="text-base">{transaction.product_name}</p>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Instrument</h3>
+                <p className="text-base">{transaction.form_of_eligible_instrument || transaction.product_name}</p>
               </div>
             </div>
             
-            {transaction.counterparty_id && (
-              <div className="flex items-start">
-                <BuildingLibraryIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Counterparty ID</h3>
-                  <p className="text-base">{transaction.counterparty_id}</p>
-                </div>
+            <div className="flex items-start">
+              <BuildingLibraryIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Confirming Bank</h3>
+                <p className="text-base">{transaction.confirming_bank || 'Not specified'}</p>
               </div>
-            )}
+            </div>
             
-            {transaction.maturity_date && (
-              <div className="flex items-start">
-                <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Maturity Date</h3>
-                  <p className="text-base">{new Date(transaction.maturity_date).toLocaleDateString()}</p>
-                </div>
+            <div className="flex items-start">
+              <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date</h3>
+                <p className="text-base">{transaction.expiry_date ? formatDate(transaction.expiry_date) : (transaction.maturity_date ? formatDate(transaction.maturity_date) : 'Not specified')}</p>
               </div>
-            )}
+            </div>
             
-            {transaction.pricing_rate && (
-              <div className="flex items-start">
-                <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Pricing Rate</h3>
-                  <p className="text-base">{transaction.pricing_rate}%</p>
-                </div>
+            <div className="flex items-start">
+              <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Guarantee Fee Rate</h3>
+                <p className="text-base">{transaction.guarantee_fee_rate ? `${transaction.guarantee_fee_rate}%` : 'Not specified'}</p>
               </div>
-            )}
+            </div>
             
-            {transaction.inquiry_reference && (
-              <div className="flex items-start">
-                <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Inquiry Reference</h3>
-                  <p className="text-base">{transaction.inquiry_reference}</p>
-                </div>
+            <div className="flex items-start">
+              <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
+                <p className="text-base">{transaction.tenor || 'Not specified'}</p>
               </div>
-            )}
+            </div>
+            
+            <div className="flex items-start">
+              <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Terms of Payment</h3>
+                <p className="text-base">{transaction.terms_of_payment || 'Not specified'}</p>
+              </div>
+            </div>
           </div>
           
           {transaction.notes && (

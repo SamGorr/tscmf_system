@@ -240,20 +240,6 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
         if not transaction:
             raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
         
-        # Get entity info if available
-        entity_info = {}
-        if transaction.entity_id:
-            entity = transaction.entity
-            if entity:
-                entity_info = {
-                    "entity_id": entity.entity_id,
-                    "entity_name": entity.entity_name,
-                    "entity_address": entity.entity_address,
-                    "country": entity.country,
-                    "client_type": entity.client_type,
-                    "risk_rating": entity.risk_rating,
-                }
-        
         # Get related events
         events = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).all()
         
@@ -262,11 +248,14 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
             event_data = {
                 "event_id": event.event_id,
                 "transaction_id": event.transaction_id,
-                "entity_id": event.entity_id,
                 "source": event.source,
-                "source_content": event.source_content,
+                "email_from": event.email_from,
+                "email_to": event.email_to,
+                "email_subject": event.email_subject,
+                "email_date": event.email_date.isoformat() if event.email_date else None,
+                "email_body": event.email_body,
                 "type": event.type,
-                "created_at": event.created_at.isoformat(),
+                "created_at": event.created_at.isoformat() if event.created_at else None,
                 "status": event.status,
             }
             events_data.append(event_data)
@@ -282,38 +271,67 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
         transaction_data = {
             "id": transaction.transaction_id,
             "transaction_id": transaction.transaction_id,
-            "entity_id": transaction.entity_id,
-            "product_id": transaction.product_id,
-            "product_name": transaction.product_name,
-            "industry": transaction.industry,
-            "amount": float(transaction.amount) if transaction.amount else None,
-            "currency": transaction.currency,
             "country": transaction.country,
-            "location": transaction.location,
-            "beneficiary": transaction.beneficiary,
+            "issuing_bank": transaction.issuing_bank,
+            "confirming_bank": transaction.confirming_bank,
+            "requesting_bank": transaction.requesting_bank,
+            "adb_guarantee_trn": transaction.adb_guarantee_trn,
+            "confirming_bank_reference_trn": transaction.confirming_bank_reference_trn,
+            "issuing_bank_reference_trn": transaction.issuing_bank_reference_trn,
+            "form_of_eligible_instrument": transaction.form_of_eligible_instrument,
+            "face_amount": float(transaction.face_amount) if transaction.face_amount else None,
+            "date_of_issue": transaction.date_of_issue.isoformat() if transaction.date_of_issue else None,
+            "expiry_date": transaction.expiry_date.isoformat() if transaction.expiry_date else None,
+            "terms_of_payment": transaction.terms_of_payment,
+            "currency": transaction.currency,
+            "local_currency_amount": float(transaction.local_currency_amount) if transaction.local_currency_amount else None,
+            "usd_equivalent_amount": float(transaction.usd_equivalent_amount) if transaction.usd_equivalent_amount else None,
+            "book_rate": float(transaction.book_rate) if transaction.book_rate else None,
+            "cover": float(transaction.cover) if transaction.cover else None,
+            "local_currency_amount_cover": float(transaction.local_currency_amount_cover) if transaction.local_currency_amount_cover else None,
+            "usd_equivalent_amount_cover": float(transaction.usd_equivalent_amount_cover) if transaction.usd_equivalent_amount_cover else None,
+            "sub_limit_type": transaction.sub_limit_type,
+            "value_date_of_adb_guarantee": transaction.value_date_of_adb_guarantee.isoformat() if transaction.value_date_of_adb_guarantee else None,
+            "end_of_risk_period": transaction.end_of_risk_period.isoformat() if transaction.end_of_risk_period else None,
             "tenor": transaction.tenor,
-            "maturity_date": transaction.maturity_date.isoformat() if transaction.maturity_date else None,
-            "price": float(transaction.price) if transaction.price else None,
-            "created_at": transaction.created_at.isoformat() if transaction.created_at else None,
-            "reference_number": f"TXN-{transaction.transaction_id:05d}",
-            "client_name": entity_info.get("entity_name", ""),
-            "client_type": entity_info.get("client_type", ""),
-            "client_country": entity_info.get("country", ""),
-            "client_address": entity_info.get("entity_address", ""),
-            "risk_rating": entity_info.get("risk_rating", ""),
+            "expiry_date_of_adb_guarantee": transaction.expiry_date_of_adb_guarantee.isoformat() if transaction.expiry_date_of_adb_guarantee else None,
+            "tenor_of_adb_guarantee": transaction.tenor_of_adb_guarantee,
+            "guarantee_fee_rate": float(transaction.guarantee_fee_rate) if transaction.guarantee_fee_rate else None,
+            
+            # Keep original fields for backward compatibility with UI
+            "reference_number": transaction.adb_guarantee_trn or f"TXN-{transaction.transaction_id:05d}",
+            "client_name": transaction.issuing_bank,
+            "client_country": transaction.country,
+            "client_address": "",
             "status": status,
             "type": event_type,
             "source": events[0].source if events else "System",
-            "goods_list": [{"name": transaction.industry, "quantity": "1", "unit": "lot"}] if transaction.industry else [],
-            "entity": entity_info,
             "events": events_data,
-            "entities": [{
-                "id": str(entity_info.get("entity_id", "")),
-                "type": "Client",
-                "name": entity_info.get("entity_name", ""),
-                "country": entity_info.get("country", ""),
-                "address": entity_info.get("entity_address", "")
-            }] if entity_info else []
+            
+            # Additional entities information derived from the transaction model
+            "entities": [
+                {
+                    "id": "1", 
+                    "type": "Issuing Bank",
+                    "name": transaction.issuing_bank,
+                    "country": transaction.country,
+                    "address": ""
+                },
+                {
+                    "id": "2", 
+                    "type": "Confirming Bank",
+                    "name": transaction.confirming_bank,
+                    "country": transaction.country, 
+                    "address": ""
+                },
+                {
+                    "id": "3", 
+                    "type": "Requesting Bank",
+                    "name": transaction.requesting_bank,
+                    "country": transaction.country,
+                    "address": ""
+                }
+            ] if transaction.issuing_bank else []
         }
         
         print(f"Returning transaction detail for ID: {transaction_id}")
@@ -409,6 +427,12 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
     try:
         print(f"Starting transaction details API endpoint request for ID: {transaction_id}...")
         
+        # Query for the specific transaction
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
         # Query transaction entities
         transaction_entities = db.query(Transaction_Entity).filter(
             Transaction_Entity.transaction_id == transaction_id
@@ -420,33 +444,71 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
         ).all()
         
         if not transaction_entities and not transaction_goods:
-            print(f"No details found for transaction ID: {transaction_id}")
+            print(f"No detailed entities/goods found for transaction ID: {transaction_id}. Using derived data.")
+            
+            # Create derived entities from transaction fields
+            entities_data = []
+            if transaction.issuing_bank:
+                entities_data.append({
+                    "id": 1,
+                    "type": "Issuing Bank",
+                    "name": transaction.issuing_bank,
+                    "country": transaction.country,
+                    "address": ""
+                })
+            
+            if transaction.confirming_bank:
+                entities_data.append({
+                    "id": 2,
+                    "type": "Confirming Bank",
+                    "name": transaction.confirming_bank,
+                    "country": transaction.country,
+                    "address": ""
+                })
+                
+            if transaction.requesting_bank:
+                entities_data.append({
+                    "id": 3,
+                    "type": "Requesting Bank",
+                    "name": transaction.requesting_bank,
+                    "country": transaction.country,
+                    "address": ""
+                })
+            
+            # Create derived goods from form_of_eligible_instrument field
+            goods_data = []
+            if transaction.form_of_eligible_instrument:
+                goods_data.append({
+                    "id": 1,
+                    "name": transaction.form_of_eligible_instrument,
+                    "quantity": 1,
+                    "unit": "item"
+                })
         else:
             print(f"Found {len(transaction_entities)} entities and {len(transaction_goods)} goods for transaction ID: {transaction_id}")
-        
-        # Format the entities data
-        entities_data = []
-        for entity in transaction_entities:
-            entity_data = {
-                "id": entity.id,
-                "type": entity.type,
-                "address": entity.address,
-                "country": entity.country,
-                # Add a default name field based on the entity type
-                "name": f"{entity.type} Entity" 
-            }
-            entities_data.append(entity_data)
-        
-        # Format the goods data
-        goods_data = []
-        for good in transaction_goods:
-            good_data = {
-                "id": good.id,
-                "name": good.item_name,
-                "quantity": good.quantity,
-                "unit": good.unit
-            }
-            goods_data.append(good_data)
+            
+            # Format the entities data
+            entities_data = []
+            for entity in transaction_entities:
+                entity_data = {
+                    "id": entity.id,
+                    "type": entity.type,
+                    "address": entity.address,
+                    "country": entity.country,
+                    "name": entity.type  # Adding a default name based on type
+                }
+                entities_data.append(entity_data)
+            
+            # Format the goods data
+            goods_data = []
+            for good in transaction_goods:
+                good_data = {
+                    "id": good.id,
+                    "name": good.item_name,
+                    "quantity": good.quantity,
+                    "unit": good.unit
+                }
+                goods_data.append(good_data)
         
         # Combine all data
         transaction_details = {
@@ -457,6 +519,8 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
         
         print(f"Returning transaction details for ID: {transaction_id}")
         return transaction_details
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"Error retrieving transaction details: {str(e)}")
         import traceback

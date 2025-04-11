@@ -162,6 +162,114 @@ Event {
     }
     ```
 
+### Transaction Endpoints
+- `GET /api/transactions`: Retrieves all transactions
+- `GET /api/transactions/{transaction_id}`: Retrieves a single transaction by ID with related event information
+  - Returns detailed transaction information from the updated data model
+  - Format:
+    ```json
+    {
+      "id": 10001,
+      "transaction_id": 10001,
+      "country": "PAKISTAN",
+      "issuing_bank": "BANK AL HABIB LIMITED",
+      "confirming_bank": "BNP PARIBAS APAC TRADE",
+      "requesting_bank": "BNP PARIBAS APAC TRADE",
+      "adb_guarantee_trn": "GU2033-017-663",
+      "confirming_bank_reference_trn": "R799180339102574",
+      "issuing_bank_reference_trn": "0007LC58671/2025",
+      "form_of_eligible_instrument": "LETTER OF CREDIT REF NO. 0007LC58671/2025",
+      "face_amount": 92000.0,
+      "date_of_issue": "2025-03-07T00:00:00",
+      "expiry_date": "2025-04-27T00:00:00",
+      "terms_of_payment": "BY NEGOTIATION SIGHT",
+      "currency": "EUR",
+      "local_currency_amount": 92000.0,
+      "usd_equivalent_amount": 100307.57,
+      "book_rate": 0.92,
+      "cover": 1.0,
+      "local_currency_amount_cover": 92000.0,
+      "usd_equivalent_amount_cover": 100307.57,
+      "sub_limit_type": "CG",
+      "value_date_of_adb_guarantee": "2025-03-24T00:00:00",
+      "end_of_risk_period": "2025-04-27T00:00:00",
+      "tenor": "34 days",
+      "expiry_date_of_adb_guarantee": "2025-05-12T00:00:00",
+      "tenor_of_adb_guarantee": "49 days",
+      "guarantee_fee_rate": 0.03,
+      "reference_number": "GU2033-017-663",
+      "client_name": "BANK AL HABIB LIMITED",
+      "client_country": "PAKISTAN",
+      "status": "Pending Review",
+      "type": "Request",
+      "source": "Email",
+      "events": [
+        {
+          "event_id": 1,
+          "transaction_id": 10001,
+          "source": "Email",
+          "email_from": "bank@example.com",
+          "email_to": "tradefinance@adb.org",
+          "email_subject": "Transaction Request",
+          "email_date": "2025-03-11T18:10:00",
+          "type": "Request",
+          "created_at": "2025-03-11T00:00:00",
+          "status": "Pending Review"
+        }
+      ],
+      "entities": [
+        {
+          "id": "1",
+          "type": "Issuing Bank",
+          "name": "BANK AL HABIB LIMITED",
+          "country": "PAKISTAN",
+          "address": ""
+        },
+        {
+          "id": "2",
+          "type": "Confirming Bank",
+          "name": "BNP PARIBAS APAC TRADE",
+          "country": "PAKISTAN",
+          "address": ""
+        }
+      ]
+    }
+    ```
+
+- `GET /api/transactions/{transaction_id}/details`: Retrieves transaction entity and goods information
+  - Returns entities and goods related to the transaction
+  - Can generate derived data from transaction fields when dedicated entries don't exist
+  - Format:
+    ```json
+    {
+      "transaction_id": 10001,
+      "entities": [
+        {
+          "id": 1,
+          "type": "Issuing Bank",
+          "name": "BANK AL HABIB LIMITED",
+          "country": "PAKISTAN",
+          "address": ""
+        },
+        {
+          "id": 2,
+          "type": "Confirming Bank",
+          "name": "BNP PARIBAS APAC TRADE",
+          "country": "PAKISTAN",
+          "address": ""
+        }
+      ],
+      "goods": [
+        {
+          "id": 1,
+          "name": "LETTER OF CREDIT REF NO. 0007LC58671/2025",
+          "quantity": 1,
+          "unit": "item"
+        }
+      ]
+    }
+    ```
+
 ## Frontend API Integration
 
 The frontend connects to these API endpoints to display:

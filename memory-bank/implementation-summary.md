@@ -308,3 +308,39 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
   - Issue and Expiry dates
 
 These changes ensure the Dashboard page exclusively relies on data from the events endpoint while maintaining the existing dashboard UI structure. 
+
+## Transaction Detail Page and API Integration Updates
+
+### Backend API Changes
+- Updated the `/api/transactions/{transaction_id}` endpoint to match the new transaction data model with fields like:
+  - `issuing_bank`, `confirming_bank`, `requesting_bank`
+  - `adb_guarantee_trn`, `form_of_eligible_instrument`
+  - `face_amount`, `usd_equivalent_amount`
+  - `date_of_issue`, `expiry_date`
+  - `tenor` and `guarantee_fee_rate`
+- Added backward compatibility fields to ensure existing UI still works
+- Modified the transaction entities information to be derived from the transaction fields
+- Enhanced the `/api/transactions/{transaction_id}/details` endpoint to generate entities and goods data from the transaction fields when not available from the dedicated tables
+
+### Frontend Changes
+- Updated the `normalizeTransaction` function to handle the new data model:
+  - Mapped `face_amount` to `amount` for backward compatibility
+  - Mapped `expiry_date` to `maturity_date` for backward compatibility
+  - Mapped `form_of_eligible_instrument` to `product_name` for backward compatibility
+- Updated the Transaction Detail page to display the new data fields:
+  - Replaced "Client Profile" section with relevant bank information
+  - Added fields for `face_amount`, `usd_equivalent_amount`, `date_of_issue`
+  - Added `adb_guarantee_trn` as reference number
+  - Added fields for `form_of_eligible_instrument`, `confirming_bank`
+  - Updated pricing data extraction to use the new fields
+  - Replaced legacy fields with their new equivalents
+
+### Benefits
+- The Transaction Detail page now accurately reflects the structure of the updated data model
+- Users can view all relevant financial information about transactions
+- The page maintains its original layout and functionality while using the new data fields
+- Backward compatibility ensures a smooth transition to the new data model
+- Trade Entities section is now populated with accurate bank information
+- Transaction goods are derived from the transaction fields when dedicated entries don't exist
+
+These changes ensure a seamless transition to the new data model while maintaining the existing user experience and providing more accurate and detailed transaction information. 

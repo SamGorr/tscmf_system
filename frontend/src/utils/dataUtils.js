@@ -38,10 +38,28 @@ export const normalizeGoodsList = (goodsList) => {
 export const normalizeTransaction = (transaction) => {
   if (!transaction) return null;
   
+  // Map face_amount to amount for backwards compatibility
+  const amount = transaction.face_amount !== undefined ? transaction.face_amount : 
+                (transaction.amount !== undefined ? transaction.amount : null);
+  
+  // Map expiry_date to maturity_date for backwards compatibility
+  const maturityDate = transaction.expiry_date || transaction.maturity_date || null;
+  
+  // Map form_of_eligible_instrument to product_name for backwards compatibility
+  const productName = transaction.form_of_eligible_instrument || transaction.product_name || null;
+  
   return {
     ...transaction,
+    // Original fields for backward compatibility
+    amount: amount, 
+    maturity_date: maturityDate,
+    product_name: productName,
+    
+    // Handle entities and goods lists
     entities: transaction.entities || [],
     goods_list: normalizeGoodsList(transaction.goods_list),
+    
+    // Sanctions checks fields - keep default values
     sanctions_check_passed: transaction.sanctions_check_passed !== undefined ? transaction.sanctions_check_passed : null,
     sanctions_check_details: transaction.sanctions_check_details || [],
     sanctions_check_timestamp: transaction.sanctions_check_timestamp || null,
