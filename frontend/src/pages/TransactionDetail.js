@@ -153,6 +153,8 @@ const TransactionDetail = () => {
     exposure: false
   });
 
+  const [activeTab, setActiveTab] = useState('issuing'); // New state for tabs
+
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
@@ -816,6 +818,44 @@ const TransactionDetail = () => {
     }
   };
 
+  // Function to get entity data based on type
+  const getEntityData = (type) => {
+    switch(type) {
+      case 'issuing':
+        return {
+          name: transaction.issuing_bank || 'Not specified',
+          country: transaction.issuing_bank_country || transaction.country || 'Not specified',
+          address: transaction.issuing_bank_address || transaction.client_address || 'Not specified',
+          type: 'Issuing Bank',
+          code: transaction.issuing_bank_code || 'Not specified',
+          reference: transaction.issuing_bank_reference_trn || 'Not specified',
+          risk_rating: transaction.issuing_bank_risk_rating || 'Not specified'
+        };
+      case 'confirming':
+        return {
+          name: transaction.confirming_bank || 'Not specified',
+          country: transaction.confirming_bank_country || transaction.country || 'Not specified',
+          address: transaction.confirming_bank_address || transaction.client_address || 'Not specified',
+          type: 'Confirming Bank',
+          code: transaction.confirming_bank_code || 'Not specified',
+          reference: transaction.confirming_bank_reference_trn || 'Not specified',
+          risk_rating: transaction.confirming_bank_risk_rating || 'Not specified'
+        };
+      case 'requesting':
+        return {
+          name: transaction.requesting_bank || 'Not specified',
+          country: transaction.requesting_bank_country || transaction.country || 'Not specified',
+          address: transaction.requesting_bank_address || transaction.client_address || 'Not specified',
+          type: 'Requesting Bank',
+          code: transaction.requesting_bank_code || 'Not specified',
+          reference: transaction.requesting_bank_reference_trn || 'Not specified',
+          risk_rating: transaction.requesting_bank_risk_rating || 'Not specified'
+        };
+      default:
+        return {};
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-64 animate-fadeIn">
@@ -955,65 +995,89 @@ const TransactionDetail = () => {
             <h2 className="text-lg font-medium text-gray-800">ADB Client Profile</h2>
           </div>
         </div>
+        
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('issuing')}
+            className={`flex-1 py-3 px-4 text-center font-medium ${
+              activeTab === 'issuing'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Issuing Bank
+          </button>
+          <button
+            onClick={() => setActiveTab('confirming')}
+            className={`flex-1 py-3 px-4 text-center font-medium ${
+              activeTab === 'confirming'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Confirming Bank
+          </button>
+          <button
+            onClick={() => setActiveTab('requesting')}
+            className={`flex-1 py-3 px-4 text-center font-medium ${
+              activeTab === 'requesting'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Requesting Bank
+          </button>
+        </div>
+        
+        {/* Tab Content */}
         <div className="px-6 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-start">
-              <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Institution Name</h3>
-                <p className="text-base font-medium">{transaction.issuing_bank || transaction.client_name || 'Not specified'}</p>
+          {activeTab && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-start">
+                <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Institution Name</h3>
+                  <p className="text-base font-medium">{getEntityData(activeTab).name}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <GlobeAmericasIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Country</h3>
+                  <p className="text-base">{getEntityData(activeTab).country}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <MapPinIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Address</h3>
+                  <p className="text-base">{getEntityData(activeTab).address}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Bank Reference</h3>
+                  <p className="text-base">{getEntityData(activeTab).reference}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <InformationCircleIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Bank Type</h3>
+                  <p className="text-base">{getEntityData(activeTab).type}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Rating</h3>
+                  <p className="text-base">{getEntityData(activeTab).risk_rating}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start">
-              <GlobeAmericasIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Country</h3>
-                <p className="text-base">{transaction.country || transaction.client_country || 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <MapPinIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Address</h3>
-                <p className="text-base">{transaction.client_address || 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Trade Amount</h3>
-                <p className="text-base">{transaction.face_amount ? `${Number(transaction.face_amount).toLocaleString()} ${transaction.currency}` : 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <BanknotesIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">USD Equivalent</h3>
-                <p className="text-base">{transaction.usd_equivalent_amount ? `${Number(transaction.usd_equivalent_amount).toLocaleString()} USD` : 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Date of Issue</h3>
-                <p className="text-base">{transaction.date_of_issue ? formatDate(transaction.date_of_issue) : 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Reference</h3>
-                <p className="text-base">{transaction.adb_guarantee_trn || 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Instrument Type</h3>
-                <p className="text-base">{transaction.form_of_eligible_instrument || 'Not specified'}</p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
       

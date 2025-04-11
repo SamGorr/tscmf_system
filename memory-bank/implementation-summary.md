@@ -344,3 +344,30 @@ These changes ensure the Dashboard page exclusively relies on data from the even
 - Transaction goods are derived from the transaction fields when dedicated entries don't exist
 
 These changes ensure a seamless transition to the new data model while maintaining the existing user experience and providing more accurate and detailed transaction information. 
+
+## ADB Client Profile Tabbed Interface
+
+The Transaction Detail page was updated to display different bank entities in a tabbed interface:
+
+1. **Tab Structure**:
+   - Implemented a 3-tab interface for displaying Requesting Bank, Issuing Bank, and Confirming Bank information
+   - Added tab navigation with active state indicators
+   - Each tab shows entity-specific data without transaction data
+
+2. **Entity Data Display**:
+   - Created a helper function `getEntityData()` to retrieve specific entity data based on the active tab
+   - Displays the following properties for each bank entity:
+     - Institution Name
+     - Country
+     - Address
+     - Bank Reference
+     - Bank Type
+     - Risk Rating
+
+3. **Implementation Details**:
+   - Added state management for active tab using `activeTab` state
+   - Created tab switching functionality
+   - Used conditional styling to highlight the active tab
+   - Maintained consistent UI styling with the rest of the application
+
+This implementation provides a cleaner, more organized view of the different banks involved in the transaction, focusing specifically on entity data rather than mixing it with transaction data. 
