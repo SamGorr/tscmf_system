@@ -1,14 +1,3 @@
 transaction_id,country,issuing_bank,confirming_bank,requesting_bank,adb_guarantee_trn,confirming_bank_reference_trn,issuing_bank_reference_trn,form_of_eligible_instrument,face_amount,date_of_issue,expiry_date,terms_of_payment,currency,local_currency_amount,usd_equivalent_amount,book_rate,cover,local_currency_amount_cover,usd_equivalent_amount_cover,sub_limit_type,value_date_of_adb_guarantee,end_of_risk_period,tenor,expiry_date_of_adb_guarantee,tenor_of_adb_guarantee,guarantee_fee_rate,industry
 10001,PAKISTAN,BANK AL HABIB LIMITED,BNP PARIBAS APAC TRADE,BNP PARIBAS APAC TRADE,GU2033-017-663,R799180339102574,0007LC58671/2025,LETTER OF CREDIT REF NO. 0007LC58671/2025,92000,3/7/2025,4/27/2025,BY NEGOTIATION SIGHT,EUR,92000,100307.57,0.92,1,92000,100307.57,CG,3/24/2025,4/27/2025,34 days,5/12/2025,49 days,0.03,INDUSTRIAL MACHINERY AND CAPITAL GOODS
 10002,PAKISTAN,BANK AL HABIB LIMITED,"JPMORGAN CHASE BANK, NATIONAL ASSOCIATION","JPMORGAN CHASE BANK, NATIONAL ASSOCIATION",GU2033-017-664,ASGSGL012033,TTTM 250101,TRADE LOAN REF NO. TTTM 250101,45000000,1/21/2025,7/18/2025,PAYABLE AT SIGHT ON THE EXPIRY / MATURITY DATE: 18 JULY 2025,USD,45000000,45000000,1,0.9,40500000,40500000,CG - LONG,0,0,,0,,0,"Food, agricultural and related goods; Consumer Goods; Automotive  and Auto Parts; Construction and Building Materials"
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,v,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,,,,,,,,,,,

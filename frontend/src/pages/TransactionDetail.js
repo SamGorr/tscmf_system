@@ -1498,34 +1498,7 @@ const TransactionDetail = () => {
                     )}
                   </div>
                 </div>
-                
-                <div className="flex items-start">
-                  <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div className="w-full">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Form of Eligible Instrument</h3>
-                    {isEditingRequest ? (
-                      <input
-                        type="text"
-                        name="form_of_eligible_instrument"
-                        value={requestData.form_of_eligible_instrument}
-                        onChange={handleRequestInputChange}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                      />
-                    ) : (
-                      <p className="text-base">
-                        {transaction.form_of_eligible_instrument ? 
-                          transaction.form_of_eligible_instrument
-                            .replace(/\s*(?:REF|Ref|ref).*$/g, '')           // Remove everything from "REF" (and variations) to the end
-                            .replace(/\b(?:\w+-\d+|\d+)\b/g, '')           // Remove remaining word-number or just number patterns
-                            .replace(/^\s*-\s*|\s*-\s*$/g, '')             // Remove dashes at start or end
-                            .replace(/\s{2,}/g, ' ')                       // Replace multiple spaces with a single space
-                            .trim() : 
-                          'Not specified'}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
+                               
                 <div className="flex items-start">
                   <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
@@ -1780,7 +1753,16 @@ const TransactionDetail = () => {
                         className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                       />
                     ) : (
-                      <p className="text-base">{transaction.form_of_eligible_instrument || 'Not specified'}</p>
+                      <p className="text-base">
+                        {transaction.form_of_eligible_instrument ? 
+                          transaction.form_of_eligible_instrument
+                            .replace(/\s*(?:REF|Ref|ref).*$/g, '')           // Remove everything from "REF" (and variations) to the end
+                            .replace(/\b(?:\w+-\d+|\d+)\b/g, '')           // Remove remaining word-number or just number patterns
+                            .replace(/^\s*-\s*|\s*-\s*$/g, '')             // Remove dashes at start or end
+                            .replace(/\s{2,}/g, ' ')                       // Replace multiple spaces with a single space
+                            .trim() : 
+                          'Not specified'}
+                      </p>
                     )}
                   </div>
                 </div>

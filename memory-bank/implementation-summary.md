@@ -676,3 +676,22 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Reduced vertical scrolling required to view all information
   - More efficient display of transaction data on larger screens
   - Consistent user experience across all information sections
+
+### Standardized Data Cleansing for Form of Eligible Instrument (Added on 2023-09-04)
+
+- Applied consistent data cleansing for the "Form of Eligible Instrument" field throughout the application:
+  - Implemented the same data cleansing logic in the Underlying Transactions section as used in the Request Information section
+  - Applied the following standardized cleansing rules to the field:
+    - Removed everything after "REF", "Ref", or "ref" (including the term itself)
+    - Removed all standalone numbers and word-number combinations
+    - Removed leading and trailing dashes
+    - Normalized whitespace by replacing multiple spaces with a single space
+    - Trimmed remaining whitespace from the beginning and end
+
+- Benefits of standardized data cleansing:
+  - Consistent display of instrument types across the application
+  - Improved readability by removing irrelevant reference numbers and codes
+  - Enhanced focus on the actual instrument type rather than reference details
+  - Better data consistency between different sections of the Transaction Detail page
+  - Simplified display that emphasizes the most important information
+  - Unified user experience with standardized data presentation
