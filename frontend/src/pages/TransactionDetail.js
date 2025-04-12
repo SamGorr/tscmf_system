@@ -1360,7 +1360,7 @@ const TransactionDetail = () => {
             {/* Tab Content */}
             <div className="px-6 py-4">
               {activeTab && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6" key={`${activeTab}-${transaction?.transaction_id || ''}-${Date.now()}`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6" key={`${activeTab}-${transaction?.transaction_id || ''}-${Date.now()}`}>
                   <div className="flex items-start">
                     <UserIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                     <div className="flex-grow">
@@ -1480,7 +1480,7 @@ const TransactionDetail = () => {
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex items-start">
                   <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
