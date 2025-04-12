@@ -430,35 +430,70 @@ This implementation ensures that the ADB Client Profile section displays accurat
   - Implemented results display with proper error and empty states
   - Connected the selected entity data to update the transaction state
 
-## Recent Updates
+## Transaction Processing Flow Implementation
 
-### Data Model Enhancements (Added on [current date])
+### Overview
+A multi-step transaction flow has been implemented to guide users through the process of reviewing and approving transactions. The flow consists of 8 steps:
 
-1. **Updated Existing Models**:
-   - Enhanced `Transaction_Entity` model with additional field:
-     - Added `name` field to store the entity name
-   - Enhanced `Transaction_Goods` model with additional fields:
-     - Added `goods_classification` field to categorize goods
-     - Updated `item_name` to be populated from the `goods` field in CSV
-     - Added `price` field to store goods pricing information
+1. Email Extract (TransactionDetail page)
+2. Sanction Check
+3. Eligibility Check
+4. Limits Check
+5. Pricing
+6. Earmarking of Limits
+7. Approval
+8. Transaction Booking
 
-2. **New Model: Underlying_Transaction**:
-   - Created a new model to store underlying transaction details with the following key fields:
-     - Reference information (transaction_id, issuing_bank, sequence_no, transaction_ref_no)
-     - Date information (issue_date, maturity_date)
-     - Financial details (currency, amount_in_local_currency)
-     - Party information (applicant and beneficiary details)
-     - Shipping details (ports, countries of origin/destination)
-     - Goods information (description, classification)
-     - Compliance flags (capital_goods, sustainability, etc.)
-   - Established a one-to-many relationship with the Transaction model
+### Components Created
 
-3. **CSV Import Enhancements**:
-   - Modified `populate_db.py` to handle the new CSV files:
-     - Updated transaction_entity import to handle the new name field
-     - Updated transaction_goods import to handle goods_classification and price
-     - Added new import logic for underlying_transactions.csv with proper data parsing
-     - Added special UTF-8 BOM handling for the underlying_transactions.csv file
-     - Improved error handling for date parsing and numeric field conversions
+1. **TransactionStepIndicator Component** (`frontend/src/components/TransactionStepIndicator.js`):
+   - Visual indicator showing all 8 steps of the process
+   - Highlights the current step
+   - Shows completed steps with checkmarks and in color
+   - Shows upcoming steps in grey
+   - Dynamically updates as the user progresses
+   - Provides navigation links to completed and current steps
 
-These enhancements provide more comprehensive data storage and relationships between transactions and their associated entities, goods, and underlying transactions, enabling more detailed reporting and analysis capabilities.
+2. **Step Pages** (in `frontend/src/pages/transaction-steps/`):
+   - `SanctionCheckStep.js`: For the Sanction Check step
+   - `EligibilityCheckStep.js`: For the Eligibility Check step
+   - `LimitsCheckStep.js`: For the Limits Check step
+   - `PricingStep.js`: For the Pricing step
+   - `EarmarkingStep.js`: For the Earmarking of Limits step
+   - `ApprovalStep.js`: For the Approval step
+   - `BookingStep.js`: For the Transaction Booking step
+
+### Routing
+
+The application's routing has been updated in `App.js` to support the multi-step flow:
+- The original `/transactions/:id` route leads to the TransactionDetail page (Email Extract step)
+- Added routes for each subsequent step:
+  - `/transactions/:id/sanction-check`
+  - `/transactions/:id/eligibility-check`
+  - `/transactions/:id/limits-check`
+  - `/transactions/:id/pricing`
+  - `/transactions/:id/earmarking`
+  - `/transactions/:id/approval`
+  - `/transactions/:id/booking`
+
+### TransactionDetail Page Updates
+
+The TransactionDetail page has been enhanced to:
+- Include the TransactionStepIndicator component
+- Add a "Continue to Sanction Check" button at the bottom of the page
+- Support the first step (Email Extract) of the transaction flow
+
+### User Navigation Flow
+
+1. User views a transaction by clicking "View" in the Dashboard or Transactions list
+2. The TransactionDetail page loads, showing the Email Extract step
+3. The user can review the transaction details and proceed to Sanction Check
+4. As the user advances through the steps, the process indicator updates to show progress
+5. Each step has navigation buttons to move forward to the next step or back to the previous step
+
+### Future Enhancements
+
+1. Implement detailed functionality for each step beyond the Email Extract step
+2. Add error handling for invalid transitions between steps
+3. Implement data persistence between steps
+4. Add validation for required information in each step before proceeding
