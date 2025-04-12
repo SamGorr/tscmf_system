@@ -121,7 +121,9 @@ const TransactionDetail = () => {
     id: '',
     name: '',
     quantity: '',
-    unit: ''
+    unit: '',
+    goods_classification: '',
+    price: ''
   });
 
   // Add state for entity search modal
@@ -544,7 +546,9 @@ const TransactionDetail = () => {
     setTradeGoodFormData({
       name: '',
       quantity: '',
-      unit: ''
+      unit: '',
+      goods_classification: '',
+      price: ''
     });
     setShowTradeGoodModal(true);
   };
@@ -553,7 +557,9 @@ const TransactionDetail = () => {
     setTradeGoodFormData({
       name: good.name,
       quantity: good.quantity || '',
-      unit: good.unit || ''
+      unit: good.unit || '',
+      goods_classification: good.goods_classification || '',
+      price: good.price || ''
     });
     setCurrentTradeGoodIndex(index);
     setShowTradeGoodModal(true);
@@ -1755,8 +1761,10 @@ const TransactionDetail = () => {
                         <thead className="bg-gray-50">
                           <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classification</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                             {isEditingTrading && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
                           </tr>
                         </thead>
@@ -1764,8 +1772,10 @@ const TransactionDetail = () => {
                           {tradeGoods.map((good, index) => (
                             <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{good.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.goods_classification || 'N/A'}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.quantity || 'N/A'}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.unit || 'N/A'}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.price ? `${good.price}` : 'N/A'}</td>
                               {isEditingTrading && (
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                   <div className="flex space-x-3">
@@ -2650,6 +2660,41 @@ const TransactionDetail = () => {
                     <option value="container">Container</option>
                   </select>
                 </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Classification</label>
+                  <select
+                    name="goods_classification"
+                    value={tradeGoodFormData.goods_classification}
+                    onChange={handleTradeGoodInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+                  >
+                    <option value="">Select Classification</option>
+                    <option value="Capital Goods">Capital Goods</option>
+                    <option value="Consumer Goods">Consumer Goods</option>
+                    <option value="Raw Materials">Raw Materials</option>
+                    <option value="Intermediate Goods">Intermediate Goods</option>
+                    <option value="Services">Services</option>
+                    <option value="Sustainable Goods">Sustainable Goods</option>
+                    <option value="Machinery">Machinery</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Textiles">Textiles</option>
+                    <option value="Agricultural Products">Agricultural Products</option>
+                    <option value="Medical Supplies">Medical Supplies</option>
+                    <option value="Energy Products">Energy Products</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                  <input
+                    type="text"
+                    name="price"
+                    value={tradeGoodFormData.price}
+                    onChange={handleTradeGoodInputChange}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+                    placeholder="Enter price"
+                  />
+                </div>
               </div>
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3 rounded-b-lg">
                 <button
@@ -2826,10 +2871,10 @@ ${transaction.entities && transaction.entities.map(entity =>
 ).join('\n')}
 
 # Goods List
-good_name,good_quantity,good_unit
+good_name,good_quantity,good_unit,good_classification,good_price
 ${Array.isArray(transaction.goods_list) ? 
   transaction.goods_list.map(good => 
-    `${good.name},${good.quantity || 'N/A'},${good.unit || 'N/A'}`
+    `${good.name},${good.quantity || 'N/A'},${good.unit || 'N/A'},${good.goods_classification || 'N/A'},${good.price || 'N/A'}`
   ).join('\n') : 
   '# No goods specified'
 }

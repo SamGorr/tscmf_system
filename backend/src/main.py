@@ -514,19 +514,25 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
                     "id": 1,
                     "name": "Electronic Components",
                     "quantity": 1000,
-                    "unit": "pcs"
+                    "unit": "pcs",
+                    "goods_classification": "Electronics",
+                    "price": "15.50"
                 },
                 {
                     "id": 2,
                     "name": "Manufacturing Equipment",
                     "quantity": 5,
-                    "unit": "sets"
+                    "unit": "sets",
+                    "goods_classification": "Capital Goods",
+                    "price": "2500.00"
                 },
                 {
                     "id": 3,
                     "name": "Raw Materials",
                     "quantity": 500,
-                    "unit": "kg"
+                    "unit": "kg",
+                    "goods_classification": "Raw Materials",
+                    "price": "8.75"
                 }
             ]
         else:
@@ -551,7 +557,9 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
                     "id": good.id,
                     "name": good.item_name,
                     "quantity": good.quantity,
-                    "unit": good.unit
+                    "unit": good.unit,
+                    "goods_classification": good.goods_classification,
+                    "price": good.price
                 }
                 goods_data.append(good_data)
         

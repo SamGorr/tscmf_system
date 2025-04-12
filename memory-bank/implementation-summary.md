@@ -505,3 +505,61 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Improved access to source documents within the context of request information
   - Editable fields with proper data validation and error handling
   - Direct updates to the backend database via API
+
+### Transaction Detail - Enhanced List of Goods Tab (Added on 2023-08-10)
+
+- Enhanced the List of Goods tab in the Transaction Detail page by adding two new columns:
+  - Added `goods_classification` column to categorize goods items
+  - Added `price` column to display the price of goods items with currency
+
+- These enhancements include:
+  - Updated table header to include the new columns
+  - Modified table rows to display classification and price data
+  - Added support for displaying the transaction currency next to the price
+  - Updated the CSV format display in the file modal to include the new columns
+
+- Added form fields for the new columns in the Add/Edit Trade Good modal:
+  - Created a dropdown select field for goods_classification with common classification options:
+    - Capital Goods
+    - Consumer Goods
+    - Raw Materials
+    - Intermediate Goods
+    - Services
+    - Sustainable Goods
+    - Machinery
+    - Electronics
+    - Textiles
+    - Agricultural Products
+    - Medical Supplies
+    - Energy Products
+    - Other
+  - Added a price input field to capture goods pricing information
+  - Updated the form data handling to include the new fields
+
+- Benefits:
+  - More detailed goods information for transaction analysis
+  - Better categorization of goods for reporting purposes
+  - Financial visibility at the individual goods level
+  - Enhanced user experience with comprehensive goods data display
+  - Improved data consistency between the transaction_goods table and UI
+
+### Transaction Detail - Fixed Goods Classification and Price Display (Added on 2023-08-11)
+
+- Fixed an issue where goods_classification and price columns were showing "N/A" in the List of Goods tab:
+  - Diagnosed that the backend API endpoint was not including these fields in the response
+  - Updated the `/api/transactions/{transaction_id}/details` API endpoint to include goods_classification and price fields in the goods data
+  - Fixed both the actual database results and mock data to include these fields
+  - Ensured proper field mapping between the backend model and frontend display
+
+- The bug fix involved:
+  - Identified that the Transaction_Goods model had the necessary fields (goods_classification and price) in the database schema
+  - Found that the API endpoint was fetching the data but not including it in the response
+  - Modified the goods_data formatting to include these additional fields
+  - Updated the mock data to provide realistic values for these fields if no real data exists
+
+- Benefits:
+  - The List of Goods tab now correctly displays classification and price data
+  - Users can view proper categorization of goods in transactions
+  - Financial details are available at the item level
+  - Consistent data representation between database and UI
+  - Improved data completeness for reporting and analysis purposes
