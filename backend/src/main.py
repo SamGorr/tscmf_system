@@ -547,7 +547,7 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
                     "type": entity.type,
                     "address": entity.address,
                     "country": entity.country,
-                    "name": entity.type  # Adding a default name based on type
+                    "name": entity.name
                 }
                 entities_data.append(entity_data)
             

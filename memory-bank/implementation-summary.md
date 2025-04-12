@@ -728,3 +728,18 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Consistent data flow between backend and frontend
   - Improved user experience by showing valuable transaction categorization information
   - Full functionality of the recently added Industry field UI component
+
+### Fixed Entity Name Display in Trade Entity Information (Added on 2023-12-15)
+
+- Fixed a critical issue in the Trade Entity Information section of the Transaction Detail page:
+  - Identified that the entity name column was incorrectly displaying the entity type instead of the entity name
+  - Root cause: In the backend `main.py` file, line 549 was incorrectly setting `"name": entity.type` in the entity_data dictionary
+  - Modified the backend code to correctly use `"name": entity.name` to populate the entity name field
+  - Fixed all entity rows in the Trade Entity Information table to display the correct entity name
+
+- This fix ensures:
+  - Proper display of entity names in the Transaction Detail page
+  - Consistent entity information across the application
+  - Accurate representation of transaction relationships
+  - Improved user experience with correct entity identification
+  - Better data integrity between the database and UI
