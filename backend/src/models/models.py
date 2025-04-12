@@ -34,6 +34,7 @@ class Transaction(Base):
     expiry_date_of_adb_guarantee = Column(DateTime)
     tenor_of_adb_guarantee = Column(String)
     guarantee_fee_rate = Column(Float)
+    industry = Column(String)
     
     events = relationship("Event", backref="transaction")
     transaction_entities = relationship("Transaction_Entity", backref="transaction")

@@ -90,7 +90,7 @@ def populate_database():
                         terms_of_payment, currency, local_currency_amount, usd_equivalent_amount, 
                         book_rate, cover, local_currency_amount_cover, usd_equivalent_amount_cover, 
                         sub_limit_type, value_date_of_adb_guarantee, end_of_risk_period, tenor, 
-                        expiry_date_of_adb_guarantee, tenor_of_adb_guarantee, guarantee_fee_rate
+                        expiry_date_of_adb_guarantee, tenor_of_adb_guarantee, guarantee_fee_rate, industry
                     )
                     VALUES (
                         :transaction_id, :country, :issuing_bank, :confirming_bank, :requesting_bank,
@@ -99,7 +99,7 @@ def populate_database():
                         :terms_of_payment, :currency, :local_currency_amount, :usd_equivalent_amount,
                         :book_rate, :cover, :local_currency_amount_cover, :usd_equivalent_amount_cover,
                         :sub_limit_type, :value_date_of_adb_guarantee, :end_of_risk_period, :tenor,
-                        :expiry_date_of_adb_guarantee, :tenor_of_adb_guarantee, :guarantee_fee_rate
+                        :expiry_date_of_adb_guarantee, :tenor_of_adb_guarantee, :guarantee_fee_rate, :industry
                     )
                 """), {
                     "transaction_id": int(row['transaction_id']),
@@ -128,7 +128,8 @@ def populate_database():
                     "tenor": row.get('tenor', ''),
                     "expiry_date_of_adb_guarantee": expiry_date_adb,
                     "tenor_of_adb_guarantee": row.get('tenor_of_adb_guarantee', ''),
-                    "guarantee_fee_rate": row.get('guarantee_fee_rate', '')
+                    "guarantee_fee_rate": row.get('guarantee_fee_rate', ''),
+                    "industry": row.get('industry', '')
                 })
 
         # Now import events from CSV file
