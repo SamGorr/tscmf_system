@@ -469,17 +469,23 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Replaced existing section with a more comprehensive "Request Information" section
   - Added display fields directly from the transaction PostgreSQL database table
   - Improved data presentation with appropriate icons and formatting
+  - Moved transaction status and source information to this section for better organization
+  - Optimized the UI layout by placing status indicators directly in the section header
+  - Relocated source document buttons (View Source Email/File) to this section
   
 - The new Request Information section includes the following fields:
+  - Transaction status badges (showing APPROVED, PROCESSING, DECLINED, etc.) positioned in the header
+  - Transaction source information (Email, File, Manual) positioned in the header
+  - Source document access buttons (View Source Email/File) based on transaction source
   - sub_limit_type (Product) - Shows the product type for the transaction
   - adb_guarantee_trn (ADB Guarantee/TRN) - Displays ADB's transaction reference number
   - confirming_bank_reference_trn (Confirming Bank Reference/TRN) - Shows confirming bank's reference
   - issuing_bank_reference_trn (Issuing Bank Reference/TRN) - Shows issuing bank's reference
-  - face_amount (Face Amount) - Displays the transaction's face value amount
-  - local_currency_amount (Currency) - Shows amount in local currency
+  - face_amount (Local Amount) - Displays the transaction's face value amount
+  - local_currency_amount (Currency) - Shows currency code only
   - usd_equivalent_amount (USD Amount) - Shows amount converted to USD
   - usd_equivalent_amount_cover (ADB Covered Amount in USD) - Shows ADB's covered portion in USD
-  - cover (Risk Coverage) - Displays the risk coverage percentage
+  - cover (Risk Coverage) - Displays the risk coverage percentage (properly scaled)
 
 - Benefits:
   - More comprehensive financial information display
@@ -487,3 +493,6 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Improved user experience with clear labeling and appropriate icons
   - Direct display of database fields for accuracy
   - Consistent formatting with the rest of the application
+  - Consolidated important transaction metadata in a single section
+  - Enhanced visual hierarchy with status information prominently displayed in the header
+  - Improved access to source documents within the context of request information

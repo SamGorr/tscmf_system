@@ -1251,9 +1251,29 @@ const TransactionDetail = () => {
           {/* Request Information Section */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
             <div className="border-b border-gray-200 bg-gray-50">
-              <div className="flex items-center px-6 py-4">
-                <DocumentTextIcon className="h-5 w-5 text-gray-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-800">Request Information</h2>
+              <div className="flex justify-between items-center px-6 py-4">
+                <div className="flex items-center">
+                  <DocumentTextIcon className="h-5 w-5 text-gray-600 mr-2" />
+                  <h2 className="text-lg font-medium text-gray-800">Request Information</h2>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusClass(transaction.status)}`}>
+                    {transaction.status === 'APPROVED' ? <CheckCircleIcon className="h-4 w-4 mr-1" /> : 
+                     transaction.status === 'PROCESSING' ? <ClockIcon className="h-4 w-4 mr-1" /> : 
+                     transaction.status === 'DECLINED' ? <XCircleIcon className="h-4 w-4 mr-1" /> : 
+                     transaction.status === 'COMPLETED' ? <CheckIcon className="h-4 w-4 mr-1" /> : 
+                     <ExclamationCircleIcon className="h-4 w-4 mr-1" />}
+                    {transaction.status}
+                  </span>
+                  {transaction.source && (
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 flex items-center">
+                      {transaction.source === 'Email' ? <EnvelopeIcon className="h-4 w-4 mr-1" /> : 
+                       transaction.source === 'File' ? <DocumentIcon className="h-4 w-4 mr-1" /> : 
+                       <PencilSquareIcon className="h-4 w-4 mr-1" />}
+                      Source: {transaction.source || 'Manual'}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             <div className="px-6 py-4">
@@ -1335,129 +1355,11 @@ const TransactionDetail = () => {
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Coverage</h3>
                     <p className="text-base">
-                      {transaction.cover ? `${transaction.cover *100}%` : 'Not specified'}
+                      {transaction.cover ? `${transaction.cover * 100}%` : 'Not specified'}
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          {/* Transaction Overview Section */}
-          <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
-            <div className="border-b border-gray-200 bg-gray-50">
-              <div className="flex justify-between items-center px-6 py-4">
-                <div className="flex items-center">
-                  <DocumentTextIcon className="h-5 w-5 text-gray-600 mr-2" />
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-800">
-                      {transaction.reference_number}
-                    </h2>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <CalendarIcon className="h-4 w-4 mr-1" />
-                      Created on {formatDateLocal(transaction.created_at, true)}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusClass(transaction.status)}`}>
-                    {transaction.status === 'APPROVED' ? <CheckCircleIcon className="h-4 w-4 mr-1" /> : 
-                     transaction.status === 'PROCESSING' ? <ClockIcon className="h-4 w-4 mr-1" /> : 
-                     transaction.status === 'DECLINED' ? <XCircleIcon className="h-4 w-4 mr-1" /> : 
-                     transaction.status === 'COMPLETED' ? <CheckIcon className="h-4 w-4 mr-1" /> : 
-                     <ExclamationCircleIcon className="h-4 w-4 mr-1" />}
-                    {transaction.status}
-                  </span>
-                  {transaction.source && (
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 flex items-center">
-                      {transaction.source === 'Email' ? <EnvelopeIcon className="h-4 w-4 mr-1" /> : 
-                       transaction.source === 'File' ? <DocumentIcon className="h-4 w-4 mr-1" /> : 
-                       <PencilSquareIcon className="h-4 w-4 mr-1" />}
-                      Source: {transaction.source || 'Manual'}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="px-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-start">
-                  <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Event Type</h3>
-                    <p className="text-base font-medium">{transaction.type}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <BanknotesIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Amount</h3>
-                    <p className="text-lg text-gray-800 font-semibold">
-                      {formatCurrency(transaction.face_amount || transaction.amount, transaction.currency)}
-                    </p>
-                  </div>
-                </div>
-                           
-                <div className="flex items-start">
-                  <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Instrument</h3>
-                    <p className="text-base">{transaction.form_of_eligible_instrument || transaction.product_name}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <BuildingLibraryIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Confirming Bank</h3>
-                    <p className="text-base">{transaction.confirming_bank || 'Not specified'}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date</h3>
-                    <p className="text-base">{transaction.expiry_date ? formatDateLocal(transaction.expiry_date) : (transaction.maturity_date ? formatDateLocal(transaction.maturity_date) : 'Not specified')}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Guarantee Fee Rate</h3>
-                    <p className="text-base">{transaction.guarantee_fee_rate ? `${transaction.guarantee_fee_rate}%` : 'Not specified'}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
-                    <p className="text-base">{transaction.tenor || 'Not specified'}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Terms of Payment</h3>
-                    <p className="text-base">{transaction.terms_of_payment || 'Not specified'}</p>
-                  </div>
-                </div>
-              </div>
-              
-              {transaction.notes && (
-                <div className="flex items-start mt-6 p-4 bg-gray-50 rounded-lg">
-                  <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Notes</h3>
-                    <p className="text-base whitespace-pre-wrap">{transaction.notes}</p>
-                  </div>
-                </div>
-              )}
 
               {/* View Source Email Button - Only for Email sourced transactions */}
               {transaction.source === 'Email' && (
