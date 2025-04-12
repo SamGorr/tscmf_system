@@ -634,36 +634,9 @@ def get_transaction_underlying(transaction_id: int, db: Session = Depends(get_db
         
         # Generate mock data if no underlying transactions found
         if not underlying_data:
-            print(f"No underlying transactions found for transaction ID: {transaction_id}, generating mock data")
-            # Create a mock underlying transaction
-            underlying_data = [{
-                "id": 1,
-                "transaction_id": transaction_id,
-                "issuing_bank": transaction.issuing_bank or "Sample Bank",
-                "sequence_no": 1,
-                "transaction_ref_no": f"REF-{transaction_id}-001",
-                "issue_date": transaction.date_of_issue.isoformat() if transaction.date_of_issue else None,
-                "maturity_date": transaction.expiry_date.isoformat() if transaction.expiry_date else None,
-                "currency": transaction.currency or "USD",
-                "amount_in_local_currency": str(transaction.face_amount or 100000),
-                "applicant_name": "Sample Applicant",
-                "applicant_address": "123 Main St, City",
-                "applicant_country": transaction.country or "USA",
-                "beneficiary_name": "Sample Beneficiary",
-                "beneficiary_address": "456 Trade St, City",
-                "beneficiary_country": "Singapore",
-                "loading_port": "Port of Origin",
-                "discharging_port": "Port of Destination",
-                "country_of_origin": "China",
-                "country_of_final_destination": "USA",
-                "goods": "Electronic Components and Equipment",
-                "goods_classification": "Electronics",
-                "goods_eligible": "Yes",
-                "es_classification": "ES-A",
-                "capital_goods": True,
-                "ee_replacement_of_an_old_equipment": False,
-                "sustainable_goods": True
-            }]
+            print(f"No underlying transactions found for transaction ID: {transaction_id}")
+            # Return empty array instead of mock data
+            underlying_data = []
         
         # Return the underlying transactions
         response = {

@@ -563,3 +563,22 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Financial details are available at the item level
   - Consistent data representation between database and UI
   - Improved data completeness for reporting and analysis purposes
+
+### Transaction Detail - Removed Mock Underlying Transactions (Added on 2023-08-12)
+
+- Modified the Underlying Transactions section to show an empty state instead of mock data:
+  - Updated the `/api/transactions/{transaction_id}/underlying` endpoint to return an empty array when no underlying transactions are found
+  - Removed the mock data generation that previously created sample data
+  - Ensured the UI properly handles the empty state with an appropriate message
+
+- The specific changes include:
+  - Modified the backend API endpoint to return an empty `underlying_transactions` array instead of generating mock data
+  - Updated logging to indicate when no underlying transactions are found without mentioning mock data generation
+  - Ensured the frontend component can handle an empty array response without errors
+
+- Benefits:
+  - More accurate representation of the actual database state
+  - Clearer indication to users when no underlying transactions exist
+  - Eliminated potential confusion caused by sample data that might be mistaken for real data
+  - Better alignment with production data requirements
+  - Improved transparency about missing data in the system
