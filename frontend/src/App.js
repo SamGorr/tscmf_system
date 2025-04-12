@@ -10,6 +10,15 @@ import PricingMatrix from './pages/PricingMatrix';
 import SanctionsCheckDetail from './pages/SanctionsCheckDetail';
 import EligibilityCheckConfig from './pages/EligibilityCheckConfig';
 
+// Import transaction step pages
+import SanctionCheckStep from './pages/transaction-steps/SanctionCheckStep';
+import EligibilityCheckStep from './pages/transaction-steps/EligibilityCheckStep';
+import LimitsCheckStep from './pages/transaction-steps/LimitsCheckStep';
+import PricingStep from './pages/transaction-steps/PricingStep';
+import EarmarkingStep from './pages/transaction-steps/EarmarkingStep';
+import ApprovalStep from './pages/transaction-steps/ApprovalStep';
+import BookingStep from './pages/transaction-steps/BookingStep';
+
 function App() {
   return (
     <Router>
@@ -21,7 +30,17 @@ function App() {
             <Route path="/clients" element={<Clients />} />
             <Route path="/products" element={<Products />} />
             <Route path="/transactions" element={<Transactions />} />
+            
+            {/* Transaction processing flow routes */}
             <Route path="/transactions/:id" element={<TransactionDetail />} />
+            <Route path="/transactions/:id/sanction-check" element={<SanctionCheckStep />} />
+            <Route path="/transactions/:id/eligibility-check" element={<EligibilityCheckStep />} />
+            <Route path="/transactions/:id/limits-check" element={<LimitsCheckStep />} />
+            <Route path="/transactions/:id/pricing" element={<PricingStep />} />
+            <Route path="/transactions/:id/earmarking" element={<EarmarkingStep />} />
+            <Route path="/transactions/:id/approval" element={<ApprovalStep />} />
+            <Route path="/transactions/:id/booking" element={<BookingStep />} />
+            
             <Route path="/sanctions-check/:id" element={<SanctionsCheckDetail />} />
             <Route path="/config/pricing-matrix" element={<PricingMatrix />} />
             <Route path="/config/eligibility-check" element={<EligibilityCheckConfig />} />
