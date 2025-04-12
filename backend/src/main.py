@@ -311,6 +311,7 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
             "expiry_date_of_adb_guarantee": transaction.expiry_date_of_adb_guarantee.isoformat() if transaction.expiry_date_of_adb_guarantee else None,
             "tenor_of_adb_guarantee": transaction.tenor_of_adb_guarantee,
             "guarantee_fee_rate": float(transaction.guarantee_fee_rate) if transaction.guarantee_fee_rate else None,
+            "industry": transaction.industry,
             
             # Keep original fields for backward compatibility with UI
             "reference_number": transaction.adb_guarantee_trn or f"TXN-{transaction.transaction_id:05d}",

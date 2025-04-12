@@ -1766,6 +1766,26 @@ const TransactionDetail = () => {
                     )}
                   </div>
                 </div>
+                
+                {/* Add Industry field right after Form of Eligible Instrument */}
+                <div className="flex items-start">
+                  <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Industry</h3>
+                    {isEditingTrading ? (
+                      <input
+                        type="text"
+                        name="industry"
+                        value={formData.industry || ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.industry || 'Not specified'}</p>
+                    )}
+                  </div>
+                </div>
+                
                 <div className="flex items-start">
                   <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">

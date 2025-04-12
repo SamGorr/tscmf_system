@@ -695,3 +695,36 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Better data consistency between different sections of the Transaction Detail page
   - Simplified display that emphasizes the most important information
   - Unified user experience with standardized data presentation
+
+### Industry Field Addition to Underlying Transactions Section (Added on 2023-12-01)
+
+- Added 'Industry' field to the Underlying Transactions section of the Transaction Detail page:
+  - Inserted the field right after the "Form of Eligible Instrument" field
+  - Connected the field to the 'industry' column in the transaction table of the PostgreSQL database
+  - Used TagIcon from Heroicons library for visual consistency
+  - Added proper edit functionality to allow users to update the industry field
+  - Maintained consistent styling with other fields in the section
+  - Ensured the field is included in data fetching and saving operations
+  - Data for the field is automatically populated from the transaction industry field in the database
+  - The field properly shows "Not specified" when industry data is not available
+
+- Benefits of this implementation:
+  - Provides users with important industry classification information directly in the transaction overview
+  - Improves data completeness in the user interface
+  - Enhances transaction categorization and reporting capabilities
+  - Maintains consistent UI/UX patterns with the rest of the application
+
+### Industry Field API Fix (Added on 2023-12-02)
+
+- Fixed an issue where the 'Industry' field in the Underlying Transactions section was not displaying data from the backend:
+  - Identified that the transaction detail API endpoint was missing the industry field in its response
+  - Modified the `/api/transactions/{transaction_id}` endpoint in main.py to include the industry field in the transaction_data dictionary
+  - Ensured proper data flow from the PostgreSQL database to the frontend UI
+  - Industry field now correctly displays the actual industry value stored in the transaction table
+
+- This fix ensures:
+  - Proper data completeness in the transaction detail view
+  - Accurate industry classification display for all transactions
+  - Consistent data flow between backend and frontend
+  - Improved user experience by showing valuable transaction categorization information
+  - Full functionality of the recently added Industry field UI component
