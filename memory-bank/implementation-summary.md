@@ -582,3 +582,48 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Eliminated potential confusion caused by sample data that might be mistaken for real data
   - Better alignment with production data requirements
   - Improved transparency about missing data in the system
+
+### Enhanced Underlying Transactions Display (Added on 2023-08-30)
+
+- Added a new section to the Transaction Detail page to display additional transaction information:
+  - Created a three-column layout for better organization and readability
+  - Added display of the following transaction fields above the List of Goods and Transaction Details tabs:
+    - Form of Eligible Instrument
+    - Date of Issue
+    - Expiry Date
+    - Terms of Payment
+    - Currency and Local Currency Amount
+    - Value Date of ADB Guarantee
+    - End of Risk Period
+    - Tenor
+    - Expiry Date of ADB Guarantee
+    - Tenor of ADB Guarantee
+  - Implemented proper formatting for date fields using the existing formatDateLocal function
+  - Used consistent styling to match the rest of the application
+
+- Benefits of the enhancement:
+  - Users can now see critical transaction information at a glance without scrolling through tabs
+  - Improved data visibility for key transaction attributes
+  - Better organization of related information in logical groupings
+  - More comprehensive view of transaction details in a single section
+
+### Updated Underlying Transactions Display Styling (Added on 2023-09-01)
+
+- Improved the Underlying Transactions section in the Transaction Detail page:
+  - Removed the Industry field which was redundant with other transaction information
+  - Updated the styling of the Transaction Information section to match the Pricing Information section
+  - Improved the visual consistency across the application by using the same component styling
+  - Enhanced the layout with appropriate icons for each information type:
+    - DocumentTextIcon for instrument and payment terms
+    - CalendarIcon for dates
+    - CurrencyDollarIcon for financial amounts
+    - ClockIcon for tenor-related information
+  - Increased font size for better readability
+  - Improved spacing between elements for better visual separation
+
+- Benefits of the enhancement:
+  - More consistent user interface across the application
+  - Better visual hierarchy with appropriate icons
+  - Improved readability with larger font sizes for transaction information
+  - Cleaner display without redundant information
+  - Enhanced user experience through consistent design patterns

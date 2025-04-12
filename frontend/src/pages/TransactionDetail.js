@@ -1706,24 +1706,83 @@ const TransactionDetail = () => {
                 </div>
               </div>
               
-              {/* Industry Field */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              {/* Transaction Information Section - Updated to match Pricing Information section styling */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {/* Column 1 */}
                 <div className="flex items-start">
-                  <BuildingOfficeIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                    {isEditingTrading ? (
-                      <input
-                        type="text"
-                        name="industry"
-                        value={formData.industry || ''}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                        placeholder="Enter industry information"
-                      />
-                    ) : (
-                      <p className="text-gray-700 font-medium">{transaction.industry || 'Not specified'}</p>
-                    )}
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Form of Eligible Instrument</h3>
+                    <p className="text-base">{transaction.form_of_eligible_instrument || 'Not specified'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Date of Issue</h3>
+                    <p className="text-base">{transaction.date_of_issue ? formatDateLocal(transaction.date_of_issue) : 'Not specified'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date</h3>
+                    <p className="text-base">{transaction.expiry_date ? formatDateLocal(transaction.expiry_date) : 'Not specified'}</p>
+                  </div>
+                </div>
+                
+                {/* Column 2 */}
+                <div className="flex items-start">
+                  <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Terms of Payment</h3>
+                    <p className="text-base">{transaction.terms_of_payment || 'Not specified'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Face Amount</h3>
+                    <p className="text-base">
+                      {transaction.currency ? `${transaction.currency} ${transaction.local_currency_amount || ''}` : 'Not specified'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Value Date of ADB Guarantee</h3>
+                    <p className="text-base">{transaction.value_date_of_adb_guarantee ? formatDateLocal(transaction.value_date_of_adb_guarantee) : 'Not specified'}</p>
+                  </div>
+                </div>
+                
+                {/* Column 3 */}
+                <div className="flex items-start">
+                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">End of Risk Period</h3>
+                    <p className="text-base">{transaction.end_of_risk_period ? formatDateLocal(transaction.end_of_risk_period) : 'Not specified'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <ClockIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
+                    <p className="text-base">{transaction.tenor || 'Not specified'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date of ADB Guarantee</h3>
+                    <p className="text-base">{transaction.expiry_date_of_adb_guarantee ? formatDateLocal(transaction.expiry_date_of_adb_guarantee) : 'Not specified'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <ClockIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor of ADB Guarantee</h3>
+                    <p className="text-base">{transaction.tenor_of_adb_guarantee || 'Not specified'}</p>
                   </div>
                 </div>
               </div>
