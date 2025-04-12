@@ -1248,6 +1248,101 @@ const TransactionDetail = () => {
             </div>
           </div>
           
+          {/* Request Information Section */}
+          <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
+            <div className="border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center px-6 py-4">
+                <DocumentTextIcon className="h-5 w-5 text-gray-600 mr-2" />
+                <h2 className="text-lg font-medium text-gray-800">Request Information</h2>
+              </div>
+            </div>
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-start">
+                  <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Product</h3>
+                    <p className="text-base">{transaction.sub_limit_type || 'Not specified'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Guarantee/ TRN</h3>
+                    <p className="text-base">{transaction.adb_guarantee_trn || 'Not specified'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Confirming Bank Reference / TRN</h3>
+                    <p className="text-base">{transaction.confirming_bank_reference_trn || 'Not specified'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Issuing Bank Reference / TRN</h3>
+                    <p className="text-base">{transaction.issuing_bank_reference_trn || 'Not specified'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Local Amount</h3>
+                    <p className="text-base">
+                      {formatCurrency(transaction.face_amount || 0, transaction.currency)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Currency</h3>
+                    <p className="text-base">
+                      {`${transaction.currency}`}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">USD Amount</h3>
+                    <p className="text-base">
+                      {formatCurrency(transaction.usd_equivalent_amount || 0, 'USD')}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Covered Amount (USD)</h3>
+                    <p className="text-base">
+                      {formatCurrency(transaction.usd_equivalent_amount_cover || 0, 'USD')}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Coverage</h3>
+                    <p className="text-base">
+                      {transaction.cover ? `${transaction.cover *100}%` : 'Not specified'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           {/* Transaction Overview Section */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
             <div className="border-b border-gray-200 bg-gray-50">

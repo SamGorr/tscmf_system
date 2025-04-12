@@ -462,3 +462,28 @@ This implementation ensures that the ADB Client Profile section displays accurat
      - Improved error handling for date parsing and numeric field conversions
 
 These enhancements provide more comprehensive data storage and relationships between transactions and their associated entities, goods, and underlying transactions, enabling more detailed reporting and analysis capabilities.
+
+### Transaction Details - Request Information Section
+
+- Enhanced the Transaction Detail page by adding a new "Request Information" section to display important transaction details:
+  - Replaced existing section with a more comprehensive "Request Information" section
+  - Added display fields directly from the transaction PostgreSQL database table
+  - Improved data presentation with appropriate icons and formatting
+  
+- The new Request Information section includes the following fields:
+  - sub_limit_type (Product) - Shows the product type for the transaction
+  - adb_guarantee_trn (ADB Guarantee/TRN) - Displays ADB's transaction reference number
+  - confirming_bank_reference_trn (Confirming Bank Reference/TRN) - Shows confirming bank's reference
+  - issuing_bank_reference_trn (Issuing Bank Reference/TRN) - Shows issuing bank's reference
+  - face_amount (Face Amount) - Displays the transaction's face value amount
+  - local_currency_amount (Currency) - Shows amount in local currency
+  - usd_equivalent_amount (USD Amount) - Shows amount converted to USD
+  - usd_equivalent_amount_cover (ADB Covered Amount in USD) - Shows ADB's covered portion in USD
+  - cover (Risk Coverage) - Displays the risk coverage percentage
+
+- Benefits:
+  - More comprehensive financial information display
+  - Better organization of transaction details
+  - Improved user experience with clear labeling and appropriate icons
+  - Direct display of database fields for accuracy
+  - Consistent formatting with the rest of the application
