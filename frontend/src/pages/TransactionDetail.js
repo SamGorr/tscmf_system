@@ -1287,6 +1287,23 @@ const TransactionDetail = () => {
                 </div>
                 
                 <div className="flex items-start">
+                  <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Form of Eligible Instrument</h3>
+                    <p className="text-base">
+                      {transaction.form_of_eligible_instrument ? 
+                        transaction.form_of_eligible_instrument
+                          .replace(/\s*(?:REF|Ref|ref).*$/g, '')           // Remove everything from "REF" (and variations) to the end
+                          .replace(/\b(?:\w+-\d+|\d+)\b/g, '')           // Remove remaining word-number or just number patterns
+                          .replace(/^\s*-\s*|\s*-\s*$/g, '')             // Remove dashes at start or end
+                          .replace(/\s{2,}/g, ' ')                       // Replace multiple spaces with a single space
+                          .trim() : 
+                        'Not specified'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
                   <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Guarantee/ TRN</h3>

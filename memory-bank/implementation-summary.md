@@ -478,6 +478,11 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Transaction source information (Email, File, Manual) positioned in the header
   - Source document access buttons (View Source Email/File) based on transaction source
   - sub_limit_type (Product) - Shows the product type for the transaction
+  - form_of_eligible_instrument (Form of Eligible Instrument) - Shows the instrument type with comprehensive data cleansing:
+    - Removes everything after "REF" (or its variations like "Ref" or "ref"), keeping only the instrument type name
+    - Removes any remaining standalone numbers and word-number combinations
+    - Removes leading/trailing dashes and normalizes whitespace
+    - Preserves only the essential instrument type description
   - adb_guarantee_trn (ADB Guarantee/TRN) - Displays ADB's transaction reference number
   - confirming_bank_reference_trn (Confirming Bank Reference/TRN) - Shows confirming bank's reference
   - issuing_bank_reference_trn (Issuing Bank Reference/TRN) - Shows issuing bank's reference
