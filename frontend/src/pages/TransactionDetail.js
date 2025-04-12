@@ -2488,7 +2488,7 @@ const TransactionDetail = () => {
             <div className="border-b border-gray-200 bg-gray-50">
               <div className="flex items-center px-6 py-4">
                 <BuildingLibraryIcon className="h-5 w-5 text-gray-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-800">Trade Entity Information</h2>
+                <h2 className="text-lg font-medium text-gray-800">Relevant Entity Information</h2>
               </div>
             </div>
             <div className="px-6 py-4">
@@ -2530,8 +2530,8 @@ const TransactionDetail = () => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
                         {isEditingEntity && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
@@ -2540,8 +2540,8 @@ const TransactionDetail = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {entities.map((entity, index) => (
                         <tr key={entity.id || index} className="hover:bg-gray-50 transition-colors duration-150">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.type}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{entity.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.type}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.address}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entity.country}</td>
                           {isEditingEntity && (

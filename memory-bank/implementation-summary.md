@@ -743,3 +743,23 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Accurate representation of transaction relationships
   - Improved user experience with correct entity identification
   - Better data integrity between the database and UI
+
+### Renamed and Reorganized Entity Information Section (Added on 2023-12-20)
+
+- Renamed the "Trade Entity Information" section to "Relevant Entity Information" for better clarity:
+  - Updated the section heading to more accurately reflect its purpose
+  - Improved navigation by using more descriptive terminology
+  - Enhanced consistency with other sections of the UI
+
+- Reorganized the entity information table:
+  - Swapped the Name and Type columns to prioritize the entity name
+  - Placed entity name as the first column to improve readability and scanning
+  - Maintained the entity type as the second column for proper categorization
+  - Kept other columns (Address, Country) in their original positions
+
+- Benefits of these changes:
+  - Improved user experience by prioritizing the most important information (entity name)
+  - Better information hierarchy with primary identifiers first
+  - Enhanced readability and scanning of entity information
+  - More intuitive presentation of relationship data
+  - Consistent with standard table design patterns that typically present identifiers first
