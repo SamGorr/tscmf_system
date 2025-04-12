@@ -6,7 +6,7 @@ from sqlalchemy import desc
 import datetime
 
 from .database.database import get_db, engine
-from .models.models import Transaction, Event, Entity, Transaction_Entity, Transaction_Goods
+from .models.models import Transaction, Event, Entity, Transaction_Entity, Transaction_Goods, Underlying_Transaction
 # Create the tables if they don't exist
 # Note: In production, use Alembic migrations instead
 # Base.metadata.create_all(bind=engine)
@@ -481,47 +481,54 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
             Transaction_Goods.transaction_id == transaction_id
         ).all()
         
-        if not transaction_entities and not transaction_goods:
-            print(f"No detailed entities/goods found for transaction ID: {transaction_id}. Using derived data.")
-            
-            # Create derived entities from transaction fields
-            entities_data = []
-            if transaction.issuing_bank:
-                entities_data.append({
+        # Additional mock data for testing
+        if len(transaction_entities) == 0 and len(transaction_goods) == 0:
+            # Create mock entities
+            entities_data = [
+                {
                     "id": 1,
                     "type": "Issuing Bank",
-                    "name": transaction.issuing_bank,
-                    "country": transaction.country,
-                    "address": ""
-                })
-            
-            if transaction.confirming_bank:
-                entities_data.append({
+                    "name": transaction.issuing_bank or "Sample Bank",
+                    "address": "123 Bank Street",
+                    "country": transaction.country or "USA"
+                },
+                {
                     "id": 2,
-                    "type": "Confirming Bank",
-                    "name": transaction.confirming_bank,
-                    "country": transaction.country,
-                    "address": ""
-                })
-                
-            if transaction.requesting_bank:
-                entities_data.append({
+                    "type": "Beneficiary",
+                    "name": "ABC Company",
+                    "address": "456 Commerce Road",
+                    "country": "Singapore"
+                },
+                {
                     "id": 3,
-                    "type": "Requesting Bank",
-                    "name": transaction.requesting_bank,
-                    "country": transaction.country,
-                    "address": ""
-                })
+                    "type": "Supplier",
+                    "name": "XYZ Manufacturing",
+                    "address": "789 Industry Avenue",
+                    "country": "China"
+                }
+            ]
             
-            # Create derived goods from form_of_eligible_instrument field
-            goods_data = []
-            if transaction.form_of_eligible_instrument:
-                goods_data.append({
+            # Create mock goods
+            goods_data = [
+                {
                     "id": 1,
-                    "name": transaction.form_of_eligible_instrument,
-                    "quantity": 1,
-                    "unit": "item"
-                })
+                    "name": "Electronic Components",
+                    "quantity": 1000,
+                    "unit": "pcs"
+                },
+                {
+                    "id": 2,
+                    "name": "Manufacturing Equipment",
+                    "quantity": 5,
+                    "unit": "sets"
+                },
+                {
+                    "id": 3,
+                    "name": "Raw Materials",
+                    "quantity": 500,
+                    "unit": "kg"
+                }
+            ]
         else:
             print(f"Found {len(transaction_entities)} entities and {len(transaction_goods)} goods for transaction ID: {transaction_id}")
             
@@ -564,3 +571,104 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error retrieving transaction details: {str(e)}")
+
+@app.get("/api/transactions/{transaction_id}/underlying")
+def get_transaction_underlying(transaction_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieve underlying transaction information by transaction ID
+    """
+    try:
+        print(f"Starting underlying transaction API endpoint request for ID: {transaction_id}...")
+        
+        # Query for the specific transaction
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
+        # Query underlying transactions
+        underlying_transactions = db.query(Underlying_Transaction).filter(
+            Underlying_Transaction.transaction_id == transaction_id
+        ).all()
+        
+        # Format the underlying transactions data
+        underlying_data = []
+        for ut in underlying_transactions:
+            ut_data = {
+                "id": ut.id,
+                "transaction_id": ut.transaction_id,
+                "issuing_bank": ut.issuing_bank,
+                "sequence_no": ut.sequence_no,
+                "transaction_ref_no": ut.transaction_ref_no,
+                "issue_date": ut.issue_date.isoformat() if ut.issue_date else None,
+                "maturity_date": ut.maturity_date.isoformat() if ut.maturity_date else None,
+                "currency": ut.currency,
+                "amount_in_local_currency": ut.amount_in_local_currency,
+                "applicant_name": ut.applicant_name,
+                "applicant_address": ut.applicant_address,
+                "applicant_country": ut.applicant_country,
+                "beneficiary_name": ut.beneficiary_name,
+                "beneficiary_address": ut.beneficiary_address,
+                "beneficiary_country": ut.beneficiary_country,
+                "loading_port": ut.loading_port,
+                "discharging_port": ut.discharging_port,
+                "country_of_origin": ut.country_of_origin,
+                "country_of_final_destination": ut.country_of_final_destination,
+                "goods": ut.goods,
+                "goods_classification": ut.goods_classification,
+                "goods_eligible": ut.goods_eligible,
+                "es_classification": ut.es_classification,
+                "capital_goods": ut.capital_goods,
+                "ee_replacement_of_an_old_equipment": ut.ee_replacement_of_an_old_equipment,
+                "sustainable_goods": ut.sustainable_goods
+            }
+            underlying_data.append(ut_data)
+        
+        # Generate mock data if no underlying transactions found
+        if not underlying_data:
+            print(f"No underlying transactions found for transaction ID: {transaction_id}, generating mock data")
+            # Create a mock underlying transaction
+            underlying_data = [{
+                "id": 1,
+                "transaction_id": transaction_id,
+                "issuing_bank": transaction.issuing_bank or "Sample Bank",
+                "sequence_no": 1,
+                "transaction_ref_no": f"REF-{transaction_id}-001",
+                "issue_date": transaction.date_of_issue.isoformat() if transaction.date_of_issue else None,
+                "maturity_date": transaction.expiry_date.isoformat() if transaction.expiry_date else None,
+                "currency": transaction.currency or "USD",
+                "amount_in_local_currency": str(transaction.face_amount or 100000),
+                "applicant_name": "Sample Applicant",
+                "applicant_address": "123 Main St, City",
+                "applicant_country": transaction.country or "USA",
+                "beneficiary_name": "Sample Beneficiary",
+                "beneficiary_address": "456 Trade St, City",
+                "beneficiary_country": "Singapore",
+                "loading_port": "Port of Origin",
+                "discharging_port": "Port of Destination",
+                "country_of_origin": "China",
+                "country_of_final_destination": "USA",
+                "goods": "Electronic Components and Equipment",
+                "goods_classification": "Electronics",
+                "goods_eligible": "Yes",
+                "es_classification": "ES-A",
+                "capital_goods": True,
+                "ee_replacement_of_an_old_equipment": False,
+                "sustainable_goods": True
+            }]
+        
+        # Return the underlying transactions
+        response = {
+            "transaction_id": transaction_id,
+            "underlying_transactions": underlying_data
+        }
+        
+        print(f"Returning {len(underlying_data)} underlying transactions for ID: {transaction_id}")
+        return response
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error retrieving underlying transactions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving underlying transactions: {str(e)}")

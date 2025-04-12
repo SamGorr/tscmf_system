@@ -179,6 +179,11 @@ const TransactionDetail = () => {
 
   const [activeTab, setActiveTab] = useState('issuing'); // New state for tabs
   
+  // Add state for Trading Section tab
+  const [tradingTab, setTradingTab] = useState('goods'); // 'goods' or 'transactions'
+  const [underlyingTransactions, setUnderlyingTransactions] = useState([]);
+  const [loadingUnderlyingTransactions, setLoadingUnderlyingTransactions] = useState(false);
+  
   // Local formatDate function to ensure consistent date formatting
   const formatDateLocal = (dateString, includeTime = false) => {
     if (!dateString) return 'Not specified';
@@ -237,6 +242,21 @@ const TransactionDetail = () => {
             } else {
               // Fall back to goods from the transaction response
               setTradeGoods(normalizedData.goods_list || []);
+            }
+            
+            // Fetch underlying transactions
+            try {
+              setLoadingUnderlyingTransactions(true);
+              const underlyingData = await DashboardService.fetchUnderlyingTransactions(id);
+              if (underlyingData && underlyingData.underlying_transactions) {
+                setUnderlyingTransactions(underlyingData.underlying_transactions);
+              }
+            } catch (underlyingError) {
+              console.error('Error fetching underlying transactions:', underlyingError);
+              // Fall back to empty array
+              setUnderlyingTransactions([]);
+            } finally {
+              setLoadingUnderlyingTransactions(false);
             }
             
           } catch (detailsError) {
@@ -1638,7 +1658,276 @@ const TransactionDetail = () => {
             </div>
           </div>
           
-          {/* Pricing Information Section - Add this before Trade Entity Information */}
+          {/* Underlying Transactions Information Section - Moved above Pricing Information */}
+          <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
+            <div className="border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center px-6 py-4">
+                <TruckIcon className="h-5 w-5 text-gray-600 mr-2" />
+                <h2 className="text-lg font-medium text-gray-800">Underlying Transactions</h2>
+              </div>
+            </div>
+            <div className="px-6 py-4">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  {!isEditingTrading ? (
+                    <button
+                      onClick={() => setIsEditingTrading(true)}
+                      className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                    >
+                      <PencilSquareIcon className="h-4 w-4 mr-1" />
+                      Edit Details
+                    </button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={handleSubmitTradingSection}
+                        className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
+                      >
+                        <CheckIcon className="h-4 w-4 mr-1" />
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingTrading(false)}
+                        className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
+                      >
+                        <XCircleIcon className="h-4 w-4 mr-1" />
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Industry Field */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-start">
+                  <BuildingOfficeIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                    {isEditingTrading ? (
+                      <input
+                        type="text"
+                        name="industry"
+                        value={formData.industry || ''}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                        placeholder="Enter industry information"
+                      />
+                    ) : (
+                      <p className="text-gray-700 font-medium">{transaction.industry || 'Not specified'}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Tab Navigation */}
+              <div className="flex border-b border-gray-200 mb-4">
+                <button
+                  onClick={() => setTradingTab('goods')}
+                  className={`flex-1 py-3 px-4 text-center font-medium ${
+                    tradingTab === 'goods'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  List of Goods
+                </button>
+                <button
+                  onClick={() => setTradingTab('transactions')}
+                  className={`flex-1 py-3 px-4 text-center font-medium ${
+                    tradingTab === 'transactions'
+                      ? 'text-primary border-b-2 border-primary'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Transaction Details
+                </button>
+              </div>
+              
+              {/* List of Goods Tab Content */}
+              {tradingTab === 'goods' && (
+                <div>                  
+                  {tradeGoods.length > 0 ? (
+                    <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
+                            {isEditingTrading && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {tradeGoods.map((good, index) => (
+                            <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{good.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.quantity || 'N/A'}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.unit || 'N/A'}</td>
+                              {isEditingTrading && (
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                  <div className="flex space-x-3">
+                                    <button 
+                                      onClick={() => handleEditTradeGood(good, index)}
+                                      className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                                    >
+                                      <PencilSquareIcon className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteTradeGood(index)}
+                                      className="text-red-600 hover:text-red-900 flex items-center"
+                                    >
+                                      <TrashIcon className="h-4 w-4 mr-1" />
+                                      Delete
+                                    </button>
+                                  </div>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <p className="text-gray-500 italic">No goods information available</p>
+                    </div>
+                  )}
+                  
+                  {isEditingTrading && (
+                    <div className="mt-4">
+                      <button
+                        onClick={openAddTradeGoodModal}
+                        className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                      >
+                        <PlusIcon className="h-4 w-4 mr-1" />
+                        Add Good
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Transaction Details Tab Content */}
+              {tradingTab === 'transactions' && (
+                <div>                 
+                  {loadingUnderlyingTransactions ? (
+                    <div className="flex justify-center items-center h-48">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  ) : underlyingTransactions.length > 0 ? (
+                    <div className="space-y-6">
+                      {underlyingTransactions.map((ut, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                            <h3 className="text-base font-medium text-gray-800">Transaction #{ut.sequence_no} - {ut.transaction_ref_no}</h3>
+                          </div>
+                          <div className="p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Reference Information</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Issuing Bank:</span> {ut.issuing_bank || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Reference Number:</span> {ut.transaction_ref_no || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Issue Date:</span> {ut.issue_date ? formatDateLocal(ut.issue_date) : 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Maturity Date:</span> {ut.maturity_date ? formatDateLocal(ut.maturity_date) : 'N/A'}</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Financial Details</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Currency:</span> {ut.currency || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Amount in Local Currency:</span> {ut.amount_in_local_currency || 'N/A'}</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Applicant Information</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Name:</span> {ut.applicant_name || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Address:</span> {ut.applicant_address || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Country:</span> {ut.applicant_country || 'N/A'}</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Beneficiary Information</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Name:</span> {ut.beneficiary_name || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Address:</span> {ut.beneficiary_address || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Country:</span> {ut.beneficiary_country || 'N/A'}</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Shipping Details</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Loading Port:</span> {ut.loading_port || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Discharging Port:</span> {ut.discharging_port || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Country of Origin:</span> {ut.country_of_origin || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Country of Final Destination:</span> {ut.country_of_final_destination || 'N/A'}</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Goods Information</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Goods Description:</span> {ut.goods || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Classification:</span> {ut.goods_classification || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">Eligibility:</span> {ut.goods_eligible || 'N/A'}</p>
+                                  <p className="text-sm"><span className="font-medium">ES Classification:</span> {ut.es_classification || 'N/A'}</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-2">Compliance Flags</h4>
+                                <div className="space-y-2">
+                                  <p className="text-sm">
+                                    <span className="font-medium">Capital Goods:</span> 
+                                    {ut.capital_goods ? (
+                                      <span className="text-green-600 ml-1">Yes</span>
+                                    ) : (
+                                      <span className="text-red-600 ml-1">No</span>
+                                    )}
+                                  </p>
+                                  <p className="text-sm">
+                                    <span className="font-medium">Equipment Replacement:</span> 
+                                    {ut.ee_replacement_of_an_old_equipment ? (
+                                      <span className="text-green-600 ml-1">Yes</span>
+                                    ) : (
+                                      <span className="text-red-600 ml-1">No</span>
+                                    )}
+                                  </p>
+                                  <p className="text-sm">
+                                    <span className="font-medium">Sustainable Goods:</span> 
+                                    {ut.sustainable_goods ? (
+                                      <span className="text-green-600 ml-1">Yes</span>
+                                    ) : (
+                                      <span className="text-red-600 ml-1">No</span>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-6 text-center">
+                      <p className="text-gray-500 italic">No underlying transaction information available</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Pricing Information Section */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
             <div className="border-b border-gray-200 bg-gray-50">
               <div className="flex items-center px-6 py-4">
@@ -2057,140 +2346,6 @@ const TransactionDetail = () => {
                   </button>
                 </div>
               )}
-            </div>
-          </div>
-          
-          {/* Trading Information Section */}
-          <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
-            <div className="border-b border-gray-200 bg-gray-50">
-              <div className="flex items-center px-6 py-4">
-                <TruckIcon className="h-5 w-5 text-gray-600 mr-2" />
-                <h2 className="text-lg font-medium text-gray-800">Trading Information</h2>
-              </div>
-            </div>
-            <div className="px-6 py-4">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  {!isEditingTrading ? (
-                    <button
-                      onClick={() => setIsEditingTrading(true)}
-                      className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-                    >
-                      <PencilSquareIcon className="h-4 w-4 mr-1" />
-                      Edit Details
-                    </button>
-                  ) : (
-                    <div className="flex space-x-2">
-                      <button
-                        type="button"
-                        onClick={handleSubmitTradingSection}
-                        className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
-                      >
-                        <CheckIcon className="h-4 w-4 mr-1" />
-                        Save Changes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingTrading(false)}
-                        className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
-                      >
-                        <XCircleIcon className="h-4 w-4 mr-1" />
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Industry Field */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-start">
-                  <BuildingOfficeIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                    {isEditingTrading ? (
-                      <input
-                        type="text"
-                        name="industry"
-                        value={formData.industry || ''}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                        placeholder="Enter industry information"
-                      />
-                    ) : (
-                      <p className="text-gray-700 font-medium">{transaction.industry || 'Not specified'}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* List of Goods as Table */}
-              <div>
-                <div className="flex items-center mb-2">
-                  <TagIcon className="h-5 w-5 text-primary mr-2" />
-                  <label className="block text-sm font-medium text-gray-700">List of Goods</label>
-                </div>
-                
-                {tradeGoods.length > 0 ? (
-                  <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                          {isEditingTrading && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {tradeGoods.map((good, index) => (
-                          <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{good.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.quantity || 'N/A'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.unit || 'N/A'}</td>
-                            {isEditingTrading && (
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div className="flex space-x-3">
-                                  <button 
-                                    onClick={() => handleEditTradeGood(good, index)}
-                                    className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                                  >
-                                    <PencilSquareIcon className="h-4 w-4 mr-1" />
-                                    Edit
-                                  </button>
-                                  <button 
-                                    onClick={() => handleDeleteTradeGood(index)}
-                                    className="text-red-600 hover:text-red-900 flex items-center"
-                                  >
-                                    <TrashIcon className="h-4 w-4 mr-1" />
-                                    Delete
-                                  </button>
-                                </div>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 rounded-lg p-6 text-center">
-                    <p className="text-gray-500 italic">No goods listed</p>
-                  </div>
-                )}
-                
-                {isEditingTrading && (
-                  <div className="mt-4">
-                    <button
-                      onClick={openAddTradeGoodModal}
-                      className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
-                    >
-                      <PlusIcon className="h-4 w-4 mr-1" />
-                      Add Good
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
           

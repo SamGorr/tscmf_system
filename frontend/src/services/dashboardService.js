@@ -146,6 +146,18 @@ const DashboardService = {
       console.error('Error fetching transaction details:', error);
       throw error;
     }
+  },
+  
+  // Fetch underlying transactions for a transaction
+  fetchUnderlyingTransactions: async (transactionId) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.get(`${apiUrl}/api/transactions/${transactionId}/underlying`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching underlying transactions:', error);
+      throw error;
+    }
   }
 };
 
