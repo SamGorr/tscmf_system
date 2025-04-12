@@ -627,3 +627,33 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Improved readability with larger font sizes for transaction information
   - Cleaner display without redundant information
   - Enhanced user experience through consistent design patterns
+
+### Added Editable Transaction Information Fields (Added on 2023-09-02)
+
+- Enhanced the Transaction Information section in the Underlying Transactions area to make all fields editable:
+  - Connected the section to the existing "Edit Details" button in the Underlying Transactions section
+  - Made all transaction fields editable with appropriate input types:
+    - Text inputs for general fields (Form of Eligible Instrument, Terms of Payment, etc.)
+    - Date inputs for all date fields (Date of Issue, Expiry Date, etc.)
+    - Split Currency & Amount into separate inputs for better data entry
+  - Updated the formData state to include all transaction information fields:
+    - form_of_eligible_instrument
+    - date_of_issue
+    - expiry_date
+    - terms_of_payment
+    - currency and local_currency_amount
+    - value_date_of_adb_guarantee
+    - end_of_risk_period
+    - tenor
+    - expiry_date_of_adb_guarantee
+    - tenor_of_adb_guarantee
+  - Modified the handleSubmitTradingSection function to update all transaction fields
+  - Added conditional rendering to show input fields when editing and display text when not editing
+
+- Benefits of this enhancement:
+  - Users can now edit all transaction information fields directly from the Underlying Transactions section
+  - Improved data management with unified edit controls
+  - Better user experience with appropriate input types for different data fields
+  - Seamless integration with existing Edit/Save/Cancel workflow
+  - Consistent styling matching the rest of the application
+  - Direct updates to all transaction fields in a single operation

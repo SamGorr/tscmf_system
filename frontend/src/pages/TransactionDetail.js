@@ -105,7 +105,18 @@ const TransactionDetail = () => {
   // Other form state
   const [formData, setFormData] = useState({
     goodsList: '',
-    industry: ''
+    industry: '',
+    form_of_eligible_instrument: '',
+    date_of_issue: '',
+    expiry_date: '',
+    terms_of_payment: '',
+    currency: '',
+    local_currency_amount: '',
+    value_date_of_adb_guarantee: '',
+    end_of_risk_period: '',
+    tenor: '',
+    expiry_date_of_adb_guarantee: '',
+    tenor_of_adb_guarantee: ''
   });
   
   // Separate edit states for different sections
@@ -273,7 +284,18 @@ const TransactionDetail = () => {
           if (normalizedData) {
             setFormData({
               goodsList: normalizedData.goods_list,
-              industry: normalizedData.industry || ''
+              industry: normalizedData.industry || '',
+              form_of_eligible_instrument: normalizedData.form_of_eligible_instrument || '',
+              date_of_issue: normalizedData.date_of_issue || '',
+              expiry_date: normalizedData.expiry_date || '',
+              terms_of_payment: normalizedData.terms_of_payment || '',
+              currency: normalizedData.currency || '',
+              local_currency_amount: normalizedData.local_currency_amount || '',
+              value_date_of_adb_guarantee: normalizedData.value_date_of_adb_guarantee || '',
+              end_of_risk_period: normalizedData.end_of_risk_period || '',
+              tenor: normalizedData.tenor || '',
+              expiry_date_of_adb_guarantee: normalizedData.expiry_date_of_adb_guarantee || '',
+              tenor_of_adb_guarantee: normalizedData.tenor_of_adb_guarantee || ''
             });
           }
           
@@ -310,7 +332,18 @@ const TransactionDetail = () => {
           if (normalizedMockData) {
             setFormData({
               goodsList: normalizedMockData.goods_list,
-              industry: normalizedMockData.industry || ''
+              industry: normalizedMockData.industry || '',
+              form_of_eligible_instrument: normalizedMockData.form_of_eligible_instrument || '',
+              date_of_issue: normalizedMockData.date_of_issue || '',
+              expiry_date: normalizedMockData.expiry_date || '',
+              terms_of_payment: normalizedMockData.terms_of_payment || '',
+              currency: normalizedMockData.currency || '',
+              local_currency_amount: normalizedMockData.local_currency_amount || '',
+              value_date_of_adb_guarantee: normalizedMockData.value_date_of_adb_guarantee || '',
+              end_of_risk_period: normalizedMockData.end_of_risk_period || '',
+              tenor: normalizedMockData.tenor || '',
+              expiry_date_of_adb_guarantee: normalizedMockData.expiry_date_of_adb_guarantee || '',
+              tenor_of_adb_guarantee: normalizedMockData.tenor_of_adb_guarantee || ''
             });
           }
         }
@@ -420,15 +453,40 @@ const TransactionDetail = () => {
       // Using the tradeGoods array directly now
       console.log('Updating trading information:', tradeGoods);
       
-      // Update industry in transaction
+      // Update transaction with all form data fields
       const updatedTransaction = {
         ...transaction,
         goods_list: tradeGoods,
-        industry: formData.industry
+        industry: formData.industry,
+        form_of_eligible_instrument: formData.form_of_eligible_instrument,
+        date_of_issue: formData.date_of_issue,
+        expiry_date: formData.expiry_date,
+        terms_of_payment: formData.terms_of_payment,
+        currency: formData.currency,
+        local_currency_amount: formData.local_currency_amount,
+        value_date_of_adb_guarantee: formData.value_date_of_adb_guarantee,
+        end_of_risk_period: formData.end_of_risk_period,
+        tenor: formData.tenor,
+        expiry_date_of_adb_guarantee: formData.expiry_date_of_adb_guarantee,
+        tenor_of_adb_guarantee: formData.tenor_of_adb_guarantee
       };
       
       // In a real implementation, you would call an API endpoint
-      // await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}/goods`, { goods: tradeGoods, industry: formData.industry });
+      // await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}/goods`, { 
+      //   goods: tradeGoods, 
+      //   industry: formData.industry,
+      //   form_of_eligible_instrument: formData.form_of_eligible_instrument,
+      //   date_of_issue: formData.date_of_issue,
+      //   expiry_date: formData.expiry_date,
+      //   terms_of_payment: formData.terms_of_payment,
+      //   currency: formData.currency,
+      //   local_currency_amount: formData.local_currency_amount,
+      //   value_date_of_adb_guarantee: formData.value_date_of_adb_guarantee,
+      //   end_of_risk_period: formData.end_of_risk_period,
+      //   tenor: formData.tenor,
+      //   expiry_date_of_adb_guarantee: formData.expiry_date_of_adb_guarantee,
+      //   tenor_of_adb_guarantee: formData.tenor_of_adb_guarantee
+      // });
       
       setTransaction(updatedTransaction);
       setIsEditingTrading(false);
@@ -1713,21 +1771,51 @@ const TransactionDetail = () => {
                   <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Form of Eligible Instrument</h3>
-                    <p className="text-base">{transaction.form_of_eligible_instrument || 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="text"
+                        name="form_of_eligible_instrument"
+                        value={formData.form_of_eligible_instrument || ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.form_of_eligible_instrument || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Date of Issue</h3>
-                    <p className="text-base">{transaction.date_of_issue ? formatDateLocal(transaction.date_of_issue) : 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="date"
+                        name="date_of_issue"
+                        value={formData.date_of_issue ? new Date(formData.date_of_issue).toISOString().split('T')[0] : ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.date_of_issue ? formatDateLocal(transaction.date_of_issue) : 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date</h3>
-                    <p className="text-base">{transaction.expiry_date ? formatDateLocal(transaction.expiry_date) : 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="date"
+                        name="expiry_date"
+                        value={formData.expiry_date ? new Date(formData.expiry_date).toISOString().split('T')[0] : ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.expiry_date ? formatDateLocal(transaction.expiry_date) : 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 
@@ -1736,23 +1824,64 @@ const TransactionDetail = () => {
                   <DocumentTextIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Terms of Payment</h3>
-                    <p className="text-base">{transaction.terms_of_payment || 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="text"
+                        name="terms_of_payment"
+                        value={formData.terms_of_payment || ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.terms_of_payment || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Face Amount</h3>
-                    <p className="text-base">
-                      {transaction.currency ? `${transaction.currency} ${transaction.local_currency_amount || ''}` : 'Not specified'}
-                    </p>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Currency & Amount</h3>
+                    {isEditingTrading ? (
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          name="currency"
+                          value={formData.currency || ''}
+                          onChange={handleInputChange}
+                          placeholder="Currency"
+                          className="w-1/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        />
+                        <input
+                          type="text"
+                          name="local_currency_amount"
+                          value={formData.local_currency_amount || ''}
+                          onChange={handleInputChange}
+                          placeholder="Amount"
+                          className="w-2/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-base">
+                        {transaction.currency ? `${transaction.currency} ${transaction.local_currency_amount || ''}` : 'Not specified'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Value Date of ADB Guarantee</h3>
-                    <p className="text-base">{transaction.value_date_of_adb_guarantee ? formatDateLocal(transaction.value_date_of_adb_guarantee) : 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="date"
+                        name="value_date_of_adb_guarantee"
+                        value={formData.value_date_of_adb_guarantee ? new Date(formData.value_date_of_adb_guarantee).toISOString().split('T')[0] : ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.value_date_of_adb_guarantee ? formatDateLocal(transaction.value_date_of_adb_guarantee) : 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 
@@ -1761,28 +1890,68 @@ const TransactionDetail = () => {
                   <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">End of Risk Period</h3>
-                    <p className="text-base">{transaction.end_of_risk_period ? formatDateLocal(transaction.end_of_risk_period) : 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="date"
+                        name="end_of_risk_period"
+                        value={formData.end_of_risk_period ? new Date(formData.end_of_risk_period).toISOString().split('T')[0] : ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.end_of_risk_period ? formatDateLocal(transaction.end_of_risk_period) : 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <ClockIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor</h3>
-                    <p className="text-base">{transaction.tenor || 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="text"
+                        name="tenor"
+                        value={formData.tenor || ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.tenor || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <CalendarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Expiry Date of ADB Guarantee</h3>
-                    <p className="text-base">{transaction.expiry_date_of_adb_guarantee ? formatDateLocal(transaction.expiry_date_of_adb_guarantee) : 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="date"
+                        name="expiry_date_of_adb_guarantee"
+                        value={formData.expiry_date_of_adb_guarantee ? new Date(formData.expiry_date_of_adb_guarantee).toISOString().split('T')[0] : ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.expiry_date_of_adb_guarantee ? formatDateLocal(transaction.expiry_date_of_adb_guarantee) : 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-start">
                   <ClockIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Tenor of ADB Guarantee</h3>
-                    <p className="text-base">{transaction.tenor_of_adb_guarantee || 'Not specified'}</p>
+                    {isEditingTrading ? (
+                      <input
+                        type="text"
+                        name="tenor_of_adb_guarantee"
+                        value={formData.tenor_of_adb_guarantee || ''}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.tenor_of_adb_guarantee || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
               </div>
