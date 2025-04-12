@@ -154,6 +154,21 @@ const TransactionDetail = () => {
   const [pricingResult, setPricingResult] = useState(null);
   const [checkingPrice, setCheckingPrice] = useState(false);
 
+  // Add state for Request Information editing
+  const [isEditingRequest, setIsEditingRequest] = useState(false);
+  const [requestData, setRequestData] = useState({
+    sub_limit_type: '',
+    form_of_eligible_instrument: '',
+    adb_guarantee_trn: '',
+    confirming_bank_reference_trn: '',
+    issuing_bank_reference_trn: '',
+    face_amount: 0,
+    currency: '',
+    usd_equivalent_amount: 0,
+    usd_equivalent_amount_cover: 0,
+    cover: 0
+  });
+
   // Add this to the state declarations inside the TransactionDetail component
   const [checkingStatus, setCheckingStatus] = useState({
     sanctions: false,
@@ -549,7 +564,7 @@ const TransactionDetail = () => {
   // Add a function to handle pricing input changes
   const handlePricingInputChange = (e) => {
     const { name, value } = e.target;
-    setPricingData(prev => ({
+    setPricingData((prev) => ({
       ...prev,
       [name]: value
     }));
@@ -558,51 +573,40 @@ const TransactionDetail = () => {
   // Add a function to handle saving pricing data
   const handleSubmitPricingSection = async (e) => {
     e.preventDefault();
+    
     try {
       setProcessingAction(true);
       
-      // Get the API URL from environment variable or default to localhost:5000
+      // Create updated transaction data
+      const updatedTransaction = {
+        ...transaction,
+        country: pricingData.country,
+        location: pricingData.location,
+        bank: pricingData.bank,
+        beneficiary: pricingData.beneficiary,
+        product: pricingData.product,
+        tenor: pricingData.tenor,
+        paymentFrequency: pricingData.paymentFrequency,
+        localCurrency: pricingData.localCurrency,
+        requestedPrice: pricingData.requestedPrice
+      };
+      
+      // Update the transaction
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}`, updatedTransaction);
       
-      // Try to update via API
-      try {
-        const response = await axios.put(`${apiUrl}/api/transactions/${id}`, {
-          client_country: pricingData.country,
-          client_location: pricingData.location,
-          bank: pricingData.bank,
-          beneficiary: pricingData.beneficiary,
-          product_name: pricingData.product,
-          tenor: pricingData.tenor ? pricingData.tenor.replace(' days', '') : null,
-          payment_frequency: pricingData.paymentFrequency,
-          currency: pricingData.localCurrency,
-          price: pricingData.requestedPrice ? parseFloat(pricingData.requestedPrice) : null
-        });
-        
-        // Update local state with the response data
-        const normalizedData = normalizeTransaction(response.data);
-        setTransaction(normalizedData);
-      } catch (apiErr) {
-        console.error('API error when updating pricing:', apiErr);
-        
-        // Fallback to just updating the local state when API fails
-        setTransaction(prevTransaction => ({
-          ...prevTransaction,
-          client_country: pricingData.country,
-          client_location: pricingData.location,
-          bank: pricingData.bank,
-          beneficiary: pricingData.beneficiary,
-          product_name: pricingData.product,
-          tenor: pricingData.tenor,
-          payment_frequency: pricingData.paymentFrequency,
-          currency: pricingData.localCurrency,
-          pricing_rate: pricingData.requestedPrice ? parseFloat(pricingData.requestedPrice) : null
-        }));
-      }
+      // Update the transaction state
+      setTransaction(updatedTransaction);
       
+      // Exit edit mode
       setIsEditingPricing(false);
-      setProcessingAction(false);
-    } catch (err) {
-      console.error('Error updating pricing information:', err);
+      
+      // Show success message
+      alert('Pricing information updated successfully');
+    } catch (error) {
+      console.error('Error updating pricing information:', error);
+      alert('Error updating pricing information. Please try again.');
+    } finally {
       setProcessingAction(false);
     }
   };
@@ -1084,6 +1088,89 @@ const TransactionDetail = () => {
     navigate(`/transactions/${id}/sanction-check`);
   };
 
+  // Add handler for Request Information input changes
+  const handleRequestInputChange = (e) => {
+    const { name, value } = e.target;
+    setRequestData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Add handler for Request Information submission
+  const handleSubmitRequestSection = async (e) => {
+    e.preventDefault();
+    
+    try {
+      setProcessingAction(true);
+      
+      // Create updated transaction data
+      const updatedTransaction = {
+        ...transaction,
+        sub_limit_type: requestData.sub_limit_type,
+        form_of_eligible_instrument: requestData.form_of_eligible_instrument,
+        adb_guarantee_trn: requestData.adb_guarantee_trn,
+        confirming_bank_reference_trn: requestData.confirming_bank_reference_trn,
+        issuing_bank_reference_trn: requestData.issuing_bank_reference_trn,
+        face_amount: parseFloat(requestData.face_amount) || 0,
+        currency: requestData.currency,
+        usd_equivalent_amount: parseFloat(requestData.usd_equivalent_amount) || 0,
+        usd_equivalent_amount_cover: parseFloat(requestData.usd_equivalent_amount_cover) || 0,
+        cover: parseFloat(requestData.cover) / 100 || 0 // Convert from percentage to decimal
+      };
+      
+      // Update the transaction
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}`, updatedTransaction);
+      
+      // Update the transaction state
+      setTransaction(updatedTransaction);
+      
+      // Exit edit mode
+      setIsEditingRequest(false);
+      
+      // Show success message
+      alert('Request information updated successfully');
+    } catch (error) {
+      console.error('Error updating request information:', error);
+      alert('Error updating request information. Please try again.');
+    } finally {
+      setProcessingAction(false);
+    }
+  };
+
+  // Update the useEffect to initialize both pricingData and requestData when transaction changes
+  useEffect(() => {
+    if (transaction) {
+      // Initialize pricing data
+      setPricingData({
+        country: transaction.country || '',
+        location: transaction.location || '',
+        bank: transaction.issuing_bank || transaction.bank || transaction.client_name || '',
+        beneficiary: transaction.requesting_bank || transaction.beneficiary || '',
+        product: transaction.form_of_eligible_instrument || transaction.product_name || '',
+        tenor: transaction.tenor || '',
+        paymentFrequency: transaction.payment_frequency || 'Monthly',
+        localCurrency: transaction.currency || '',
+        requestedPrice: transaction.guarantee_fee_rate || 0
+      });
+      
+      // Initialize request data
+      setRequestData({
+        sub_limit_type: transaction.sub_limit_type || '',
+        form_of_eligible_instrument: transaction.form_of_eligible_instrument || '',
+        adb_guarantee_trn: transaction.adb_guarantee_trn || '',
+        confirming_bank_reference_trn: transaction.confirming_bank_reference_trn || '',
+        issuing_bank_reference_trn: transaction.issuing_bank_reference_trn || '',
+        face_amount: transaction.face_amount || 0,
+        currency: transaction.currency || '',
+        usd_equivalent_amount: transaction.usd_equivalent_amount || 0,
+        usd_equivalent_amount_cover: transaction.usd_equivalent_amount_cover || 0,
+        cover: transaction.cover ? transaction.cover * 100 : 0 // Convert from decimal to percentage
+      });
+    }
+  }, [transaction]);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -1277,103 +1364,248 @@ const TransactionDetail = () => {
               </div>
             </div>
             <div className="px-6 py-4">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  {!isEditingRequest ? (
+                    <button
+                      onClick={() => setIsEditingRequest(true)}
+                      className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                    >
+                      <PencilSquareIcon className="h-4 w-4 mr-1" />
+                      Edit Details
+                    </button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={handleSubmitRequestSection}
+                        className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors duration-200"
+                      >
+                        <CheckIcon className="h-4 w-4 mr-1" />
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingRequest(false)}
+                        className="flex items-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors duration-200"
+                      >
+                        <XCircleIcon className="h-4 w-4 mr-1" />
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-start">
                   <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Product</h3>
-                    <p className="text-base">{transaction.sub_limit_type || 'Not specified'}</p>
+                    {isEditingRequest ? (
+                      <input
+                        type="text"
+                        name="sub_limit_type"
+                        value={requestData.sub_limit_type}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.sub_limit_type || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <TagIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Form of Eligible Instrument</h3>
-                    <p className="text-base">
-                      {transaction.form_of_eligible_instrument ? 
-                        transaction.form_of_eligible_instrument
-                          .replace(/\s*(?:REF|Ref|ref).*$/g, '')           // Remove everything from "REF" (and variations) to the end
-                          .replace(/\b(?:\w+-\d+|\d+)\b/g, '')           // Remove remaining word-number or just number patterns
-                          .replace(/^\s*-\s*|\s*-\s*$/g, '')             // Remove dashes at start or end
-                          .replace(/\s{2,}/g, ' ')                       // Replace multiple spaces with a single space
-                          .trim() : 
-                        'Not specified'}
-                    </p>
+                    {isEditingRequest ? (
+                      <input
+                        type="text"
+                        name="form_of_eligible_instrument"
+                        value={requestData.form_of_eligible_instrument}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">
+                        {transaction.form_of_eligible_instrument ? 
+                          transaction.form_of_eligible_instrument
+                            .replace(/\s*(?:REF|Ref|ref).*$/g, '')           // Remove everything from "REF" (and variations) to the end
+                            .replace(/\b(?:\w+-\d+|\d+)\b/g, '')           // Remove remaining word-number or just number patterns
+                            .replace(/^\s*-\s*|\s*-\s*$/g, '')             // Remove dashes at start or end
+                            .replace(/\s{2,}/g, ' ')                       // Replace multiple spaces with a single space
+                            .trim() : 
+                          'Not specified'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Guarantee/ TRN</h3>
-                    <p className="text-base">{transaction.adb_guarantee_trn || 'Not specified'}</p>
+                    {isEditingRequest ? (
+                      <input
+                        type="text"
+                        name="adb_guarantee_trn"
+                        value={requestData.adb_guarantee_trn}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.adb_guarantee_trn || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Confirming Bank Reference / TRN</h3>
-                    <p className="text-base">{transaction.confirming_bank_reference_trn || 'Not specified'}</p>
+                    {isEditingRequest ? (
+                      <input
+                        type="text"
+                        name="confirming_bank_reference_trn"
+                        value={requestData.confirming_bank_reference_trn}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.confirming_bank_reference_trn || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <IdentificationIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Issuing Bank Reference / TRN</h3>
-                    <p className="text-base">{transaction.issuing_bank_reference_trn || 'Not specified'}</p>
+                    {isEditingRequest ? (
+                      <input
+                        type="text"
+                        name="issuing_bank_reference_trn"
+                        value={requestData.issuing_bank_reference_trn}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                      />
+                    ) : (
+                      <p className="text-base">{transaction.issuing_bank_reference_trn || 'Not specified'}</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Local Amount</h3>
-                    <p className="text-base">
-                      {formatCurrency(transaction.face_amount || 0, transaction.currency)}
-                    </p>
+                    {isEditingRequest ? (
+                      <input
+                        type="number"
+                        name="face_amount"
+                        value={requestData.face_amount}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        step="0.01"
+                        min="0"
+                      />
+                    ) : (
+                      <p className="text-base">
+                        {formatCurrency(transaction.face_amount || 0, transaction.currency)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Currency</h3>
-                    <p className="text-base">
-                      {`${transaction.currency}`}
-                    </p>
+                    {isEditingRequest ? (
+                      <input
+                        type="text"
+                        name="currency"
+                        value={requestData.currency}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        placeholder="e.g. USD"
+                      />
+                    ) : (
+                      <p className="text-base">
+                        {`${transaction.currency}`}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">USD Amount</h3>
-                    <p className="text-base">
-                      {formatCurrency(transaction.usd_equivalent_amount || 0, 'USD')}
-                    </p>
+                    {isEditingRequest ? (
+                      <input
+                        type="number"
+                        name="usd_equivalent_amount"
+                        value={requestData.usd_equivalent_amount}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        step="0.01"
+                        min="0"
+                      />
+                    ) : (
+                      <p className="text-base">
+                        {formatCurrency(transaction.usd_equivalent_amount || 0, 'USD')}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">ADB Covered Amount (USD)</h3>
-                    <p className="text-base">
-                      {formatCurrency(transaction.usd_equivalent_amount_cover || 0, 'USD')}
-                    </p>
+                    {isEditingRequest ? (
+                      <input
+                        type="number"
+                        name="usd_equivalent_amount_cover"
+                        value={requestData.usd_equivalent_amount_cover}
+                        onChange={handleRequestInputChange}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        step="0.01"
+                        min="0"
+                      />
+                    ) : (
+                      <p className="text-base">
+                        {formatCurrency(transaction.usd_equivalent_amount_cover || 0, 'USD')}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-start">
                   <ShieldCheckIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
+                  <div className="w-full">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Risk Coverage</h3>
-                    <p className="text-base">
-                      {transaction.cover ? `${transaction.cover * 100}%` : 'Not specified'}
-                    </p>
+                    {isEditingRequest ? (
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          name="cover"
+                          value={requestData.cover}
+                          onChange={handleRequestInputChange}
+                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                          step="0.01"
+                          min="0"
+                          max="100"
+                        />
+                        <span className="ml-2">%</span>
+                      </div>
+                    ) : (
+                      <p className="text-base">
+                        {transaction.cover ? `${transaction.cover * 100}%` : 'Not specified'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

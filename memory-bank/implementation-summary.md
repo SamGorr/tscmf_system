@@ -472,11 +472,13 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Moved transaction status and source information to this section for better organization
   - Optimized the UI layout by placing status indicators directly in the section header
   - Relocated source document buttons (View Source Email/File) to this section
+  - Added edit functionality allowing users to modify request information
   
 - The new Request Information section includes the following fields:
   - Transaction status badges (showing APPROVED, PROCESSING, DECLINED, etc.) positioned in the header
   - Transaction source information (Email, File, Manual) positioned in the header
   - Source document access buttons (View Source Email/File) based on transaction source
+  - Edit/Save/Cancel buttons for modifying request information with full form validation
   - sub_limit_type (Product) - Shows the product type for the transaction
   - form_of_eligible_instrument (Form of Eligible Instrument) - Shows the instrument type with comprehensive data cleansing:
     - Removes everything after "REF" (or its variations like "Ref" or "ref"), keeping only the instrument type name
@@ -501,3 +503,5 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Consolidated important transaction metadata in a single section
   - Enhanced visual hierarchy with status information prominently displayed in the header
   - Improved access to source documents within the context of request information
+  - Editable fields with proper data validation and error handling
+  - Direct updates to the backend database via API
