@@ -302,22 +302,47 @@ const TransactionDetail = () => {
   /**
    * Handle form submission for adding/editing an entity
    */
-  const handleEntitySubmit = (e) => {
+  const handleEntitySubmit = async (e) => {
     e.preventDefault();
     
-    if (currentEntity) {
-      // Update existing entity
-      setEntities(prev => 
-        prev.map(entity => 
-          entity.id === entityFormData.id ? entityFormData : entity
-        )
-      );
-    } else {
-      // Add new entity
-      setEntities(prev => [...prev, entityFormData]);
+    try {
+      setProcessingAction(true);
+      
+      if (currentEntity) {
+        // Update existing entity
+        if (currentEntity.id && !isNaN(currentEntity.id)) {
+          // If the entity has a numeric ID, it's already in the database - update it
+          await DashboardService.updateTransactionEntity(
+            transaction.transaction_id,
+            currentEntity.id,
+            entityFormData
+          );
+        }
+        
+        // Update local state
+        setEntities(prev => 
+          prev.map(entity => 
+            entity.id === entityFormData.id ? entityFormData : entity
+          )
+        );
+      } else {
+        // Add new entity
+        const newEntity = await DashboardService.addTransactionEntity(
+          transaction.transaction_id,
+          entityFormData
+        );
+        
+        // Add the returned entity (with ID) to local state
+        setEntities(prev => [...prev, newEntity]);
+      }
+      
+      setShowEntityModal(false);
+    } catch (error) {
+      console.error('Error saving entity:', error);
+      alert('Error saving entity. Please try again.');
+    } finally {
+      setProcessingAction(false);
     }
-    
-    setShowEntityModal(false);
   };
 
   /**
@@ -329,23 +354,29 @@ const TransactionDetail = () => {
     try {
       setProcessingAction(true);
       
-      // API endpoint for updating entities
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      // Update entities via API service
+      const result = await DashboardService.updateTransactionEntities(
+        transaction.transaction_id, 
+        entities
+      );
       
-      // Update entities via API
-      await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}/entities`, { 
-        entities: entities 
-      });
-      
-      // Update local transaction state to include updated entities
-      setTransaction(prev => ({
-        ...prev,
-        entities: entities
-      }));
-      
-      setIsEditingEntity(false);
+      if (result) {
+        console.log('Entities updated successfully:', result);
+        
+        // Update the transaction state with the updated entities
+        setTransaction(prev => ({
+          ...prev,
+          entities: result.entities || entities
+        }));
+        
+        setIsEditingEntity(false);
+        
+        // Show success message
+        alert('Entity information updated successfully');
+      }
     } catch (err) {
       console.error('Error updating entities:', err);
+      alert('Error updating entities. Please try again.');
     } finally {
       setProcessingAction(false);
     }
@@ -354,8 +385,27 @@ const TransactionDetail = () => {
   /**
    * Remove an entity from the transaction
    */
-  const handleDeleteEntity = (entityId) => {
-    setEntities(prev => prev.filter(entity => entity.id !== entityId));
+  const handleDeleteEntity = async (entityId) => {
+    try {
+      setProcessingAction(true);
+      
+      // If the entity has a numeric ID, delete it from the database
+      if (!isNaN(entityId)) {
+        await DashboardService.deleteTransactionEntity(
+          transaction.transaction_id,
+          entityId
+        );
+      }
+      
+      // Update local state
+      setEntities(prev => prev.filter(entity => entity.id !== entityId));
+      
+    } catch (error) {
+      console.error('Error deleting entity:', error);
+      alert('Error deleting entity. Please try again.');
+    } finally {
+      setProcessingAction(false);
+    }
   };
 
   // =========================================================================

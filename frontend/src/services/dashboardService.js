@@ -218,6 +218,58 @@ const DashboardService = {
       console.error('Error deleting transaction good:', error);
       throw error;
     }
+  },
+  
+  // Entity operations
+  
+  // Update all entities for a transaction
+  updateTransactionEntities: async (transactionId, entities) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.put(`${apiUrl}/api/transactions/${transactionId}/entities`, {
+        entities: entities
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating transaction entities:', error);
+      throw error;
+    }
+  },
+  
+  // Add a new entity to a transaction
+  addTransactionEntity: async (transactionId, entityData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.post(`${apiUrl}/api/transactions/${transactionId}/entities`, entityData);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding transaction entity:', error);
+      throw error;
+    }
+  },
+  
+  // Update an existing entity
+  updateTransactionEntity: async (transactionId, entityId, entityData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.put(`${apiUrl}/api/transactions/${transactionId}/entities/${entityId}`, entityData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating transaction entity:', error);
+      throw error;
+    }
+  },
+  
+  // Delete an entity from a transaction
+  deleteTransactionEntity: async (transactionId, entityId) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.delete(`${apiUrl}/api/transactions/${transactionId}/entities/${entityId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting transaction entity:', error);
+      throw error;
+    }
   }
 };
 

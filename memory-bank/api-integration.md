@@ -227,4 +227,120 @@ The Dashboard component was updated to fetch data from the backend API:
   {
     "message": "Good with ID 456 has been deleted"
   }
+  ```
+
+## Transaction Entity API
+
+### Update All Transaction Entities
+- **Endpoint**: PUT `/api/transactions/{transaction_id}/entities`
+- **Description**: Updates all entities for a transaction by replacing existing entities
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction to update
+- **Request Body**:
+  ```json
+  {
+    "entities": [
+      {
+        "name": "ABC Corporation",
+        "type": "Beneficiary",
+        "address": "123 Main St, New York, NY",
+        "country": "USA"
+      },
+      {
+        "name": "XYZ Bank",
+        "type": "Issuing Bank",
+        "address": "456 Bank Ave, London",
+        "country": "UK"
+      }
+    ]
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "entities": [
+      {
+        "id": 1,
+        "transaction_id": 123,
+        "name": "ABC Corporation",
+        "type": "Beneficiary",
+        "address": "123 Main St, New York, NY",
+        "country": "USA"
+      },
+      {
+        "id": 2,
+        "transaction_id": 123,
+        "name": "XYZ Bank",
+        "type": "Issuing Bank",
+        "address": "456 Bank Ave, London",
+        "country": "UK"
+      }
+    ]
+  }
+  ```
+
+### Add Transaction Entity
+- **Endpoint**: POST `/api/transactions/{transaction_id}/entities`
+- **Description**: Adds a new entity to a transaction
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction to add the entity to
+- **Request Body**:
+  ```json
+  {
+    "name": "ABC Corporation",
+    "type": "Beneficiary",
+    "address": "123 Main St, New York, NY",
+    "country": "USA"
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "id": 1,
+    "transaction_id": 123,
+    "name": "ABC Corporation",
+    "type": "Beneficiary",
+    "address": "123 Main St, New York, NY",
+    "country": "USA"
+  }
+  ```
+
+### Update Transaction Entity
+- **Endpoint**: PUT `/api/transactions/{transaction_id}/entities/{entity_id}`
+- **Description**: Updates an existing entity in a transaction
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction that contains the entity
+  - `entity_id` (path): The ID of the entity to update
+- **Request Body**:
+  ```json
+  {
+    "name": "ABC Corporation Updated",
+    "type": "Beneficiary",
+    "address": "123 Main St, New York, NY",
+    "country": "USA"
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "id": 1,
+    "transaction_id": 123,
+    "name": "ABC Corporation Updated",
+    "type": "Beneficiary",
+    "address": "123 Main St, New York, NY",
+    "country": "USA"
+  }
+  ```
+
+### Delete Transaction Entity
+- **Endpoint**: DELETE `/api/transactions/{transaction_id}/entities/{entity_id}`
+- **Description**: Deletes an entity from a transaction
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction that contains the entity
+  - `entity_id` (path): The ID of the entity to delete
+- **Response**: 
+  ```json
+  {
+    "message": "Entity with ID 1 has been deleted"
+  }
   ``` 

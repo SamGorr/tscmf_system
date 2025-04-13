@@ -883,3 +883,68 @@ The specific functions modified were:
 - Date fields are properly handled, including parsing ISO format dates
 - Trade goods are identified by unique IDs in the database
 - Frontend maintains synchronization between local state and database
+
+## Relevant Entity Information Update Feature
+
+### Overview
+- Implemented functionality to allow users to update entity information through the TransactionDetail page
+- Created new backend endpoints to handle entity CRUD operations (Create, Read, Update, Delete)
+- Added frontend service methods to interact with these endpoints
+- Enhanced database operations to properly handle updating transaction entities
+
+### Components Modified
+
+1. **Backend API Endpoints**
+   - Added `/api/transactions/{transaction_id}/entities` PUT endpoint to update all entities for a transaction
+   - Added `/api/transactions/{transaction_id}/entities` POST endpoint to add a new entity
+   - Added `/api/transactions/{transaction_id}/entities/{entity_id}` PUT endpoint to update an existing entity
+   - Added `/api/transactions/{transaction_id}/entities/{entity_id}` DELETE endpoint to remove an entity
+   - Implemented proper error handling and database transaction management
+
+2. **Frontend Service Methods**
+   - Added `updateTransactionEntities` method to update all entities at once
+   - Added `addTransactionEntity`, `updateTransactionEntity`, and `deleteTransactionEntity` methods for individual entity operations
+   - Implemented consistent error handling across all methods
+   - Added proper logging for debugging purposes
+
+3. **TransactionDetail Component**
+   - Updated `handleSubmitEntitySection` to use the new service method for updating entities
+   - Enhanced `handleEntitySubmit` to properly add or update entities via API
+   - Modified `handleDeleteEntity` to delete entities via API
+   - Added loading state management during API operations
+   - Implemented user feedback for successful operations and errors
+
+### Key Features
+
+1. **Bulk Entity Update**
+   - Users can edit all entities at once and save changes with a single button click
+   - The Save Changes button now persists changes to the database
+
+2. **Individual Entity Management**
+   - Complete CRUD operations for entities:
+     - Add new entities with type, name, country, and address
+     - Edit existing entities to update any field
+     - Delete entities from the transaction
+   - All changes are immediately reflected in both the UI and the database
+
+### Usage
+1. **Updating All Entities**
+   - Navigate to the Transaction Detail page
+   - Click "Edit Details" in the Relevant Entity Information section
+   - Make necessary changes to the entities
+   - Add or remove entities as needed
+   - Click "Save Changes" to persist changes to the database
+
+2. **Managing Individual Entities**
+   - In the Relevant Entity Information section:
+     - Click "Add Entity" to create a new entity
+     - Click the Edit icon to modify an existing entity
+     - Click the Delete icon to remove an entity
+   - Fill in the required information in the modal dialog
+   - Changes are saved to the database upon submission
+
+### Technical Details
+- Database updates are performed within transactions for data integrity
+- Entity relationships are maintained through foreign key constraints
+- Entities are identified by unique IDs in the database
+- Frontend maintains synchronization between local state and database

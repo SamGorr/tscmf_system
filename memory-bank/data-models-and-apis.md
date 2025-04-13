@@ -96,6 +96,16 @@ The Transaction_Entity model represents the entities associated with a transacti
 | address       | String  | Address of the entity                  |
 | country       | String  | Country of the entity                  |
 
+**API Operations:**
+- Create: POST `/api/transactions/{transaction_id}/entities`
+- Read: GET `/api/transactions/{transaction_id}/details` (returns all entities for a transaction)
+- Update: PUT `/api/transactions/{transaction_id}/entities/{entity_id}`
+- Delete: DELETE `/api/transactions/{transaction_id}/entities/{entity_id}`
+- Batch Update: PUT `/api/transactions/{transaction_id}/entities` (includes all entities in the request)
+
+**Relationships:**
+- Many-to-one relationship with Transaction (a transaction can have multiple entities)
+
 ### Transaction_Goods
 
 The Transaction_Goods model represents the goods associated with a transaction.

@@ -910,3 +910,194 @@ def delete_transaction_good(transaction_id: int, good_id: int, db: Session = Dep
         traceback.print_exc()
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error deleting good: {str(e)}")
+
+# Entity CRUD operations
+@app.put("/api/transactions/{transaction_id}/entities")
+def update_transaction_entities(transaction_id: int, entity_data: dict, db: Session = Depends(get_db)):
+    """
+    Update all entities for a transaction
+    """
+    try:
+        print(f"Updating entities for transaction ID: {transaction_id}")
+        print(f"Entity data: {entity_data}")
+        
+        # Get transaction from database
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
+        if 'entities' not in entity_data or not isinstance(entity_data['entities'], list):
+            raise HTTPException(status_code=400, detail="Invalid entities data format")
+        
+        # First, delete all existing entities for this transaction
+        db.query(Transaction_Entity).filter(Transaction_Entity.transaction_id == transaction_id).delete()
+        
+        # Then add the new entities
+        for entity in entity_data['entities']:
+            new_entity = Transaction_Entity(
+                transaction_id=transaction_id,
+                name=entity.get('name', ''),
+                type=entity.get('type', ''),
+                address=entity.get('address', ''),
+                country=entity.get('country', '')
+            )
+            db.add(new_entity)
+        
+        # Commit changes to the database
+        db.commit()
+        
+        # Return updated entities
+        updated_entities = db.query(Transaction_Entity).filter(
+            Transaction_Entity.transaction_id == transaction_id
+        ).all()
+        
+        result = []
+        for entity in updated_entities:
+            result.append({
+                "id": entity.id,
+                "transaction_id": entity.transaction_id,
+                "name": entity.name,
+                "type": entity.type,
+                "address": entity.address,
+                "country": entity.country
+            })
+        
+        return {"entities": result}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error updating entities: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating entities: {str(e)}")
+
+@app.post("/api/transactions/{transaction_id}/entities")
+def add_transaction_entity(transaction_id: int, entity_data: dict, db: Session = Depends(get_db)):
+    """
+    Add a new entity to a transaction
+    """
+    try:
+        print(f"Adding entity for transaction ID: {transaction_id}")
+        print(f"Entity data: {entity_data}")
+        
+        # Check if transaction exists
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
+        # Create new entity
+        new_entity = Transaction_Entity(
+            transaction_id=transaction_id,
+            name=entity_data.get('name', ''),
+            type=entity_data.get('type', ''),
+            address=entity_data.get('address', ''),
+            country=entity_data.get('country', '')
+        )
+        
+        # Add to database
+        db.add(new_entity)
+        db.commit()
+        db.refresh(new_entity)
+        
+        # Return the newly created entity
+        return {
+            "id": new_entity.id,
+            "transaction_id": new_entity.transaction_id,
+            "name": new_entity.name,
+            "type": new_entity.type,
+            "address": new_entity.address,
+            "country": new_entity.country
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error adding entity: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error adding entity: {str(e)}")
+
+@app.put("/api/transactions/{transaction_id}/entities/{entity_id}")
+def update_transaction_entity(transaction_id: int, entity_id: int, entity_data: dict, db: Session = Depends(get_db)):
+    """
+    Update an existing entity for a transaction
+    """
+    try:
+        print(f"Updating entity ID {entity_id} for transaction ID: {transaction_id}")
+        print(f"Update data: {entity_data}")
+        
+        # Get the entity
+        entity = db.query(Transaction_Entity).filter(
+            Transaction_Entity.id == entity_id,
+            Transaction_Entity.transaction_id == transaction_id
+        ).first()
+        
+        if not entity:
+            raise HTTPException(status_code=404, detail=f"Entity with ID {entity_id} not found for transaction {transaction_id}")
+        
+        # Update fields
+        entity.name = entity_data.get('name', entity.name)
+        entity.type = entity_data.get('type', entity.type)
+        entity.address = entity_data.get('address', entity.address)
+        entity.country = entity_data.get('country', entity.country)
+        
+        # Commit changes
+        db.commit()
+        db.refresh(entity)
+        
+        # Return the updated entity
+        return {
+            "id": entity.id,
+            "transaction_id": entity.transaction_id,
+            "name": entity.name,
+            "type": entity.type,
+            "address": entity.address,
+            "country": entity.country
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error updating entity: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating entity: {str(e)}")
+
+@app.delete("/api/transactions/{transaction_id}/entities/{entity_id}")
+def delete_transaction_entity(transaction_id: int, entity_id: int, db: Session = Depends(get_db)):
+    """
+    Delete an entity from a transaction
+    """
+    try:
+        print(f"Deleting entity ID {entity_id} from transaction ID: {transaction_id}")
+        
+        # Get the entity
+        entity = db.query(Transaction_Entity).filter(
+            Transaction_Entity.id == entity_id,
+            Transaction_Entity.transaction_id == transaction_id
+        ).first()
+        
+        if not entity:
+            raise HTTPException(status_code=404, detail=f"Entity with ID {entity_id} not found for transaction {transaction_id}")
+        
+        # Delete the entity
+        db.delete(entity)
+        db.commit()
+        
+        # Return success
+        return {"message": f"Entity with ID {entity_id} has been deleted"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error deleting entity: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error deleting entity: {str(e)}")
