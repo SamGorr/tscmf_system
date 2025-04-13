@@ -89,7 +89,6 @@ const TransactionDetail = () => {
   // Separate edit states for different sections
   const [isEditingEntity, setIsEditingEntity] = useState(false);
   const [isEditingTrading, setIsEditingTrading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Keep for backward compatibility
 
   // Add state for managing trading goods as an array
   const [tradeGoods, setTradeGoods] = useState([]);
@@ -111,28 +110,9 @@ const TransactionDetail = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
 
-  // First add a new state for the trading information modal
-  const [showTradeInfoModal, setShowTradeInfoModal] = useState(false);
-
   // Add this to your state declarations at the top of the component
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
-
-  // Add new state for pricing information section
-  const [isEditingPricing, setIsEditingPricing] = useState(false);
-  const [pricingData, setPricingData] = useState({
-    country: '',
-    location: '',
-    bank: '',
-    beneficiary: '',
-    product: '',
-    tenor: '',
-    paymentFrequency: 'Monthly',
-    localCurrency: '',
-    requestedPrice: 0
-  });
-  const [pricingResult, setPricingResult] = useState(null);
-  const [checkingPrice, setCheckingPrice] = useState(false);
 
   // Add state for Request Information editing
   const [isEditingRequest, setIsEditingRequest] = useState(false);
@@ -148,14 +128,6 @@ const TransactionDetail = () => {
     usd_equivalent_amount_cover: 0,
     cover: 0,
     guarantee_fee_rate: 0
-  });
-
-  // Add this to the state declarations inside the TransactionDetail component
-  const [checkingStatus, setCheckingStatus] = useState({
-    sanctions: false,
-    eligibility: false,
-    limits: false,
-    exposure: false
   });
 
   const [activeTab, setActiveTab] = useState('issuing'); // New state for tabs
@@ -264,20 +236,6 @@ const TransactionDetail = () => {
               tenor: normalizedData.tenor || '',
               expiry_date_of_adb_guarantee: normalizedData.expiry_date_of_adb_guarantee || '',
               tenor_of_adb_guarantee: normalizedData.tenor_of_adb_guarantee || ''
-            });
-          }
-          
-          // Initialize pricing data from transaction
-          if (normalizedData) {
-            // Extract pricing-related data from the transaction
-            setPricingData({
-              country: normalizedData.country || normalizedData.client_country || '',
-              location: normalizedData.location || normalizedData.client_location || '',
-              bank: normalizedData.issuing_bank || normalizedData.bank || normalizedData.client_name || '',
-              beneficiary: normalizedData.requesting_bank || normalizedData.beneficiary || '',
-              product: normalizedData.form_of_eligible_instrument || normalizedData.product_name || '',
-              tenor: normalizedData.tenor || '',
-              paymentFrequency: normalizedData.payment_frequency || normalizedData.terms_of_payment || '',
             });
           }
         } catch (apiError) {
@@ -617,130 +575,6 @@ const TransactionDetail = () => {
     setTradeGoods(prevGoods => prevGoods.filter((_, i) => i !== index));
   };
 
-  // =========================================================================
-  // Pricing Information Handling Functions
-  // =========================================================================
-  
-  /**
-   * Handle input changes in the pricing form
-   */
-  const handlePricingInputChange = (e) => {
-    const { name, value } = e.target;
-    setPricingData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  /**
-   * Submit pricing section changes to the API
-   * @param {Event} e - The form submission event
-   */
-  const handleSubmitPricingSection = async (e) => {
-    e.preventDefault();
-    
-    try {
-      setProcessingAction(true);
-      
-      // Create updated transaction data
-      const updatedTransaction = {
-        ...transaction,
-        country: pricingData.country,
-        location: pricingData.location,
-        bank: pricingData.bank,
-        beneficiary: pricingData.beneficiary,
-        product: pricingData.product,
-        tenor: pricingData.tenor,
-        paymentFrequency: pricingData.paymentFrequency,
-        localCurrency: pricingData.localCurrency,
-        requestedPrice: pricingData.requestedPrice
-      };
-      
-      // API endpoint for updating pricing information
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      
-      // Update the transaction via API
-      await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}`, updatedTransaction);
-      
-      // Update the transaction state
-      setTransaction(updatedTransaction);
-      
-      // Exit edit mode
-      setIsEditingPricing(false);
-    } catch (error) {
-      console.error('Error updating pricing information:', error);
-      // Display error notification
-    } finally {
-      setProcessingAction(false);
-    }
-  };
-
-  /**
-   * Check the requested pricing against the pricing matrix
-   * This function calls the pricing API to get a recommendation and comparison
-   */
-  const handleCheckPricing = () => {
-    setCheckingPrice(true);
-    
-    // Get the API URL from environment variable or default to localhost:5000
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-    
-    // In a real application, make an API call to the pricing service
-    axios.post(`${apiUrl}/api/pricing/check`, {
-      transactionId: transaction.transaction_id,
-      requestedPrice: pricingData.requestedPrice,
-      currency: pricingData.localCurrency || transaction.currency,
-      country: pricingData.country,
-      product: pricingData.product,
-      tenor: pricingData.tenor
-    })
-    .then(response => {
-      setPricingResult(response.data);
-    })
-    .catch(error => {
-      console.error('Error checking pricing:', error);
-      setPricingResult({
-        status: 'error',
-        message: 'Error checking pricing: ' + (error.response?.data?.message || error.message),
-        indicativePrice: '0.00',
-        requestedPrice: pricingData.requestedPrice || '0.00',
-        difference: 0,
-        priceRange: { min: '0.00', max: '0.00' }
-      });
-    })
-    .finally(() => {
-      setCheckingPrice(false);
-    });
-  };
-
-  // Simplified sanctions check function that uses API instead of mock data
-  const handleRunSanctionsCheck = async () => {
-    try {
-      setCheckingStatus(prev => ({ ...prev, sanctions: true }));
-      
-      // Get the API URL from environment variable or default to localhost:5000
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      
-      // Make an API call to run sanctions check
-      const response = await axios.post(`${apiUrl}/api/transactions/${transaction.transaction_id}/sanctions-check`, {
-        entities: entities
-      });
-      
-      // Update the transaction with the sanctions check result
-      setTransaction(prev => ({
-        ...prev,
-        sanctions_check_passed: response.data.passed,
-        sanctions_check_details: response.data.details,
-        sanctions_check_timestamp: response.data.check_timestamp
-      }));
-    } catch (error) {
-      console.error('Error running sanctions check:', error);
-      // Show error notification to user
-    } finally {
-      setCheckingStatus(prev => ({ ...prev, sanctions: false }));
-    }
-  };
-
   // Function to get entity data based on type
   const getEntityData = (type) => {
     console.log("Getting entity data for type:", type);
@@ -1035,22 +869,9 @@ const TransactionDetail = () => {
     }
   };
 
-  // Update the useEffect to initialize both pricingData and requestData when transaction changes
+  // Update the useEffect to initialize requestData when transaction changes
   useEffect(() => {
-    if (transaction) {
-      // Initialize pricing data
-      setPricingData({
-        country: transaction.country || '',
-        location: transaction.location || '',
-        bank: transaction.issuing_bank || transaction.bank || transaction.client_name || '',
-        beneficiary: transaction.requesting_bank || transaction.beneficiary || '',
-        product: transaction.form_of_eligible_instrument || transaction.product_name || '',
-        tenor: transaction.tenor || '',
-        paymentFrequency: transaction.payment_frequency || 'Monthly',
-        localCurrency: transaction.currency || '',
-        requestedPrice: transaction.guarantee_fee_rate || 0
-      });
-      
+    if (transaction) {    
       // Initialize request data
       setRequestData({
         sub_limit_type: transaction.sub_limit_type || '',
@@ -1527,7 +1348,7 @@ const TransactionDetail = () => {
             </div>
           </div>
           
-          {/* Underlying Transactions Information Section - Moved above Pricing Information */}
+          {/* Underlying Transactions Information Section */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6 hover:shadow-lg transition-shadow duration-300">
             <div className="border-b border-gray-200 bg-gray-50">
               <div className="flex items-center px-6 py-4">
@@ -1569,7 +1390,7 @@ const TransactionDetail = () => {
                 </div>
               </div>
               
-              {/* Transaction Information Section - Updated to match Pricing Information section styling */}
+              {/* Transaction Information Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 {/* Column 1 */}
                 <div className="flex items-start">
