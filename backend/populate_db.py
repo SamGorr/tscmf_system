@@ -154,11 +154,13 @@ def populate_database():
                 session.execute(text("""
                     INSERT INTO event (
                         event_id, transaction_id, source, email_from, email_to, 
-                        email_subject, email_date, email_body, type, created_at, status
+                        email_subject, email_date, email_body, type, created_at, status,
+                        sanction_check_status, eligibility_check_status, limit_check_status, pricing_status
                     )
                     VALUES (
                         :event_id, :transaction_id, :source, :email_from, :email_to, 
-                        :email_subject, :email_date, :email_body, :type, :created_at, :status
+                        :email_subject, :email_date, :email_body, :type, :created_at, :status,
+                        :sanction_check_status, :eligibility_check_status, :limit_check_status, :pricing_status
                     )
                 """), {
                     "event_id": int(row['event_id']),
@@ -171,7 +173,11 @@ def populate_database():
                     "email_body": row.get('email_body', ''),
                     "type": row.get('type', ''),
                     "created_at": created_at,
-                    "status": row.get('status', '')
+                    "status": row.get('status', ''),
+                    "sanction_check_status": row.get('sanction_check_status', ''),
+                    "eligibility_check_status": row.get('eligibility_check_status', ''),
+                    "limit_check_status": row.get('limit_check_status', ''),
+                    "pricing_status": row.get('pricing_status', '')
                 })
                 
         # Import transaction_entity from CSV file

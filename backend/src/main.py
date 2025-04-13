@@ -229,61 +229,20 @@ def get_transactions(db: Session = Depends(get_db)):
 @app.get("/api/transactions/{transaction_id}")
 def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
     """
-    Retrieve a single transaction by ID with related entity and event information
+    Retrieve a specific transaction by its ID
     """
     try:
-        print(f"Starting transaction detail API endpoint request for ID: {transaction_id}...")
-        
-        # Query for the specific transaction with joined entity data
+        print(f"Starting get transaction by ID API endpoint request for ID: {transaction_id}...")
         transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
         
         if not transaction:
             raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
         
-        # Get related events
-        events = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).all()
+        # Get the latest event for this transaction to get status information
+        event = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).first()
         
-        # Get entity data
-        issuing_entity = None
-        confirming_entity = None
-        requesting_entity = None
-        
-        if transaction.issuing_bank:
-            issuing_entity = db.query(Entity).filter(Entity.entity_name == transaction.issuing_bank).first()
-            
-        if transaction.confirming_bank:
-            confirming_entity = db.query(Entity).filter(Entity.entity_name == transaction.confirming_bank).first()
-            
-        if transaction.requesting_bank:
-            requesting_entity = db.query(Entity).filter(Entity.entity_name == transaction.requesting_bank).first()
-        
-        events_data = []
-        for event in events:
-            event_data = {
-                "event_id": event.event_id,
-                "transaction_id": event.transaction_id,
-                "source": event.source,
-                "email_from": event.email_from,
-                "email_to": event.email_to,
-                "email_subject": event.email_subject,
-                "email_date": event.email_date.isoformat() if event.email_date else None,
-                "email_body": event.email_body,
-                "type": event.type,
-                "created_at": event.created_at.isoformat() if event.created_at else None,
-                "status": event.status,
-            }
-            events_data.append(event_data)
-        
-        # Determine status and type from most recent event
-        status = "Pending Review"
-        event_type = "Request"
-        if events:
-            status = events[0].status
-            event_type = events[0].type
-        
-        # Format transaction with detailed information
+        # Format transaction data including verification check statuses
         transaction_data = {
-            "id": transaction.transaction_id,
             "transaction_id": transaction.transaction_id,
             "country": transaction.country,
             "issuing_bank": transaction.issuing_bank,
@@ -300,8 +259,8 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
             "currency": transaction.currency,
             "local_currency_amount": float(transaction.local_currency_amount) if transaction.local_currency_amount else None,
             "usd_equivalent_amount": float(transaction.usd_equivalent_amount) if transaction.usd_equivalent_amount else None,
-            "book_rate": float(transaction.book_rate) if transaction.book_rate else None,
-            "cover": float(transaction.cover) if transaction.cover else None,
+            "book_rate": transaction.book_rate,
+            "cover": transaction.cover,
             "local_currency_amount_cover": float(transaction.local_currency_amount_cover) if transaction.local_currency_amount_cover else None,
             "usd_equivalent_amount_cover": float(transaction.usd_equivalent_amount_cover) if transaction.usd_equivalent_amount_cover else None,
             "sub_limit_type": transaction.sub_limit_type,
@@ -310,78 +269,31 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
             "tenor": transaction.tenor,
             "expiry_date_of_adb_guarantee": transaction.expiry_date_of_adb_guarantee.isoformat() if transaction.expiry_date_of_adb_guarantee else None,
             "tenor_of_adb_guarantee": transaction.tenor_of_adb_guarantee,
-            "guarantee_fee_rate": float(transaction.guarantee_fee_rate) if transaction.guarantee_fee_rate else None,
+            "guarantee_fee_rate": transaction.guarantee_fee_rate,
             "industry": transaction.industry,
-            
-            # Keep original fields for backward compatibility with UI
-            "reference_number": transaction.adb_guarantee_trn or f"TXN-{transaction.transaction_id:05d}",
-            "client_name": transaction.issuing_bank,
-            "client_country": transaction.country,
-            "client_address": "",
-            "status": status,
-            "type": event_type,
-            "source": events[0].source if events else "System",
-            "events": events_data,
-            
-            # Entity data from relationships
-            "entity_address": issuing_entity.entity_address if issuing_entity else "",
-            
-            # Issuing bank entity data
-            "issuing_bank_swift": issuing_entity.swift if issuing_entity else None,
-            "issuing_bank_entity_address": issuing_entity.entity_address if issuing_entity else None,
-            "issuing_bank_signing_office_branch": issuing_entity.signing_office_branch if issuing_entity else None,
-            "issuing_bank_agreement_date": issuing_entity.agreement_date.isoformat() if issuing_entity and issuing_entity.agreement_date else None,
-            "issuing_bank_country": issuing_entity.country if issuing_entity else transaction.country,
-            
-            # Confirming bank entity data
-            "confirming_bank_swift": confirming_entity.swift if confirming_entity else None,
-            "confirming_bank_entity_address": confirming_entity.entity_address if confirming_entity else None,
-            "confirming_bank_signing_office_branch": confirming_entity.signing_office_branch if confirming_entity else None,
-            "confirming_bank_agreement_date": confirming_entity.agreement_date.isoformat() if confirming_entity and confirming_entity.agreement_date else None,
-            "confirming_bank_country": confirming_entity.country if confirming_entity else transaction.country,
-            
-            # Requesting bank entity data
-            "requesting_bank_swift": requesting_entity.swift if requesting_entity else None,
-            "requesting_bank_entity_address": requesting_entity.entity_address if requesting_entity else None,
-            "requesting_bank_signing_office_branch": requesting_entity.signing_office_branch if requesting_entity else None,
-            "requesting_bank_agreement_date": requesting_entity.agreement_date.isoformat() if requesting_entity and requesting_entity.agreement_date else None,
-            "requesting_bank_country": requesting_entity.country if requesting_entity else transaction.country,
-            
-            # Additional entities information derived from the transaction model
-            "entities": [
-                {
-                    "id": "1", 
-                    "type": "Issuing Bank",
-                    "name": transaction.issuing_bank,
-                    "country": issuing_entity.country if issuing_entity else transaction.country,
-                    "address": issuing_entity.entity_address if issuing_entity else ""
-                },
-                {
-                    "id": "2", 
-                    "type": "Confirming Bank",
-                    "name": transaction.confirming_bank,
-                    "country": confirming_entity.country if confirming_entity else transaction.country, 
-                    "address": confirming_entity.entity_address if confirming_entity else ""
-                },
-                {
-                    "id": "3", 
-                    "type": "Requesting Bank",
-                    "name": transaction.requesting_bank,
-                    "country": requesting_entity.country if requesting_entity else transaction.country,
-                    "address": requesting_entity.entity_address if requesting_entity else ""
-                }
-            ] if transaction.issuing_bank else []
         }
         
-        print(f"Returning transaction detail for ID: {transaction_id}")
+        # Add verification check statuses from the latest event
+        if event:
+            transaction_data.update({
+                "status": event.status,
+                "type": event.type,
+                "created_at": event.created_at.isoformat() if event.created_at else None,
+                "sanction_check_status": event.sanction_check_status,
+                "eligibility_check_status": event.eligibility_check_status,
+                "limit_check_status": event.limit_check_status,
+                "pricing_status": event.pricing_status
+            })
+        
+        print(f"Returning transaction {transaction_id} details")
         return transaction_data
-    except HTTPException as he:
-        raise he
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error retrieving transaction detail: {str(e)}")
+        print(f"Error retrieving transaction by ID: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error retrieving transaction detail: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving transaction: {str(e)}")
 
 @app.get("/api/dashboard/stats")
 def get_dashboard_stats(db: Session = Depends(get_db)):
@@ -461,120 +373,103 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
 @app.get("/api/transactions/{transaction_id}/details")
 def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
     """
-    Retrieve transaction entity and goods information by transaction ID
+    Retrieve detailed information for a transaction including entities and goods
     """
     try:
         print(f"Starting transaction details API endpoint request for ID: {transaction_id}...")
-        
-        # Query for the specific transaction
         transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
         
         if not transaction:
             raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+
+        # Get the latest event for this transaction
+        event = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).first()
         
-        # Query transaction entities
-        transaction_entities = db.query(Transaction_Entity).filter(
-            Transaction_Entity.transaction_id == transaction_id
-        ).all()
+        # Get transaction entities
+        transaction_entities = db.query(Transaction_Entity).filter(Transaction_Entity.transaction_id == transaction_id).all()
         
-        # Query transaction goods
-        transaction_goods = db.query(Transaction_Goods).filter(
-            Transaction_Goods.transaction_id == transaction_id
-        ).all()
+        # Get transaction goods
+        transaction_goods = db.query(Transaction_Goods).filter(Transaction_Goods.transaction_id == transaction_id).all()
         
-        # Additional mock data for testing
-        if len(transaction_entities) == 0 and len(transaction_goods) == 0:
-            # Create mock entities
-            entities_data = [
-                {
-                    "id": 1,
-                    "type": "Issuing Bank",
-                    "name": transaction.issuing_bank or "Sample Bank",
-                    "address": "123 Bank Street",
-                    "country": transaction.country or "USA"
-                },
-                {
-                    "id": 2,
-                    "type": "Beneficiary",
-                    "name": "ABC Company",
-                    "address": "456 Commerce Road",
-                    "country": "Singapore"
-                },
-                {
-                    "id": 3,
-                    "type": "Supplier",
-                    "name": "XYZ Manufacturing",
-                    "address": "789 Industry Avenue",
-                    "country": "China"
-                }
-            ]
-            
-            # Create mock goods
-            goods_data = [
-                {
-                    "id": 1,
-                    "name": "Electronic Components",
-                    "quantity": 1000,
-                    "unit": "pcs",
-                    "goods_classification": "Electronics",
-                    "price": "15.50"
-                },
-                {
-                    "id": 2,
-                    "name": "Manufacturing Equipment",
-                    "quantity": 5,
-                    "unit": "sets",
-                    "goods_classification": "Capital Goods",
-                    "price": "2500.00"
-                },
-                {
-                    "id": 3,
-                    "name": "Raw Materials",
-                    "quantity": 500,
-                    "unit": "kg",
-                    "goods_classification": "Raw Materials",
-                    "price": "8.75"
-                }
-            ]
-        else:
-            print(f"Found {len(transaction_entities)} entities and {len(transaction_goods)} goods for transaction ID: {transaction_id}")
-            
-            # Format the entities data
-            entities_data = []
-            for entity in transaction_entities:
-                entity_data = {
-                    "id": entity.id,
-                    "type": entity.type,
-                    "address": entity.address,
-                    "country": entity.country,
-                    "name": entity.name
-                }
-                entities_data.append(entity_data)
-            
-            # Format the goods data
-            goods_data = []
-            for good in transaction_goods:
-                good_data = {
-                    "id": good.id,
-                    "name": good.item_name,
-                    "quantity": good.quantity,
-                    "unit": good.unit,
-                    "goods_classification": good.goods_classification,
-                    "price": good.price
-                }
-                goods_data.append(good_data)
+        # Format entities
+        entities_data = []
+        for entity in transaction_entities:
+            entity_data = {
+                "id": entity.id,
+                "transaction_id": entity.transaction_id,
+                "name": entity.name,
+                "type": entity.type,
+                "address": entity.address,
+                "country": entity.country
+            }
+            entities_data.append(entity_data)
         
-        # Combine all data
-        transaction_details = {
-            "transaction_id": transaction_id,
+        # Format goods
+        goods_data = []
+        for good in transaction_goods:
+            good_data = {
+                "id": good.id,
+                "transaction_id": good.transaction_id,
+                "goods_classification": good.goods_classification,
+                "item_name": good.item_name,
+                "quantity": good.quantity,
+                "unit": good.unit,
+                "price": good.price
+            }
+            goods_data.append(good_data)
+        
+        # Build the response with transaction, entities, and goods data
+        result = {
+            "transaction": {
+                "transaction_id": transaction.transaction_id,
+                "country": transaction.country,
+                "issuing_bank": transaction.issuing_bank,
+                "confirming_bank": transaction.confirming_bank,
+                "requesting_bank": transaction.requesting_bank,
+                "adb_guarantee_trn": transaction.adb_guarantee_trn,
+                "confirming_bank_reference_trn": transaction.confirming_bank_reference_trn,
+                "issuing_bank_reference_trn": transaction.issuing_bank_reference_trn,
+                "form_of_eligible_instrument": transaction.form_of_eligible_instrument,
+                "face_amount": float(transaction.face_amount) if transaction.face_amount else None,
+                "date_of_issue": transaction.date_of_issue.isoformat() if transaction.date_of_issue else None,
+                "expiry_date": transaction.expiry_date.isoformat() if transaction.expiry_date else None,
+                "terms_of_payment": transaction.terms_of_payment,
+                "currency": transaction.currency,
+                "local_currency_amount": float(transaction.local_currency_amount) if transaction.local_currency_amount else None,
+                "usd_equivalent_amount": float(transaction.usd_equivalent_amount) if transaction.usd_equivalent_amount else None,
+                "book_rate": transaction.book_rate,
+                "cover": transaction.cover,
+                "local_currency_amount_cover": float(transaction.local_currency_amount_cover) if transaction.local_currency_amount_cover else None,
+                "usd_equivalent_amount_cover": float(transaction.usd_equivalent_amount_cover) if transaction.usd_equivalent_amount_cover else None,
+                "sub_limit_type": transaction.sub_limit_type,
+                "value_date_of_adb_guarantee": transaction.value_date_of_adb_guarantee.isoformat() if transaction.value_date_of_adb_guarantee else None,
+                "end_of_risk_period": transaction.end_of_risk_period.isoformat() if transaction.end_of_risk_period else None,
+                "tenor": transaction.tenor,
+                "expiry_date_of_adb_guarantee": transaction.expiry_date_of_adb_guarantee.isoformat() if transaction.expiry_date_of_adb_guarantee else None,
+                "tenor_of_adb_guarantee": transaction.tenor_of_adb_guarantee,
+                "guarantee_fee_rate": transaction.guarantee_fee_rate,
+                "industry": transaction.industry
+            },
             "entities": entities_data,
             "goods": goods_data
         }
         
+        # Add verification check statuses from the latest event
+        if event:
+            result["transaction"].update({
+                "status": event.status,
+                "type": event.type,
+                "created_at": event.created_at.isoformat() if event.created_at else None,
+                "sanction_check_status": event.sanction_check_status,
+                "eligibility_check_status": event.eligibility_check_status,
+                "limit_check_status": event.limit_check_status,
+                "pricing_status": event.pricing_status
+            })
+        
         print(f"Returning transaction details for ID: {transaction_id}")
-        return transaction_details
-    except HTTPException as he:
-        raise he
+        return result
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error retrieving transaction details: {str(e)}")
         import traceback
@@ -1101,3 +996,48 @@ def delete_transaction_entity(transaction_id: int, entity_id: int, db: Session =
         traceback.print_exc()
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error deleting entity: {str(e)}")
+
+@app.put("/api/transactions/{transaction_id}/verification-checks")
+def update_verification_checks(transaction_id: int, check_data: dict, db: Session = Depends(get_db)):
+    """
+    Update verification check statuses for a transaction's event
+    """
+    try:
+        # Find the latest event for this transaction
+        event = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).first()
+        
+        if not event:
+            raise HTTPException(status_code=404, detail=f"No events found for transaction {transaction_id}")
+        
+        # Update the event's verification check statuses
+        if "sanction_check_status" in check_data:
+            event.sanction_check_status = check_data["sanction_check_status"]
+        
+        if "eligibility_check_status" in check_data:
+            event.eligibility_check_status = check_data["eligibility_check_status"]
+        
+        if "limit_check_status" in check_data:
+            event.limit_check_status = check_data["limit_check_status"]
+        
+        if "pricing_status" in check_data:
+            event.pricing_status = check_data["pricing_status"]
+        
+        # Commit changes to the database
+        db.commit()
+        
+        # Return the updated event data
+        return {
+            "event_id": event.event_id,
+            "transaction_id": event.transaction_id,
+            "sanction_check_status": event.sanction_check_status,
+            "eligibility_check_status": event.eligibility_check_status,
+            "limit_check_status": event.limit_check_status,
+            "pricing_status": event.pricing_status
+        }
+        
+    except Exception as e:
+        print(f"Error updating verification checks: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating verification checks: {str(e)}")

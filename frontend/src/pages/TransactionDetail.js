@@ -868,15 +868,11 @@ const TransactionDetail = () => {
     // Update the transaction status to show checks are in progress
     const updatedTransaction = {
       ...transaction,
-      sanctions_check_passed: null,
-      eligibility_check_passed: null,
-      limits_check_passed: null,
-      pricing_completed: null,
-      // Add timestamps to show checks are in progress
-      sanctions_check_timestamp: new Date().toISOString(),
-      eligibility_check_timestamp: new Date().toISOString(),
-      limits_check_timestamp: new Date().toISOString(),
-      pricing_timestamp: new Date().toISOString()
+      // Set all check statuses to PROCESSING
+      sanction_check_status: 'PROCESSING',
+      eligibility_check_status: 'PROCESSING',
+      limit_check_status: 'PROCESSING',
+      pricing_status: 'PROCESSING'
     };
     
     // Update local state to show checks are in progress
@@ -891,37 +887,42 @@ const TransactionDetail = () => {
     try {
       // Set a slight delay to simulate processing
       setTimeout(async () => {
-        // Simulate API calls for each check
-        // In a real implementation, these would be actual API calls
-        
-        // Mock results - in a real implementation these would come from the backend
-        const mockResults = {
-          sanctions_check_passed: Math.random() > 0.2, // 80% pass rate
-          eligibility_check_passed: Math.random() > 0.3, // 70% pass rate
-          limits_check_passed: Math.random() > 0.1, // 90% pass rate
-          pricing_completed: true
-        };
-        
-        // Update transaction with results
-        const finalResults = {
-          ...transactionData,
-          ...mockResults,
-          // Update timestamps to show when checks completed
-          sanctions_check_timestamp: new Date().toISOString(),
-          eligibility_check_timestamp: new Date().toISOString(),
-          limits_check_timestamp: new Date().toISOString(),
-          pricing_timestamp: new Date().toISOString()
-        };
-        
-        // Update transaction state with results
-        setTransaction(finalResults);
-        
-        // Save the results to the backend
         try {
-          await DashboardService.updateTransaction(transaction.transaction_id, finalResults);
+          // Submit initial "PROCESSING" status to the backend
+          await DashboardService.updateVerificationChecks(transaction.transaction_id, {
+            sanction_check_status: 'PROCESSING',
+            eligibility_check_status: 'PROCESSING',
+            limit_check_status: 'PROCESSING',
+            pricing_status: 'PROCESSING'
+          });
+          
+          // Simulate API calls for each check
+          // In a real implementation, these would be actual API calls to specific check services
+          
+          // Mock results - in a real implementation these would come from the backend
+          const mockResults = {
+            sanction_check_status: Math.random() > 0.2 ? 'PASSED' : 'WARNING', // 80% pass rate
+            eligibility_check_status: Math.random() > 0.3 ? 'PASSED' : 'WARNING', // 70% pass rate
+            limit_check_status: Math.random() > 0.1 ? 'PASSED' : 'WARNING', // 90% pass rate
+            pricing_status: 'COMPLETED'
+          };
+          
+          // Update transaction with results
+          const finalResults = {
+            ...transactionData,
+            ...mockResults
+          };
+          
+          // Update transaction state with results
+          setTransaction(finalResults);
+          
+          // Save the results to the backend via the verification checks API
+          await DashboardService.updateVerificationChecks(transaction.transaction_id, mockResults);
+          
           console.log('Transaction check results saved to backend');
         } catch (error) {
           console.error('Error saving check results:', error);
+          alert('There was a problem saving the check results. Please try again.');
         }
       }, 2000); // 2-second delay to simulate processing
     } catch (error) {

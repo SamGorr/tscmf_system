@@ -157,13 +157,13 @@ const TransactionStepIndicator = ({ transactionId, currentStep, transaction }) =
     
     switch (stepId) {
       case 'sanction-check':
-        return transaction.sanctions_check_timestamp && transaction.sanctions_check_passed === null;
+        return transaction.sanction_check_status === 'PROCESSING';
       case 'eligibility-check':
-        return transaction.eligibility_check_timestamp && transaction.eligibility_check_passed === null;
+        return transaction.eligibility_check_status === 'PROCESSING';
       case 'limits-check':
-        return transaction.limits_check_timestamp && transaction.limits_check_passed === null;
+        return transaction.limit_check_status === 'PROCESSING';
       case 'pricing':
-        return transaction.pricing_timestamp && transaction.pricing_completed === null;
+        return transaction.pricing_status === 'PROCESSING';
       default:
         return false;
     }
@@ -175,13 +175,13 @@ const TransactionStepIndicator = ({ transactionId, currentStep, transaction }) =
     
     switch (stepId) {
       case 'sanction-check':
-        return transaction.sanctions_check_passed === true;
+        return transaction.sanction_check_status === 'PASSED';
       case 'eligibility-check':
-        return transaction.eligibility_check_passed === true;
+        return transaction.eligibility_check_status === 'PASSED';
       case 'limits-check':
-        return transaction.limits_check_passed === true;
+        return transaction.limit_check_status === 'PASSED';
       case 'pricing':
-        return transaction.pricing_completed === true;
+        return transaction.pricing_status === 'COMPLETED';
       default:
         return false;
     }
@@ -193,13 +193,13 @@ const TransactionStepIndicator = ({ transactionId, currentStep, transaction }) =
     
     switch (stepId) {
       case 'sanction-check':
-        return transaction.sanctions_check_passed === false;
+        return transaction.sanction_check_status === 'WARNING' || transaction.sanction_check_status === 'FAILED';
       case 'eligibility-check':
-        return transaction.eligibility_check_passed === false;
+        return transaction.eligibility_check_status === 'WARNING' || transaction.eligibility_check_status === 'FAILED';
       case 'limits-check':
-        return transaction.limits_check_passed === false;
+        return transaction.limit_check_status === 'WARNING' || transaction.limit_check_status === 'FAILED';
       case 'pricing':
-        return transaction.pricing_completed === false;
+        return transaction.pricing_status === 'WARNING' || transaction.pricing_status === 'FAILED';
       default:
         return false;
     }

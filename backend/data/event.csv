@@ -1,3 +1,3 @@
-event_id,transaction_id,source,email_from,email_to,email_subject,email_date,email_body,type,created_at,status
-1,10001,Email,PAROLE Marie-Laurence <marie-laurence.parole@bnpparibas.com>,Trade Finance Unit <tradefinanceunit@adb.org>,PAKISTAN - BK AL HABIB -ANDRIN - EUR 92K,3/11/2025 18:10,,Request,11-Mar-25,Pending Review
-2,10002,Email,FINANCE<finance@jpmorganchasebank.com>,Trade Finance Unit <tradefinanceunit@adb.org>,PAKISTAN - BK AL HABIB - TRADE LOAN - USD 45M,4/20/2025 16:22,,Request,20-Apr-25,Pending Review
+event_id,transaction_id,source,email_from,email_to,email_subject,email_date,email_body,type,created_at,status,sanction_check_status,eligibility_check_status,limit_check_status,pricing_status
+1,10001,Email,PAROLE Marie-Laurence <marie-laurence.parole@bnpparibas.com>,Trade Finance Unit <tradefinanceunit@adb.org>,PAKISTAN - BK AL HABIB -ANDRIN - EUR 92K,3/11/2025 18:10,,Request,11-Mar-25,Pending Review,,,,
+2,10002,Email,FINANCE<finance@jpmorganchasebank.com>,Trade Finance Unit <tradefinanceunit@adb.org>,PAKISTAN - BK AL HABIB - TRADE LOAN - USD 45M,4/20/2025 16:22,,Request,20-Apr-25,Pending Review,,,,

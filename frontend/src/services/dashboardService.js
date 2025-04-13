@@ -270,6 +270,18 @@ const DashboardService = {
       console.error('Error deleting transaction entity:', error);
       throw error;
     }
+  },
+
+  // Update verification check statuses
+  updateVerificationChecks: async (transactionId, checkData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.put(`${apiUrl}/api/transactions/${transactionId}/verification-checks`, checkData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating verification checks:', error);
+      throw error;
+    }
   }
 };
 

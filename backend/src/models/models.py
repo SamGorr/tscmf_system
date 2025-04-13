@@ -58,6 +58,10 @@ class Event(Base):
     type = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String)
+    sanction_check_status = Column(String)
+    eligibility_check_status = Column(String)
+    limit_check_status = Column(String)
+    pricing_status = Column(String)
 
 class Entity(Base):
     __tablename__ = "entity"
