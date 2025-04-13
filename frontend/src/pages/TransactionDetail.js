@@ -1262,16 +1262,10 @@ const TransactionDetail = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
-          <Link to="/transactions" className="flex items-center mr-4 text-gray-600 hover:text-gray-800">
+          <Link to="/" className="flex items-center mr-4 text-gray-600 hover:text-gray-800">
             <ArrowLeftIcon className="h-5 w-5 mr-1" />
-            <span>Back to Transactions</span>
+            <span>Back to Dashboard</span>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800">Transaction Details</h1>
-          {transaction && (
-            <span className={`ml-3 px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(transaction.status)}`}>
-              {transaction.status}
-            </span>
-          )}
         </div>
         
         {transaction && (
