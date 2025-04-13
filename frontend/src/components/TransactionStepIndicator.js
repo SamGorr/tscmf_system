@@ -9,7 +9,9 @@ import {
   CalculatorIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  BookOpenIcon
+  BookOpenIcon,
+  ExclamationCircleIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/solid';
 
 // Add a style block for custom animations
@@ -56,6 +58,15 @@ const customStyles = `
       opacity: 1;
     }
   }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 
   .step-pulse {
     animation: pulse 2s infinite;
@@ -71,6 +82,10 @@ const customStyles = `
 
   .fade-in {
     animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  .spin {
+    animation: spin 1.5s linear infinite;
   }
 
   .connecting-line {
@@ -113,7 +128,7 @@ const customStyles = `
   }
 `;
 
-const TransactionStepIndicator = ({ transactionId, currentStep }) => {
+const TransactionStepIndicator = ({ transactionId, currentStep, transaction }) => {
   const location = useLocation();
   
   // Define all steps in the transaction flow with icons
@@ -135,6 +150,60 @@ const TransactionStepIndicator = ({ transactionId, currentStep }) => {
   const progressPercentage = currentStepIndex === 0 
     ? 0 
     : Math.min(100, Math.round((currentStepIndex / (steps.length - 1)) * 100));
+  
+  // Function to determine if a check step is in progress
+  const isStepInProgress = (stepId) => {
+    if (!transaction) return false;
+    
+    switch (stepId) {
+      case 'sanction-check':
+        return transaction.sanctions_check_timestamp && transaction.sanctions_check_passed === null;
+      case 'eligibility-check':
+        return transaction.eligibility_check_timestamp && transaction.eligibility_check_passed === null;
+      case 'limits-check':
+        return transaction.limits_check_timestamp && transaction.limits_check_passed === null;
+      case 'pricing':
+        return transaction.pricing_timestamp && transaction.pricing_completed === null;
+      default:
+        return false;
+    }
+  };
+  
+  // Function to determine if a check step has passed
+  const hasStepPassed = (stepId) => {
+    if (!transaction) return false;
+    
+    switch (stepId) {
+      case 'sanction-check':
+        return transaction.sanctions_check_passed === true;
+      case 'eligibility-check':
+        return transaction.eligibility_check_passed === true;
+      case 'limits-check':
+        return transaction.limits_check_passed === true;
+      case 'pricing':
+        return transaction.pricing_completed === true;
+      default:
+        return false;
+    }
+  };
+  
+  // Function to determine if a check step has warnings
+  const hasStepWarnings = (stepId) => {
+    if (!transaction) return false;
+    
+    switch (stepId) {
+      case 'sanction-check':
+        return transaction.sanctions_check_passed === false;
+      case 'eligibility-check':
+        return transaction.eligibility_check_passed === false;
+      case 'limits-check':
+        return transaction.limits_check_passed === false;
+      case 'pricing':
+        return transaction.pricing_completed === false;
+      default:
+        return false;
+    }
+  };
   
   return (
     <div className="w-full mb-10 mt-4">
@@ -160,9 +229,20 @@ const TransactionStepIndicator = ({ transactionId, currentStep }) => {
             const isCurrent = index === currentStepIndex;
             const isPending = index > currentStepIndex;
             
+            const isInProgress = isStepInProgress(step.id);
+            const hasPassed = hasStepPassed(step.id);
+            const hasWarnings = hasStepWarnings(step.id);
+            
             // Define animation classes
             const stepAnimClass = isCurrent ? 'scale-in step-pulse' : isComplete ? 'fade-in' : '';
             const textAnimClass = isCurrent ? 'slide-right' : '';
+            
+            // Define circle background color based on status
+            let bgColorClass = 'bg-gray-200';
+            if (isComplete || hasPassed) bgColorClass = 'bg-green-600';
+            else if (isCurrent) bgColorClass = 'bg-blue-500';
+            else if (isInProgress) bgColorClass = 'bg-blue-400';
+            else if (hasWarnings) bgColorClass = 'bg-yellow-500';
             
             return (
               <div key={step.id} className="flex flex-col items-center">
@@ -170,19 +250,21 @@ const TransactionStepIndicator = ({ transactionId, currentStep }) => {
                 <div 
                   className={`
                     relative flex items-center justify-center w-10 h-10 rounded-full step-circle
-                    ${isComplete ? 'bg-blue-600 shadow-md' : 
-                    isCurrent ? 'bg-blue-500 shadow-lg ring-4 ring-blue-200' : 
-                    'bg-gray-200'}
+                    ${bgColorClass} shadow-md
                     transition-all duration-300 ${stepAnimClass}
-                    ${isComplete || isCurrent ? 'cursor-pointer' : 'cursor-not-allowed'}
+                    ${(isComplete || isCurrent || isInProgress || hasPassed || hasWarnings) ? 'cursor-pointer' : 'cursor-not-allowed'}
                   `}
                   style={{
-                    boxShadow: isComplete || isCurrent ? '0 0 0 4px white' : '0 0 0 4px white',
+                    boxShadow: '0 0 0 4px white',
                   }}
                 >
-                  <div className="relative z-20">
-                    {isComplete ? (
+                  <div className={`relative z-20 ${isInProgress ? 'spin' : ''}`}>
+                    {isComplete || hasPassed ? (
                       <CheckIcon className="w-6 h-6 text-white" aria-hidden="true" />
+                    ) : isInProgress ? (
+                      <ArrowPathIcon className="w-5 h-5 text-white" aria-hidden="true" />
+                    ) : hasWarnings ? (
+                      <ExclamationCircleIcon className="w-5 h-5 text-white" aria-hidden="true" />
                     ) : (
                       <step.icon 
                         className={`w-5 h-5 ${isCurrent ? 'text-white' : 'text-gray-500'}`}
@@ -194,12 +276,16 @@ const TransactionStepIndicator = ({ transactionId, currentStep }) => {
                   {/* Step number absolute positioned above the icon */}
                   <div className={`
                     absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border-2 z-20
-                    ${isComplete ? 'border-blue-600' : 
+                    ${isComplete || hasPassed ? 'border-green-600' : 
                       isCurrent ? 'border-blue-500' : 
+                      isInProgress ? 'border-blue-400' :
+                      hasWarnings ? 'border-yellow-500' :
                       'border-gray-300'}
                     flex items-center justify-center text-xs font-bold
-                    ${isComplete ? 'text-blue-600' : 
+                    ${isComplete || hasPassed ? 'text-green-600' : 
                       isCurrent ? 'text-blue-500' : 
+                      isInProgress ? 'text-blue-400' :
+                      hasWarnings ? 'text-yellow-500' :
                       'text-gray-500'}
                   `}>
                     {index + 1}
@@ -209,13 +295,15 @@ const TransactionStepIndicator = ({ transactionId, currentStep }) => {
                 {/* Step label */}
                 <div className={`mt-3 ${textAnimClass}`}>
                   <Link 
-                    to={isComplete || isCurrent ? step.path : '#'}
+                    to={(isComplete || isCurrent || isInProgress || hasPassed || hasWarnings) ? step.path : '#'}
                     className={`
                       relative text-sm font-medium px-3 py-1 rounded-full
-                      ${isComplete ? 'text-blue-700' : 
+                      ${isComplete || hasPassed ? 'text-green-700' : 
                         isCurrent ? 'text-white bg-blue-600 shadow-md' : 
+                        isInProgress ? 'text-white bg-blue-400 shadow-md' :
+                        hasWarnings ? 'text-white bg-yellow-500 shadow-md' :
                         'text-gray-500'}
-                      ${isComplete || isCurrent ? 'cursor-pointer' : 
+                      ${(isComplete || isCurrent || isInProgress || hasPassed || hasWarnings) ? 'cursor-pointer' : 
                         'cursor-not-allowed pointer-events-none opacity-70'}
                       transition-all duration-200
                     `}

@@ -865,7 +865,69 @@ const TransactionDetail = () => {
 
   // Add a function to navigate to the next step
   const navigateToNextStep = () => {
-    navigate(`/transactions/${id}/sanction-check`);
+    // Update the transaction status to show checks are in progress
+    const updatedTransaction = {
+      ...transaction,
+      sanctions_check_passed: null,
+      eligibility_check_passed: null,
+      limits_check_passed: null,
+      pricing_completed: null,
+      // Add timestamps to show checks are in progress
+      sanctions_check_timestamp: new Date().toISOString(),
+      eligibility_check_timestamp: new Date().toISOString(),
+      limits_check_timestamp: new Date().toISOString(),
+      pricing_timestamp: new Date().toISOString()
+    };
+    
+    // Update local state to show checks are in progress
+    setTransaction(updatedTransaction);
+    
+    // Run all checks simultaneously
+    runAllChecks(updatedTransaction);
+  };
+  
+  // Function to run all checks simultaneously
+  const runAllChecks = async (transactionData) => {
+    try {
+      // Set a slight delay to simulate processing
+      setTimeout(async () => {
+        // Simulate API calls for each check
+        // In a real implementation, these would be actual API calls
+        
+        // Mock results - in a real implementation these would come from the backend
+        const mockResults = {
+          sanctions_check_passed: Math.random() > 0.2, // 80% pass rate
+          eligibility_check_passed: Math.random() > 0.3, // 70% pass rate
+          limits_check_passed: Math.random() > 0.1, // 90% pass rate
+          pricing_completed: true
+        };
+        
+        // Update transaction with results
+        const finalResults = {
+          ...transactionData,
+          ...mockResults,
+          // Update timestamps to show when checks completed
+          sanctions_check_timestamp: new Date().toISOString(),
+          eligibility_check_timestamp: new Date().toISOString(),
+          limits_check_timestamp: new Date().toISOString(),
+          pricing_timestamp: new Date().toISOString()
+        };
+        
+        // Update transaction state with results
+        setTransaction(finalResults);
+        
+        // Save the results to the backend
+        try {
+          await DashboardService.updateTransaction(transaction.transaction_id, finalResults);
+          console.log('Transaction check results saved to backend');
+        } catch (error) {
+          console.error('Error saving check results:', error);
+        }
+      }, 2000); // 2-second delay to simulate processing
+    } catch (error) {
+      console.error('Error running checks:', error);
+      alert('There was an error running the checks. Please try again.');
+    }
   };
 
   // =========================================================================
@@ -964,7 +1026,7 @@ const TransactionDetail = () => {
       
       {/* Add Transaction Step Indicator */}
       {transaction && (
-        <TransactionStepIndicator transactionId={id} currentStep="email-extract" />
+        <TransactionStepIndicator transactionId={id} currentStep="email-extract" transaction={transaction} />
       )}
       
       {/* Error and loading states */}
@@ -1976,7 +2038,7 @@ const TransactionDetail = () => {
               onClick={navigateToNextStep}
               className="flex items-center px-6 py-3 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors duration-200"
             >
-              Continue to Sanction Check
+              Confirm Request Information
               <ArrowRightIcon className="ml-2 h-5 w-5" />
             </button>
           </div>
