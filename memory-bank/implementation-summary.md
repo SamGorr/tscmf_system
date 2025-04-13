@@ -493,6 +493,7 @@ These enhancements provide more comprehensive data storage and relationships bet
   - usd_equivalent_amount (USD Amount) - Shows amount converted to USD
   - usd_equivalent_amount_cover (ADB Covered Amount in USD) - Shows ADB's covered portion in USD
   - cover (Risk Coverage) - Displays the risk coverage percentage (properly scaled)
+  - guarantee_fee_rate (Requested Price) - Displays the requested guarantee fee rate percentage
 
 - Benefits:
   - More comprehensive financial information display

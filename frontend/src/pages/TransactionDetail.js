@@ -179,7 +179,8 @@ const TransactionDetail = () => {
     currency: '',
     usd_equivalent_amount: 0,
     usd_equivalent_amount_cover: 0,
-    cover: 0
+    cover: 0,
+    guarantee_fee_rate: 0
   });
 
   // Add this to the state declarations inside the TransactionDetail component
@@ -1200,7 +1201,8 @@ const TransactionDetail = () => {
         currency: requestData.currency,
         usd_equivalent_amount: parseFloat(requestData.usd_equivalent_amount) || 0,
         usd_equivalent_amount_cover: parseFloat(requestData.usd_equivalent_amount_cover) || 0,
-        cover: parseFloat(requestData.cover) / 100 || 0 // Convert from percentage to decimal
+        cover: parseFloat(requestData.cover) / 100 || 0, // Convert from percentage to decimal
+        guarantee_fee_rate: parseFloat(requestData.guarantee_fee_rate) || 0
       };
       
       // Update the transaction
@@ -1250,7 +1252,8 @@ const TransactionDetail = () => {
         currency: transaction.currency || '',
         usd_equivalent_amount: transaction.usd_equivalent_amount || 0,
         usd_equivalent_amount_cover: transaction.usd_equivalent_amount_cover || 0,
-        cover: transaction.cover ? transaction.cover * 100 : 0 // Convert from decimal to percentage
+        cover: transaction.cover ? transaction.cover * 100 : 0, // Convert from decimal to percentage
+        guarantee_fee_rate: transaction.guarantee_fee_rate || 0
       });
     }
   }, [transaction]);
@@ -1661,6 +1664,31 @@ const TransactionDetail = () => {
                     ) : (
                       <p className="text-base">
                         {transaction.cover ? `${transaction.cover * 100}%` : 'Not specified'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="w-full">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Requested Price</h3>
+                    {isEditingRequest ? (
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          name="guarantee_fee_rate"
+                          value={requestData.guarantee_fee_rate}
+                          onChange={handleRequestInputChange}
+                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                          step="0.01"
+                          min="0"
+                        />
+                        <span className="ml-2">%</span>
+                      </div>
+                    ) : (
+                      <p className="text-base">
+                        {transaction.guarantee_fee_rate ? `${transaction.guarantee_fee_rate * 100}%` : 'Not specified'}
                       </p>
                     )}
                   </div>
