@@ -654,3 +654,51 @@ def get_transaction_underlying(transaction_id: int, db: Session = Depends(get_db
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error retrieving underlying transactions: {str(e)}")
+
+@app.put("/api/transactions/{transaction_id}")
+def update_transaction(transaction_id: int, transaction_data: dict, db: Session = Depends(get_db)):
+    """
+    Update transaction details
+    """
+    try:
+        print(f"Updating transaction with ID: {transaction_id}")
+        print(f"Update data: {transaction_data}")
+        
+        # Get transaction from database
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
+        # Update transaction fields from the request data
+        # Only update fields that are provided in the request
+        update_fields = [
+            'sub_limit_type', 'form_of_eligible_instrument', 'adb_guarantee_trn',
+            'confirming_bank_reference_trn', 'issuing_bank_reference_trn',
+            'face_amount', 'currency', 'usd_equivalent_amount',
+            'usd_equivalent_amount_cover', 'cover', 'guarantee_fee_rate'
+        ]
+        
+        for field in update_fields:
+            if field in transaction_data:
+                setattr(transaction, field, transaction_data[field])
+        
+        # Commit changes to the database
+        db.commit()
+        db.refresh(transaction)
+        
+        # Return updated transaction data
+        return {
+            "transaction_id": transaction.transaction_id,
+            "message": "Transaction updated successfully"
+        }
+        
+    except HTTPException as he:
+        # Re-raise HTTP exceptions
+        raise he
+    except Exception as e:
+        print(f"Error updating transaction: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()  # Rollback the transaction in case of error
+        raise HTTPException(status_code=500, detail=f"Error updating transaction: {str(e)}")

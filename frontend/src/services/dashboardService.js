@@ -158,6 +158,18 @@ const DashboardService = {
       console.error('Error fetching underlying transactions:', error);
       throw error;
     }
+  },
+  
+  // Update transaction with new data
+  updateTransaction: async (transactionId, transactionData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.put(`${apiUrl}/api/transactions/${transactionId}`, transactionData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
   }
 };
 

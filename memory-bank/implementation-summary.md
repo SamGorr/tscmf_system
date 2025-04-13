@@ -786,3 +786,30 @@ The specific functions modified were:
 - Removed unused CSS animations at the top of the file
 - Added comments to organize code into logical sections
 - Removed the legacy `handleSubmit` function which was redundant
+
+## Transaction Update Feature
+
+### Overview
+- Implemented a transaction update feature that allows users to edit transaction details and save changes to the database
+- Changes are persisted in the PostgreSQL database through a new backend API endpoint
+
+### Components Modified
+1. **Backend**
+   - Added a new PUT endpoint `/api/transactions/{transaction_id}` to handle transaction updates
+   - Implemented database transaction handling with commit and rollback for data integrity
+
+2. **Frontend Service**
+   - Added `updateTransaction` method to the `DashboardService` to call the new backend API
+   - This centralizes API calls and provides a consistent interface for transaction updates
+
+3. **Transaction Detail Component**
+   - Updated the `handleSubmitRequestSection` function to use the new service method
+   - Added proper error handling and success feedback
+   - Maintains local state to reflect changes immediately in the UI
+
+### Usage
+1. Navigate to the Transaction Detail page
+2. Click "Edit Details" in the Request Information section
+3. Make necessary changes to the fields
+4. Click "Save Changes" to persist the changes to the database
+5. The updated values will be reflected in both the UI and the backend database

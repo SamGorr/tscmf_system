@@ -799,18 +799,21 @@ const TransactionDetail = () => {
         guarantee_fee_rate: parseFloat(requestData.guarantee_fee_rate) || 0
       };
       
-      // Update the transaction
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}`, updatedTransaction);
+      // Update the transaction using the service
+      const result = await DashboardService.updateTransaction(transaction.transaction_id, updatedTransaction);
       
-      // Update the transaction state
-      setTransaction(updatedTransaction);
-      
-      // Exit edit mode
-      setIsEditingRequest(false);
-      
-      // Show success message
-      alert('Request information updated successfully');
+      if (result) {
+        console.log('Transaction updated successfully:', result);
+        
+        // Update the transaction state
+        setTransaction(updatedTransaction);
+        
+        // Exit edit mode
+        setIsEditingRequest(false);
+        
+        // Show success message
+        alert('Request information updated successfully');
+      }
     } catch (error) {
       console.error('Error updating request information:', error);
       alert('Error updating request information. Please try again.');
