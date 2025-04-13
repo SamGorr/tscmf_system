@@ -41,7 +41,10 @@ function App() {
             <Route path="/transactions/:id/approval" element={<ApprovalStep />} />
             <Route path="/transactions/:id/booking" element={<BookingStep />} />
             
-            <Route path="/sanctions-check/:id" element={<SanctionsCheckDetail />} />
+            {/* Transaction checks detail pages */}
+            <Route path="/transactions/:id/sanctions-check" element={<SanctionsCheckDetail />} />
+            
+            {/* Configuration pages */}
             <Route path="/config/pricing-matrix" element={<PricingMatrix />} />
             <Route path="/config/eligibility-check" element={<EligibilityCheckConfig />} />
           </Routes>

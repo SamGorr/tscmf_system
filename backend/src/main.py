@@ -7,6 +7,7 @@ import datetime
 
 from .database.database import get_db, engine
 from .models.models import Transaction, Event, Entity, Transaction_Entity, Transaction_Goods, Underlying_Transaction
+from .services.sanctions_check import check_entity_against_watchlist, check_transaction_entities
 # Create the tables if they don't exist
 # Note: In production, use Alembic migrations instead
 # Base.metadata.create_all(bind=engine)
@@ -1041,3 +1042,105 @@ def update_verification_checks(transaction_id: int, check_data: dict, db: Sessio
         traceback.print_exc()
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating verification checks: {str(e)}")
+
+@app.get("/api/transactions/{transaction_id}/sanctions-check")
+def get_transaction_sanctions_check(transaction_id: int, db: Session = Depends(get_db)):
+    """
+    Perform sanctions check on all entities associated with a transaction
+    """
+    try:
+        print(f"Starting sanctions check for transaction {transaction_id}")
+        
+        # Get transaction entities
+        transaction_entities = db.query(Transaction_Entity).filter(
+            Transaction_Entity.transaction_id == transaction_id
+        ).all()
+        
+        if not transaction_entities:
+            return {"error": "No entities found for this transaction"}
+        
+        # Convert entities to dict format for checking
+        entities_for_check = []
+        for entity in transaction_entities:
+            entities_for_check.append({
+                "name": entity.name,
+                "type": entity.type,
+                "address": entity.address,
+                "country": entity.country,
+                "id": entity.id
+            })
+        
+        # Perform sanctions check
+        check_results = check_transaction_entities(entities_for_check)
+        
+        # Format results
+        formatted_results = []
+        for entity in transaction_entities:
+            entity_name = entity.name
+            entity_result = check_results.get(entity_name, {"status": "Not Checked", "matches": []})
+            
+            formatted_results.append({
+                "entity_id": entity.id,
+                "entity_name": entity_name,
+                "entity_type": entity.type,
+                "entity_address": entity.address,
+                "entity_country": entity.country,
+                "match_status": entity_result["status"],
+                "matches": entity_result.get("matches", []),
+                "check_timestamp": entity_result.get("check_timestamp", datetime.datetime.utcnow().isoformat())
+            })
+        
+        # Update the event's sanction_check_status if there is a relevant event
+        event = db.query(Event).filter(
+            Event.transaction_id == transaction_id
+        ).order_by(desc(Event.created_at)).first()
+        
+        if event:
+            # Set status based on results - if any entity is "Reviewed", set overall status to "REVIEW"
+            if any(result["match_status"] == "Reviewed" for result in formatted_results):
+                event.sanction_check_status = "REVIEW"
+            else:
+                event.sanction_check_status = "CLEARED"
+            
+            db.commit()
+            print(f"Updated event sanction_check_status to {event.sanction_check_status}")
+        
+        return formatted_results
+    except Exception as e:
+        print(f"Error performing sanctions check: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error performing sanctions check: {str(e)}")
+
+@app.put("/api/transactions/{transaction_id}/sanctions-check")
+def update_transaction_sanctions_check(transaction_id: int, entity_decisions: dict, db: Session = Depends(get_db)):
+    """
+    Update the sanctions check status for entities in a transaction
+    """
+    try:
+        # Check if transaction exists
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Get the event for this transaction
+        event = db.query(Event).filter(
+            Event.transaction_id == transaction_id
+        ).order_by(desc(Event.created_at)).first()
+        
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found for this transaction")
+        
+        # Update the sanction check status
+        event.sanction_check_status = entity_decisions.get("overall_status", "REVIEW")
+        
+        # Commit changes
+        db.commit()
+        
+        return {"message": "Sanctions check status updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error updating sanctions check status: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating sanctions check status: {str(e)}")

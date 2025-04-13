@@ -1,0 +1,298 @@
+[
+  {
+    "basic_information": {
+      "entity_name": "Northern Financial Services Bank",
+      "country": "North Korea",
+      "full_address": "125 Kim Il Sung Square, Pyongyang, North Korea",
+      "swift_code": "NFSPKPPY",
+      "registration_number": "DPR-2003-08654",
+      "entity_type": "Bank",
+      "founding_date": "2003-07-15",
+      "industry_sector": "Banking & Financial Services"
+    },
+    "sanction_information": [
+      {
+        "sanction_regime": "OFAC",
+        "effective_date": "2017-09-21",
+        "expiration_date": null,
+        "sanction_type": "Full Blocking",
+        "reason_for_designation": "Providing financial services to entities involved in North Korea's ballistic missile program",
+        "sanction_reference_number": "OFAC-SDN-NK-20170921-001"
+      },
+      {
+        "sanction_regime": "UN",
+        "effective_date": "2017-10-03",
+        "expiration_date": null,
+        "sanction_type": "Asset Freeze",
+        "reason_for_designation": "Violation of UN Security Council Resolution 1718",
+        "sanction_reference_number": "UNSCR-1718-2017-10-03-002"
+      },
+      {
+        "sanction_regime": "EU",
+        "effective_date": "2017-10-16",
+        "expiration_date": null,
+        "sanction_type": "Asset Freeze & Service Prohibition",
+        "reason_for_designation": "Supporting sanctioned activities of the DPRK government",
+        "sanction_reference_number": "EU-DPRK-2017-10-16-003"
+      }
+    ],
+    "adverse_news": [
+      {
+        "publication_date": "2019-03-12",
+        "news_category": "Sanctions Evasion",
+        "news_headline": "Northern Financial Services Bank Implicated in Coal Exports Scheme",
+        "detailed_content_summary": "Investigation reveals the bank's role in facilitating payments for North Korean coal exports in violation of international sanctions. The scheme involved falsified shipping documents and front companies in multiple Asian countries.",
+        "source_publication": "Financial Times",
+        "url": "https://www.ft.com/content/example-url-1"
+      },
+      {
+        "publication_date": "2020-08-27",
+        "news_category": "Money Laundering",
+        "news_headline": "UN Panel of Experts Identifies Northern Financial Services Bank in Global Money Laundering Network",
+        "detailed_content_summary": "UN report details how the bank established a sophisticated network of shell companies to launder funds from illegal arms sales and other prohibited activities. The network spans several jurisdictions including China, Malaysia, and Singapore.",
+        "source_publication": "Reuters",
+        "url": "https://www.reuters.com/article/example-url-2"
+      },
+      {
+        "publication_date": "2021-11-05",
+        "news_category": "Cybercrime",
+        "news_headline": "Northern Financial Services Bank Linked to State-Sponsored Hacking Group",
+        "detailed_content_summary": "Cybersecurity researchers connect the bank to a North Korean state-sponsored hacking group that has targeted financial institutions worldwide. The bank is believed to be involved in laundering proceeds from cryptocurrency thefts.",
+        "source_publication": "Cybersecurity Today",
+        "url": "https://www.cybersecuritytoday.com/article/example-url-3"
+      }
+    ]
+  },
+  {
+    "basic_information": {
+      "entity_name": "Crescent International Banking Corporation",
+      "country": "Iran",
+      "full_address": "27 Ferdowsi Avenue, Tehran, Iran",
+      "swift_code": "CIBCIRTX",
+      "registration_number": "IR-BANK-1992-453678",
+      "entity_type": "Bank",
+      "founding_date": "1992-04-12",
+      "industry_sector": "Banking & Financial Services"
+    },
+    "sanction_information": [
+      {
+        "sanction_regime": "OFAC",
+        "effective_date": "2018-11-05",
+        "expiration_date": null,
+        "sanction_type": "Secondary Sanctions",
+        "reason_for_designation": "Providing support to Iran's nuclear program and Revolutionary Guard Corps",
+        "sanction_reference_number": "OFAC-IRAN-2018-11-05-007"
+      },
+      {
+        "sanction_regime": "UK",
+        "effective_date": "2019-01-15",
+        "expiration_date": null,
+        "sanction_type": "Financial Restrictions",
+        "reason_for_designation": "Supporting designated entities with ties to Iran's nuclear proliferation activities",
+        "sanction_reference_number": "UK-IRAN-SANCTIONS-2019-01-15-021"
+      }
+    ],
+    "adverse_news": [
+      {
+        "publication_date": "2019-07-23",
+        "news_category": "Sanctions Evasion",
+        "news_headline": "Crescent International Banking Corporation Exposed in Oil Sanctions Workaround",
+        "detailed_content_summary": "Investigation uncovers scheme where the bank facilitated oil sales by disguising the origin of Iranian crude oil shipments. The bank allegedly used a series of front companies and altered shipping documentation to bypass international sanctions.",
+        "source_publication": "Wall Street Journal",
+        "url": "https://www.wsj.com/articles/example-url-4"
+      },
+      {
+        "publication_date": "2020-03-18",
+        "news_category": "Terrorist Financing",
+        "news_headline": "Treasury Department Links Crescent International to Terrorist Financing Networks",
+        "detailed_content_summary": "U.S. Treasury report details evidence of the bank's involvement in financial networks supporting designated terrorist organizations in the Middle East. Transactions worth over $240 million were processed through obscured channels.",
+        "source_publication": "Financial Intelligence Bulletin",
+        "url": "https://www.fib.gov/reports/example-url-5"
+      }
+    ]
+  },
+  {
+    "basic_information": {
+      "entity_name": "Eurasian Unity Development Bank",
+      "country": "Russia",
+      "full_address": "14 Neglinnaya Street, Moscow, 107016, Russia",
+      "swift_code": "EUDBRUMM",
+      "registration_number": "RU-CB-2008-11234",
+      "entity_type": "Bank",
+      "founding_date": "2008-09-03",
+      "industry_sector": "Banking & Financial Services"
+    },
+    "sanction_information": [
+      {
+        "sanction_regime": "OFAC",
+        "effective_date": "2022-02-24",
+        "expiration_date": null,
+        "sanction_type": "Sectoral Sanctions",
+        "reason_for_designation": "Operating in the financial sector of the Russian economy following invasion of Ukraine",
+        "sanction_reference_number": "OFAC-UKRAINE-2022-02-24-021"
+      },
+      {
+        "sanction_regime": "EU",
+        "effective_date": "2022-03-09",
+        "expiration_date": null,
+        "sanction_type": "Financial and Investment Restrictions",
+        "reason_for_designation": "Supporting actions undermining the territorial integrity of Ukraine",
+        "sanction_reference_number": "EU-RUSSIA-2022-03-09-006"
+      },
+      {
+        "sanction_regime": "UK",
+        "effective_date": "2022-03-15",
+        "expiration_date": null,
+        "sanction_type": "Asset Freeze",
+        "reason_for_designation": "Providing financial services in support of Russian government",
+        "sanction_reference_number": "UK-RUSSIA-2022-03-15-012"
+      }
+    ],
+    "adverse_news": [
+      {
+        "publication_date": "2022-01-18",
+        "news_category": "Political Exposure",
+        "news_headline": "Eurasian Unity Development Bank Leadership Tied to Kremlin Inner Circle",
+        "detailed_content_summary": "Investigation reveals close ties between the bank's senior management and Russian political elites. Several executives have direct personal and financial relationships with individuals in Putin's inner circle, raising concerns about the bank's independence.",
+        "source_publication": "Bloomberg",
+        "url": "https://www.bloomberg.com/news/articles/example-url-6"
+      },
+      {
+        "publication_date": "2022-03-30",
+        "news_category": "Sanctions Evasion",
+        "news_headline": "Eurasian Unity Development Bank Creating Alternative Payment Channel After SWIFT Ban",
+        "detailed_content_summary": "Reports indicate the bank is developing alternative payment infrastructure to circumvent SWIFT restrictions. The new system would potentially allow sanctioned Russian entities to continue international transactions outside regulated channels.",
+        "source_publication": "Economic Times",
+        "url": "https://economictimes.com/article/example-url-7"
+      },
+      {
+        "publication_date": "2022-05-12",
+        "news_category": "Fraud",
+        "news_headline": "Whistleblower Alleges Document Falsification at Eurasian Unity Development Bank",
+        "detailed_content_summary": "Former employee claims the bank systematically altered documentation to obscure transaction origins and beneficiaries. Internal audit procedures were allegedly bypassed to facilitate transactions with entities under international scrutiny.",
+        "source_publication": "Financial Integrity Monitor",
+        "url": "https://www.financialintegritymonitor.org/reports/example-url-8"
+      }
+    ]
+  },
+  {
+    "basic_information": {
+      "entity_name": "Global Trade & Finance Bank",
+      "country": "Belarus",
+      "full_address": "43 Independence Avenue, Minsk, 220030, Belarus",
+      "swift_code": "GTFBBY2X",
+      "registration_number": "BY-NB-2001-23456",
+      "entity_type": "Bank",
+      "founding_date": "2001-11-27",
+      "industry_sector": "Banking & Financial Services"
+    },
+    "sanction_information": [
+      {
+        "sanction_regime": "OFAC",
+        "effective_date": "2021-08-09",
+        "expiration_date": null,
+        "sanction_type": "Full Blocking",
+        "reason_for_designation": "Operating in the financial sector of the Belarusian economy and supporting government repression",
+        "sanction_reference_number": "OFAC-BELARUS-2021-08-09-003"
+      },
+      {
+        "sanction_regime": "EU",
+        "effective_date": "2021-06-24",
+        "expiration_date": null,
+        "sanction_type": "Financial Restrictions",
+        "reason_for_designation": "Supporting Belarusian regime and financing activities that contribute to repression of civil society",
+        "sanction_reference_number": "EU-BELARUS-2021-06-24-005"
+      }
+    ],
+    "adverse_news": [
+      {
+        "publication_date": "2020-12-03",
+        "news_category": "Political Exposure",
+        "news_headline": "Global Trade & Finance Bank Executives Connected to Belarusian Government Officials",
+        "detailed_content_summary": "Investigation uncovers close personal and financial relationships between the bank's executive team and high-ranking Belarusian government officials. Several board members previously held positions in government ministries with human rights concerns.",
+        "source_publication": "The Guardian",
+        "url": "https://www.theguardian.com/business/example-url-9"
+      },
+      {
+        "publication_date": "2021-05-17",
+        "news_category": "Money Laundering",
+        "news_headline": "Global Trade & Finance Bank Named in Money Laundering Investigation",
+        "detailed_content_summary": "Regulatory authorities identify patterns of suspicious transactions involving the bank related to potential money laundering. The transactions involve cross-border transfers with high-risk jurisdictions and inadequate due diligence procedures.",
+        "source_publication": "Financial Crime News",
+        "url": "https://www.financialcrimenews.com/article/example-url-10"
+      },
+      {
+        "publication_date": "2022-02-08",
+        "news_category": "Sanctions Violations",
+        "news_headline": "Global Trade & Finance Bank Allegedly Processed Transactions for Sanctioned Entities",
+        "detailed_content_summary": "Evidence suggests the bank knowingly processed transactions for entities already under international sanctions. Internal documents indicate deliberate circumvention of screening protocols and compliance failures.",
+        "source_publication": "Compliance Weekly",
+        "url": "https://www.complianceweekly.com/news/example-url-11"
+      }
+    ]
+  },
+  {
+    "basic_information": {
+      "entity_name": "Damascus International Commerce Bank",
+      "country": "Syria",
+      "full_address": "78 Aleppo Street, Damascus, Syria",
+      "swift_code": "DICBSYDA",
+      "registration_number": "SY-CB-1999-87612",
+      "entity_type": "Bank",
+      "founding_date": "1999-06-21",
+      "industry_sector": "Banking & Financial Services"
+    },
+    "sanction_information": [
+      {
+        "sanction_regime": "OFAC",
+        "effective_date": "2012-05-30",
+        "expiration_date": null,
+        "sanction_type": "Full Blocking",
+        "reason_for_designation": "Providing financial services to the Government of Syria and supporting human rights abuses",
+        "sanction_reference_number": "OFAC-SYRIA-2012-05-30-009"
+      },
+      {
+        "sanction_regime": "EU",
+        "effective_date": "2012-06-15",
+        "expiration_date": null,
+        "sanction_type": "Asset Freeze & Service Prohibition",
+        "reason_for_designation": "Supporting the Syrian regime financially and facilitating international transactions",
+        "sanction_reference_number": "EU-SYRIA-2012-06-15-017"
+      },
+      {
+        "sanction_regime": "UN",
+        "effective_date": "2013-01-22",
+        "expiration_date": null,
+        "sanction_type": "Asset Freeze",
+        "reason_for_designation": "Providing financial support to entities involved in violence against civilian population",
+        "sanction_reference_number": "UNSC-SYRIA-2013-01-22-004"
+      }
+    ],
+    "adverse_news": [
+      {
+        "publication_date": "2014-09-05",
+        "news_category": "Terrorist Financing",
+        "news_headline": "Damascus International Commerce Bank Implicated in Terrorist Group Funding",
+        "detailed_content_summary": "Intelligence reports connect the bank to financial networks funding designated terrorist organizations operating in Syria and Iraq. The bank allegedly processed transactions disguised as humanitarian aid to channel funds to armed groups.",
+        "source_publication": "International Security Journal",
+        "url": "https://www.internationalsecurityjournal.com/article/example-url-12"
+      },
+      {
+        "publication_date": "2017-03-21",
+        "news_category": "Sanctions Evasion",
+        "news_headline": "Damascus International Commerce Bank Operating Shadow Network of Correspondent Relationships",
+        "detailed_content_summary": "Investigation reveals the bank maintained unofficial correspondent banking relationships through intermediaries to access international financial markets despite sanctions. The network spans multiple jurisdictions including Lebanon, UAE, and Russia.",
+        "source_publication": "The Economist",
+        "url": "https://www.economist.com/finance/example-url-13"
+      },
+      {
+        "publication_date": "2019-11-14",
+        "news_category": "Human Rights Violations",
+        "news_headline": "Damascus International Commerce Bank Financing Properties Seized from Displaced Syrians",
+        "detailed_content_summary": "Human rights organizations document the bank's involvement in financing development projects on properties illegally seized from displaced Syrians. These projects are part of a systematic effort to prevent refugees from reclaiming their homes.",
+        "source_publication": "Human Rights Watch",
+        "url": "https://www.hrw.org/news/example-url-14"
+      }
+    ]
+  }
+] 

@@ -24,10 +24,12 @@ import {
 const SanctionsCheckDetail = () => {
   const { id } = useParams();
   const [transaction, setTransaction] = useState(null);
+  const [sanctionsData, setSanctionsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('summary');
   const [selectedEntity, setSelectedEntity] = useState(null);
+  const [runningCheck, setRunningCheck] = useState(false);
 
   useEffect(() => {
     const fetchTransactionDetails = async () => {
@@ -35,93 +37,58 @@ const SanctionsCheckDetail = () => {
         // Get the API URL from environment variable or default to localhost:5000
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
         
-        // Try fetching from API first
+        // Fetch transaction details
         const response = await axios.get(`${apiUrl}/api/transactions/${id}`);
         setTransaction(response.data);
         
-        // If there are entities, set the first one as selected
-        if (response.data.sanctions_check_details && response.data.sanctions_check_details.length > 0) {
-          setSelectedEntity(response.data.sanctions_check_details[0]);
+        // Fetch sanctions check data if available
+        try {
+          const sanctionsResponse = await axios.get(`${apiUrl}/api/transactions/${id}/sanctions-check`);
+          setSanctionsData(sanctionsResponse.data);
+          
+          // If there are entities, set the first one as selected
+          if (sanctionsResponse.data && sanctionsResponse.data.length > 0) {
+            setSelectedEntity(sanctionsResponse.data[0]);
+          }
+        } catch (sanctionsError) {
+          console.error('Error fetching sanctions check data:', sanctionsError);
+          // If sanctions data isn't available yet, that's OK
         }
         
         setLoading(false);
       } catch (err) {
         console.error('Error fetching transaction details:', err);
-        
-        // Fallback to mock data
-        console.log('Using mock data for demonstration');
-        
-        // Try to find the transaction in our mock data
-        const foundTransaction = MOCK_TRANSACTION_DATA.find(t => t.id.toString() === id) || 
-                                { ...mockTransactionData, id };
-        
-        // Add mock sanctions check details if they don't exist
-        if (!foundTransaction.sanctions_check_details) {
-          const entities = foundTransaction.entities || [];
-          
-          foundTransaction.sanctions_check_details = entities.map(entity => ({
-            entity_name: entity.name,
-            entity_type: entity.type,
-            status: Math.random() > 0.7 ? 'MATCH' : 'CLEAR',
-            matches: Math.random() > 0.7 ? [
-              {
-                list_name: 'OFAC SDN',
-                match_score: Math.floor(Math.random() * 20) + 70,
-                match_name: entity.name,
-                match_id: '12345',
-                match_details: {
-                  programs: ['UKRAINE-EO13662', 'RUSSIA-EO14024'],
-                  nationalities: ['Russia', 'Ukraine'],
-                  dob: '1975-03-12',
-                  addresses: ['123 Main St, Moscow, Russia']
-                }
-              },
-              {
-                list_name: 'EU Consolidated',
-                match_score: Math.floor(Math.random() * 20) + 60,
-                match_name: entity.name,
-                match_id: '54321',
-                match_details: {
-                  programs: ['EU_RUSSIA', 'EU_UKRAINE'],
-                  nationalities: ['Russia'],
-                  dob: '1975-03-15',
-                  addresses: ['456 Center St, Moscow, Russia']
-                }
-              }
-            ] : [],
-            pep_status: Math.random() > 0.8 ? 'PEP' : 'NON-PEP',
-            adverse_media: Math.random() > 0.7 ? [
-              {
-                source: 'Reuters',
-                date: '2022-05-15',
-                title: 'Company linked to fraud investigation',
-                summary: 'The entity was mentioned in connection with an ongoing fraud investigation in Eastern Europe.'
-              },
-              {
-                source: 'Financial Times',
-                date: '2021-11-03',
-                title: 'Regulatory scrutiny increases for sector',
-                summary: 'The sector in which the entity operates is facing increased regulatory scrutiny due to compliance concerns.'
-              }
-            ] : [],
-            risk_score: Math.floor(Math.random() * 100),
-            check_timestamp: new Date().toISOString()
-          }));
-        }
-        
-        setTransaction(foundTransaction);
-        
-        // If there are entities, set the first one as selected
-        if (foundTransaction.sanctions_check_details && foundTransaction.sanctions_check_details.length > 0) {
-          setSelectedEntity(foundTransaction.sanctions_check_details[0]);
-        }
-        
+        setError(err.message);
         setLoading(false);
       }
     };
 
     fetchTransactionDetails();
   }, [id]);
+
+  const runSanctionsCheck = async () => {
+    try {
+      setRunningCheck(true);
+      
+      // Get the API URL from environment variable or default to localhost:5000
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      
+      // Run the sanctions check
+      const response = await axios.get(`${apiUrl}/api/transactions/${id}/sanctions-check`);
+      setSanctionsData(response.data);
+      
+      // If there are entities, set the first one as selected
+      if (response.data && response.data.length > 0) {
+        setSelectedEntity(response.data[0]);
+      }
+      
+      setRunningCheck(false);
+    } catch (err) {
+      console.error('Error running sanctions check:', err);
+      setError(err.message);
+      setRunningCheck(false);
+    }
+  };
 
   const handleEntitySelect = (entity) => {
     setSelectedEntity(entity);
@@ -138,10 +105,11 @@ const SanctionsCheckDetail = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'CLEAR':
+      case 'Cleared':
+      case 'CLEARED':
         return 'bg-green-100 text-green-800';
       case 'MATCH':
-        return 'bg-red-100 text-red-800';
+      case 'Reviewed':
       case 'REVIEW':
         return 'bg-yellow-100 text-yellow-800';
       default:
@@ -158,10 +126,10 @@ const SanctionsCheckDetail = () => {
           <div className="bg-white shadow rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-medium text-gray-900">Sanctions Screening Summary</h3>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center ${getStatusColor(selectedEntity.status)}`}>
-                {selectedEntity.status === 'CLEAR' ? 
-                  <><CheckCircleIcon className="h-4 w-4 mr-1" />Clear</> : 
-                  <><ExclamationCircleIcon className="h-4 w-4 mr-1" />Match Found</>}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium inline-flex items-center ${getStatusColor(selectedEntity.match_status)}`}>
+                {selectedEntity.match_status === 'Cleared' || selectedEntity.match_status === 'CLEARED' ? 
+                  <><CheckCircleIcon className="h-4 w-4 mr-1" />Cleared</> : 
+                  <><ExclamationCircleIcon className="h-4 w-4 mr-1" />Review Required</>}
               </span>
             </div>
             
@@ -178,44 +146,31 @@ const SanctionsCheckDetail = () => {
                     <span className="text-gray-900">{selectedEntity.entity_type}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">PEP Status:</span>
-                    <span className={selectedEntity.pep_status === 'PEP' ? 'text-yellow-600 font-medium' : 'text-gray-900'}>
-                      {selectedEntity.pep_status || 'Not Checked'}
-                    </span>
+                    <span className="text-gray-500 text-sm">Country:</span>
+                    <span className="text-gray-900">{selectedEntity.entity_country}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 text-sm">Address:</span>
+                    <span className="text-gray-900 truncate max-w-[300px]">{selectedEntity.entity_address}</span>
                   </div>
                 </div>
               </div>
               
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Risk Assessment</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Screening Results</h4>
                 <div className="space-y-3">
-                  <div>
-                    <span className="text-gray-500 text-sm block mb-1">Overall Risk Score:</span>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div 
-                        className={`h-2.5 rounded-full ${
-                          selectedEntity.risk_score < 25 ? 'bg-green-500' :
-                          selectedEntity.risk_score < 50 ? 'bg-green-600' :
-                          selectedEntity.risk_score < 75 ? 'bg-yellow-500' :
-                          selectedEntity.risk_score < 90 ? 'bg-orange-500' : 'bg-red-500'
-                        }`} 
-                        style={{ width: `${selectedEntity.risk_score}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-gray-500">0</span>
-                      <span className="text-xs font-medium">{selectedEntity.risk_score}/100</span>
-                      <span className="text-xs text-gray-500">100</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between pt-2">
-                    <span className="text-gray-500 text-sm">Risk Level:</span>
-                    <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${getRiskLevel(selectedEntity.risk_score).color}`}>
-                      {getRiskLevel(selectedEntity.risk_score).level}
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 text-sm">Status:</span>
+                    <span className={`font-medium ${selectedEntity.match_status === 'Cleared' || selectedEntity.match_status === 'CLEARED' ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {selectedEntity.match_status}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Checked On:</span>
+                    <span className="text-gray-500 text-sm">Potential Matches:</span>
+                    <span className="text-gray-900 font-medium">{selectedEntity.matches ? selectedEntity.matches.length : 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 text-sm">Check Date:</span>
                     <span className="text-gray-900">
                       {new Date(selectedEntity.check_timestamp).toLocaleString()}
                     </span>
@@ -318,7 +273,7 @@ const SanctionsCheckDetail = () => {
                     <div className="bg-gray-50 px-4 py-3 border-b">
                       <div className="flex justify-between items-center">
                         <h4 className="font-medium text-gray-800">
-                          {match.list_name}
+                          {match.match_name}
                         </h4>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-gray-500">Match Score:</span>
@@ -484,29 +439,22 @@ const SanctionsCheckDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 py-8">
+      <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-64">
-            <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+          <div className="bg-white shadow rounded-lg p-6">
+            <p className="text-center">Loading...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (error || !transaction) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 py-8">
+      <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 p-6 rounded-lg shadow">
-            <h2 className="text-red-800 font-medium text-lg mb-2">Error Loading Data</h2>
-            <p className="text-red-700">{error || 'Transaction not found'}</p>
-            <Link to="/transactions" className="mt-4 inline-flex items-center text-red-600 hover:text-red-800">
-              <ArrowLeftIcon className="h-4 w-4 mr-1" /> Back to Transactions
-            </Link>
+          <div className="bg-white shadow rounded-lg p-6">
+            <p className="text-center text-red-500">Error: {error}</p>
           </div>
         </div>
       </div>
@@ -514,142 +462,232 @@ const SanctionsCheckDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <ShieldCheckIcon className="h-6 w-6 text-primary mr-2" />
-                <div>
-                  <h1 className="text-xl font-medium text-gray-900">
-                    Sanctions Check - Transaction #{transaction.reference_number}
-                  </h1>
-                  <p className="text-sm text-gray-500">
-                    {transaction.sanctions_check_timestamp 
-                      ? `Last checked: ${new Date(transaction.sanctions_check_timestamp).toLocaleString()}`
-                      : 'Not checked yet'}
-                  </p>
+        <div className="mb-6 flex justify-between items-center">
+          <div className="flex items-center">
+            <Link to={`/transactions/${id}`} className="text-blue-600 hover:text-blue-800 flex items-center">
+              <ArrowLeftIcon className="h-5 w-5 mr-1" />
+              <span>Back to Transaction</span>
+            </Link>
+            <h1 className="ml-8 text-2xl font-semibold text-gray-900">Sanctions Check</h1>
+          </div>
+          <button
+            onClick={runSanctionsCheck}
+            disabled={runningCheck}
+            className={`px-4 py-2 rounded text-white flex items-center ${
+              runningCheck ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {runningCheck ? (
+              <>
+                <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+                Running Check...
+              </>
+            ) : (
+              <>
+                <ArrowPathIcon className="h-5 w-5 mr-2" />
+                Run Check
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="p-4 bg-gray-50 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Transaction {id} - Sanctions Screening</h2>
+          </div>
+
+          {sanctionsData.length === 0 ? (
+            <div className="p-6 text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
+                <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Sanctions Check Data</h3>
+              <p className="text-gray-500 mb-4">Click the "Run Check" button to perform a sanctions check for this transaction.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4">
+              <div className="col-span-1 border-r border-gray-200 bg-gray-50">
+                <div className="p-4 border-b border-gray-200">
+                  <h3 className="font-medium text-gray-700">Entities</h3>
+                </div>
+                <div className="overflow-y-auto max-h-[70vh]">
+                  {sanctionsData.map((entity) => (
+                    <div 
+                      key={entity.entity_id} 
+                      className={`p-4 border-b border-gray-200 hover:bg-gray-100 cursor-pointer flex justify-between items-center ${
+                        selectedEntity && selectedEntity.entity_id === entity.entity_id ? 'bg-blue-50' : ''
+                      }`}
+                      onClick={() => handleEntitySelect(entity)}
+                    >
+                      <div>
+                        <div className="font-medium text-gray-900">{entity.entity_name}</div>
+                        <div className="text-sm text-gray-500">{entity.entity_type}</div>
+                      </div>
+                      <div className={`px-2 py-1 rounded-full text-xs ${getStatusColor(entity.match_status)}`}>
+                        {entity.match_status}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <Link 
-                  to={`/transactions/${id}`}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  <ArrowLeftIcon className="h-4 w-4 mr-1" />
-                  Back to Transaction
-                </Link>
-                <button 
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  <ArrowPathIcon className="h-4 w-4 mr-1" />
-                  Recheck
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <div>
-                <span className="text-sm font-medium text-gray-700">Transaction Status:</span>
-                <span className={`ml-2 px-3 py-1 rounded-full text-sm font-medium inline-flex items-center ${
-                  transaction.sanctions_check_passed === true ? 'bg-green-100 text-green-800' : 
-                  transaction.sanctions_check_passed === false ? 'bg-red-100 text-red-800' : 
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {transaction.sanctions_check_passed === true ? 
-                    <><CheckCircleIcon className="h-4 w-4 mr-1" />All Checks Passed</> : 
-                    transaction.sanctions_check_passed === false ?
-                    <><XCircleIcon className="h-4 w-4 mr-1" />Sanctions Check Failed</> :
-                    <><ExclamationCircleIcon className="h-4 w-4 mr-1" />Pending Review</>}
-                </span>
-              </div>
-              
-              <div className="text-sm text-gray-500">
-                <span>Transaction Amount:</span>
-                <span className="font-medium ml-1">{transaction.currency} {transaction.amount.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar with entities list */}
-          <div className="lg:col-span-1">
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                <h2 className="text-md font-medium text-gray-800">Entities</h2>
-              </div>
-              
-              <div className="divide-y divide-gray-200">
-                {transaction.sanctions_check_details && transaction.sanctions_check_details.map((entity, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleEntitySelect(entity)}
-                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-150 ${
-                      selectedEntity === entity ? 'bg-blue-50' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className={`text-sm ${selectedEntity === entity ? 'font-medium text-blue-700' : 'text-gray-900'}`}>
-                          {entity.entity_name || 'Unknown Entity'}
-                        </span>
-                        <p className="text-xs text-gray-500">{entity.entity_type || 'Unknown Type'}</p>
+
+              <div className="col-span-3 p-6">
+                {selectedEntity ? (
+                  <div>
+                    <div className="mb-6 flex justify-between items-center">
+                      <h3 className="text-xl font-medium text-gray-900">{selectedEntity.entity_name}</h3>
+                      <div className={`px-3 py-1 rounded-full text-sm ${getStatusColor(selectedEntity.match_status)}`}>
+                        {selectedEntity.match_status === 'Cleared' || selectedEntity.match_status === 'CLEARED' ? (
+                          <div className="flex items-center">
+                            <CheckCircleIcon className="h-4 w-4 mr-1" />
+                            <span>Cleared</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <ExclamationCircleIcon className="h-4 w-4 mr-1" />
+                            <span>Review Required</span>
+                          </div>
+                        )}
                       </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(entity.status)}`}>
-                        {entity.status}
-                      </span>
                     </div>
-                  </button>
-                ))}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">Entity Information</h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Name:</span>
+                            <span className="text-gray-900 font-medium">{selectedEntity.entity_name}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Type:</span>
+                            <span className="text-gray-900">{selectedEntity.entity_type}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Country:</span>
+                            <span className="text-gray-900">{selectedEntity.entity_country}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Address:</span>
+                            <span className="text-gray-900 truncate max-w-[300px]">{selectedEntity.entity_address}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">Screening Results</h4>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Status:</span>
+                            <span className={`font-medium ${selectedEntity.match_status === 'Cleared' || selectedEntity.match_status === 'CLEARED' ? 'text-green-600' : 'text-yellow-600'}`}>
+                              {selectedEntity.match_status}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Potential Matches:</span>
+                            <span className="text-gray-900 font-medium">{selectedEntity.matches ? selectedEntity.matches.length : 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500 text-sm">Check Date:</span>
+                            <span className="text-gray-900">
+                              {new Date(selectedEntity.check_timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedEntity.matches && selectedEntity.matches.length > 0 && (
+                      <div className="mt-8">
+                        <h4 className="text-md font-medium text-gray-900 mb-4">Potential Matches</h4>
+                        <div className="space-y-6">
+                          {selectedEntity.matches.map((match, index) => (
+                            <div key={index} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                              <div className="flex justify-between items-center mb-4">
+                                <span className="font-medium text-gray-900">{match.match_name}</span>
+                                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                  Match Score: {match.match_score}%
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">Entity Information</h5>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">Country:</span>
+                                      <span className="text-gray-900">{match.country}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">SWIFT:</span>
+                                      <span className="text-gray-900">{match.swift_code}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">Address:</span>
+                                      <span className="text-gray-900 truncate max-w-[200px]">{match.full_address}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">Sanctions</h5>
+                                  {match.sanctions && match.sanctions.length > 0 ? (
+                                    <div className="space-y-2">
+                                      {match.sanctions.map((sanction, idx) => (
+                                        <div key={idx} className="bg-gray-100 p-2 rounded text-sm">
+                                          <div className="text-xs font-medium text-gray-900">{sanction.sanction_regime}</div>
+                                          <div className="text-xs text-gray-500">Type: {sanction.sanction_type}</div>
+                                          <div className="text-xs text-gray-500">Date: {sanction.effective_date}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-gray-500 italic">No sanctions information available</p>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {match.adverse_news && match.adverse_news.length > 0 && (
+                                <div className="mt-4">
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">Adverse News</h5>
+                                  <div className="space-y-2">
+                                    {match.adverse_news.map((news, idx) => (
+                                      <div key={idx} className="bg-gray-100 p-2 rounded text-sm">
+                                        <div className="text-xs font-medium text-gray-900">{news.news_headline}</div>
+                                        <div className="text-xs text-gray-500">
+                                          {news.source_publication} | {news.publication_date}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="mt-4 flex justify-end">
+                                <button
+                                  className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+                                  onClick={() => window.open(match.url, '_blank')}
+                                >
+                                  <EyeIcon className="h-4 w-4 mr-1" />
+                                  View Details
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500">
+                    <p>Select an entity to view details</p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-          
-          {/* Main content area with tabs */}
-          <div className="lg:col-span-3">
-            <div className="bg-white shadow rounded-lg overflow-hidden mb-6">
-              <div className="border-b border-gray-200">
-                <nav className="flex -mb-px">
-                  <button
-                    onClick={() => setActiveTab('summary')}
-                    className={`px-4 py-3 text-sm font-medium border-b-2 ${
-                      activeTab === 'summary'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Summary
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('matches')}
-                    className={`px-4 py-3 text-sm font-medium border-b-2 ${
-                      activeTab === 'matches'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Sanctions Matches
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('adverse-media')}
-                    className={`px-4 py-3 text-sm font-medium border-b-2 ${
-                      activeTab === 'adverse-media'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Adverse Media
-                  </button>
-                </nav>
-              </div>
-            </div>
-            
-            {renderTabContent()}
-          </div>
+          )}
         </div>
       </div>
     </div>
