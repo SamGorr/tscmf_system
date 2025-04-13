@@ -114,4 +114,117 @@ The Dashboard component was updated to fetch data from the backend API:
 | `/api/entities` | GET | Returns a list of all entities (clients) |
 | `/api/events` | GET | Returns a list of all events with related transaction and entity information |
 | `/api/events-simple` | GET | Returns a simplified list of events (for testing) |
-| `/api/dashboard/stats` | GET | Returns summary statistics for the dashboard | 
+| `/api/dashboard/stats` | GET | Returns summary statistics for the dashboard |
+
+## Transaction Trading Information API
+
+### Update Transaction Trading Information
+- **Endpoint**: PUT `/api/transactions/{transaction_id}/trading`
+- **Description**: Updates underlying transaction information including industry, form of eligible instrument, dates, and trade goods
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction to update
+- **Request Body**:
+  ```json
+  {
+    "industry": "Electronics",
+    "form_of_eligible_instrument": "Letter of Credit",
+    "date_of_issue": "2023-05-01T00:00:00Z",
+    "expiry_date": "2023-12-31T00:00:00Z",
+    "terms_of_payment": "Net 30",
+    "currency": "USD",
+    "local_currency_amount": 50000,
+    "value_date_of_adb_guarantee": "2023-05-01T00:00:00Z",
+    "end_of_risk_period": "2023-12-31T00:00:00Z",
+    "tenor": "180 days",
+    "expiry_date_of_adb_guarantee": "2023-12-31T00:00:00Z",
+    "tenor_of_adb_guarantee": "180 days",
+    "goods": [
+      {
+        "name": "Electronic Components",
+        "quantity": 1000,
+        "unit": "pcs",
+        "goods_classification": "Electronics",
+        "price": "15.50"
+      }
+    ]
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "transaction_id": 123,
+    "message": "Trading information updated successfully"
+  }
+  ```
+
+## Transaction Goods API
+
+### Add Transaction Good
+- **Endpoint**: POST `/api/transactions/{transaction_id}/goods`
+- **Description**: Adds a new trade good to a transaction
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction to add the good to
+- **Request Body**:
+  ```json
+  {
+    "name": "Electronic Components",
+    "quantity": 1000,
+    "unit": "pcs",
+    "goods_classification": "Electronics",
+    "price": "15.50"
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "id": 456,
+    "transaction_id": 123,
+    "name": "Electronic Components",
+    "quantity": 1000,
+    "unit": "pcs",
+    "goods_classification": "Electronics",
+    "price": "15.50"
+  }
+  ```
+
+### Update Transaction Good
+- **Endpoint**: PUT `/api/transactions/{transaction_id}/goods/{good_id}`
+- **Description**: Updates an existing trade good in a transaction
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction that contains the good
+  - `good_id` (path): The ID of the good to update
+- **Request Body**:
+  ```json
+  {
+    "name": "Updated Electronic Components",
+    "quantity": 1500,
+    "unit": "pcs",
+    "goods_classification": "Electronics",
+    "price": "16.50"
+  }
+  ```
+- **Response**: 
+  ```json
+  {
+    "id": 456,
+    "transaction_id": 123,
+    "name": "Updated Electronic Components",
+    "quantity": 1500,
+    "unit": "pcs",
+    "goods_classification": "Electronics",
+    "price": "16.50"
+  }
+  ```
+
+### Delete Transaction Good
+- **Endpoint**: DELETE `/api/transactions/{transaction_id}/goods/{good_id}`
+- **Description**: Deletes a trade good from a transaction
+- **Parameters**:
+  - `transaction_id` (path): The ID of the transaction that contains the good
+  - `good_id` (path): The ID of the good to delete
+- **Response**: 
+  ```json
+  {
+    "message": "Good with ID 456 has been deleted"
+  }
+  ``` 

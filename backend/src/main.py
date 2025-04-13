@@ -702,3 +702,211 @@ def update_transaction(transaction_id: int, transaction_data: dict, db: Session 
         traceback.print_exc()
         db.rollback()  # Rollback the transaction in case of error
         raise HTTPException(status_code=500, detail=f"Error updating transaction: {str(e)}")
+
+@app.put("/api/transactions/{transaction_id}/trading")
+def update_transaction_trading(transaction_id: int, trading_data: dict, db: Session = Depends(get_db)):
+    """
+    Update transaction trading information (underlying transaction details)
+    """
+    try:
+        print(f"Updating trading information for transaction ID: {transaction_id}")
+        print(f"Update data: {trading_data}")
+        
+        # Get transaction from database
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
+        # Update transaction fields from the request data
+        # Only update fields that are provided in the request
+        update_fields = [
+            'industry', 'form_of_eligible_instrument', 'date_of_issue',
+            'expiry_date', 'terms_of_payment', 'currency',
+            'local_currency_amount', 'value_date_of_adb_guarantee',
+            'end_of_risk_period', 'tenor', 'expiry_date_of_adb_guarantee',
+            'tenor_of_adb_guarantee'
+        ]
+        
+        for field in update_fields:
+            if field in trading_data:
+                # Handle date fields
+                if field.endswith('_date') and trading_data[field]:
+                    try:
+                        # Try to parse as date
+                        setattr(transaction, field, datetime.datetime.fromisoformat(trading_data[field].replace('Z', '+00:00')))
+                    except Exception as e:
+                        print(f"Error parsing date field {field}: {e}")
+                        # Keep as string if parsing fails
+                        setattr(transaction, field, trading_data[field])
+                else:
+                    setattr(transaction, field, trading_data[field])
+        
+        # If goods data is provided, update trade goods
+        if 'goods' in trading_data and isinstance(trading_data['goods'], list):
+            # First, delete existing goods for this transaction
+            db.query(Transaction_Goods).filter(Transaction_Goods.transaction_id == transaction_id).delete()
+            
+            # Then add the new/updated goods
+            for good in trading_data['goods']:
+                new_good = Transaction_Goods(
+                    transaction_id=transaction_id,
+                    item_name=good.get('name', ''),
+                    quantity=good.get('quantity', 0),
+                    unit=good.get('unit', ''),
+                    goods_classification=good.get('goods_classification', ''),
+                    price=good.get('price', '')
+                )
+                db.add(new_good)
+        
+        # Commit changes to the database
+        db.commit()
+        db.refresh(transaction)
+        
+        # Return updated transaction data
+        return {
+            "transaction_id": transaction.transaction_id,
+            "message": "Trading information updated successfully"
+        }
+        
+    except HTTPException as he:
+        # Re-raise HTTP exceptions
+        raise he
+    except Exception as e:
+        print(f"Error updating trading information: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()  # Rollback the transaction in case of error
+        raise HTTPException(status_code=500, detail=f"Error updating trading information: {str(e)}")
+
+@app.post("/api/transactions/{transaction_id}/goods")
+def add_transaction_good(transaction_id: int, good_data: dict, db: Session = Depends(get_db)):
+    """
+    Add a new good to a transaction
+    """
+    try:
+        print(f"Adding good for transaction ID: {transaction_id}")
+        print(f"Good data: {good_data}")
+        
+        # Check if transaction exists
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+        
+        # Create new good
+        new_good = Transaction_Goods(
+            transaction_id=transaction_id,
+            item_name=good_data.get('name', ''),
+            quantity=good_data.get('quantity', 0),
+            unit=good_data.get('unit', ''),
+            goods_classification=good_data.get('goods_classification', ''),
+            price=good_data.get('price', '')
+        )
+        
+        # Add to database
+        db.add(new_good)
+        db.commit()
+        db.refresh(new_good)
+        
+        # Return the newly created good
+        return {
+            "id": new_good.id,
+            "transaction_id": new_good.transaction_id,
+            "name": new_good.item_name,
+            "quantity": new_good.quantity,
+            "unit": new_good.unit,
+            "goods_classification": new_good.goods_classification,
+            "price": new_good.price
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error adding good: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error adding good: {str(e)}")
+
+@app.put("/api/transactions/{transaction_id}/goods/{good_id}")
+def update_transaction_good(transaction_id: int, good_id: int, good_data: dict, db: Session = Depends(get_db)):
+    """
+    Update an existing good for a transaction
+    """
+    try:
+        print(f"Updating good ID {good_id} for transaction ID: {transaction_id}")
+        print(f"Update data: {good_data}")
+        
+        # Get the good
+        good = db.query(Transaction_Goods).filter(
+            Transaction_Goods.id == good_id,
+            Transaction_Goods.transaction_id == transaction_id
+        ).first()
+        
+        if not good:
+            raise HTTPException(status_code=404, detail=f"Good with ID {good_id} not found for transaction {transaction_id}")
+        
+        # Update fields
+        good.item_name = good_data.get('name', good.item_name)
+        good.quantity = good_data.get('quantity', good.quantity)
+        good.unit = good_data.get('unit', good.unit)
+        good.goods_classification = good_data.get('goods_classification', good.goods_classification)
+        good.price = good_data.get('price', good.price)
+        
+        # Commit changes
+        db.commit()
+        db.refresh(good)
+        
+        # Return the updated good
+        return {
+            "id": good.id,
+            "transaction_id": good.transaction_id,
+            "name": good.item_name,
+            "quantity": good.quantity,
+            "unit": good.unit,
+            "goods_classification": good.goods_classification,
+            "price": good.price
+        }
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error updating good: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating good: {str(e)}")
+
+@app.delete("/api/transactions/{transaction_id}/goods/{good_id}")
+def delete_transaction_good(transaction_id: int, good_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a good from a transaction
+    """
+    try:
+        print(f"Deleting good ID {good_id} from transaction ID: {transaction_id}")
+        
+        # Get the good
+        good = db.query(Transaction_Goods).filter(
+            Transaction_Goods.id == good_id,
+            Transaction_Goods.transaction_id == transaction_id
+        ).first()
+        
+        if not good:
+            raise HTTPException(status_code=404, detail=f"Good with ID {good_id} not found for transaction {transaction_id}")
+        
+        # Delete the good
+        db.delete(good)
+        db.commit()
+        
+        # Return success
+        return {"message": f"Good with ID {good_id} has been deleted"}
+        
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error deleting good: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error deleting good: {str(e)}")

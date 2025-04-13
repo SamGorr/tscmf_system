@@ -100,15 +100,25 @@ The Transaction_Entity model represents the entities associated with a transacti
 
 The Transaction_Goods model represents the goods associated with a transaction.
 
-| Field               | Type    | Description                        |
-|---------------------|---------|------------------------------------|
-| id                  | Integer | Primary key                        |
-| transaction_id      | Integer | Foreign key to Transaction         |
-| goods_classification| String  | Classification of goods            |
-| item_name           | String  | Name of the goods                  |
-| quantity            | Integer | Quantity of goods                  |
-| unit                | String  | Unit of measurement                |
-| price               | String  | Price of the goods                 |
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| id | Integer | Primary key |
+| transaction_id | Integer | Foreign key to Transaction table |
+| item_name | String | Name of the goods |
+| quantity | Integer | Quantity of goods |
+| unit | String | Unit of measurement (e.g., pcs, kg) |
+| goods_classification | String | Classification of goods (e.g., Electronics, Raw Materials) |
+| price | String | Price of goods |
+
+**API Operations:**
+- Create: POST `/api/transactions/{transaction_id}/goods`
+- Read: GET `/api/transactions/{transaction_id}/details` (returns all goods for a transaction)
+- Update: PUT `/api/transactions/{transaction_id}/goods/{good_id}`
+- Delete: DELETE `/api/transactions/{transaction_id}/goods/{good_id}`
+- Batch Update: PUT `/api/transactions/{transaction_id}/trading` (includes goods in the request)
+
+**Relationships:**
+- Many-to-one relationship with Transaction (a transaction can have multiple goods)
 
 ### Underlying_Transaction
 

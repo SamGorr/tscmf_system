@@ -170,6 +170,54 @@ const DashboardService = {
       console.error('Error updating transaction:', error);
       throw error;
     }
+  },
+  
+  // Update transaction trading information
+  updateTransactionTrading: async (transactionId, tradingData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.put(`${apiUrl}/api/transactions/${transactionId}/trading`, tradingData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating transaction trading information:', error);
+      throw error;
+    }
+  },
+  
+  // Add a new good to a transaction
+  addTransactionGood: async (transactionId, goodData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.post(`${apiUrl}/api/transactions/${transactionId}/goods`, goodData);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding transaction good:', error);
+      throw error;
+    }
+  },
+  
+  // Update an existing good
+  updateTransactionGood: async (transactionId, goodId, goodData) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.put(`${apiUrl}/api/transactions/${transactionId}/goods/${goodId}`, goodData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating transaction good:', error);
+      throw error;
+    }
+  },
+  
+  // Delete a good from a transaction
+  deleteTransactionGood: async (transactionId, goodId) => {
+    try {
+      const apiUrl = DashboardService.getApiUrl();
+      const response = await axios.delete(`${apiUrl}/api/transactions/${transactionId}/goods/${goodId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting transaction good:', error);
+      throw error;
+    }
   }
 };
 

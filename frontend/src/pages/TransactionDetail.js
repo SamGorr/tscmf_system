@@ -382,13 +382,9 @@ const TransactionDetail = () => {
     try {
       setProcessingAction(true);
       
-      // API endpoint for updating trading information
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      
-      // Update transaction with all form data fields
-      const updatedTransaction = {
-        ...transaction,
-        goods_list: tradeGoods,
+      // Prepare trading data to update
+      const tradingData = {
+        goods: tradeGoods,
         industry: formData.industry,
         form_of_eligible_instrument: formData.form_of_eligible_instrument,
         date_of_issue: formData.date_of_issue,
@@ -403,28 +399,39 @@ const TransactionDetail = () => {
         tenor_of_adb_guarantee: formData.tenor_of_adb_guarantee
       };
       
-      // Update via API
-      await axios.put(`${apiUrl}/api/transactions/${transaction.transaction_id}/trading`, {
-        goods: tradeGoods,
-        industry: formData.industry,
-        form_of_eligible_instrument: formData.form_of_eligible_instrument,
-        date_of_issue: formData.date_of_issue,
-        expiry_date: formData.expiry_date,
-        terms_of_payment: formData.terms_of_payment,
-        currency: formData.currency,
-        local_currency_amount: formData.local_currency_amount,
-        value_date_of_adb_guarantee: formData.value_date_of_adb_guarantee,
-        end_of_risk_period: formData.end_of_risk_period,
-        tenor: formData.tenor,
-        expiry_date_of_adb_guarantee: formData.expiry_date_of_adb_guarantee,
-        tenor_of_adb_guarantee: formData.tenor_of_adb_guarantee
-      });
+      // Update via API service
+      const result = await DashboardService.updateTransactionTrading(transaction.transaction_id, tradingData);
       
-      // Update local transaction state
-      setTransaction(updatedTransaction);
-      setIsEditingTrading(false);
+      if (result) {
+        console.log('Trading information updated successfully:', result);
+        
+        // Update local transaction state
+        const updatedTransaction = {
+          ...transaction,
+          goods_list: tradeGoods,
+          industry: formData.industry,
+          form_of_eligible_instrument: formData.form_of_eligible_instrument,
+          date_of_issue: formData.date_of_issue,
+          expiry_date: formData.expiry_date,
+          terms_of_payment: formData.terms_of_payment,
+          currency: formData.currency,
+          local_currency_amount: formData.local_currency_amount,
+          value_date_of_adb_guarantee: formData.value_date_of_adb_guarantee,
+          end_of_risk_period: formData.end_of_risk_period,
+          tenor: formData.tenor,
+          expiry_date_of_adb_guarantee: formData.expiry_date_of_adb_guarantee,
+          tenor_of_adb_guarantee: formData.tenor_of_adb_guarantee
+        };
+        
+        setTransaction(updatedTransaction);
+        setIsEditingTrading(false);
+        
+        // Show success message
+        alert('Trading information updated successfully');
+      }
     } catch (err) {
       console.error('Error updating trading information:', err);
+      alert('Error updating trading information. Please try again.');
     } finally {
       setProcessingAction(false);
     }
@@ -499,30 +506,82 @@ const TransactionDetail = () => {
   /**
    * Handle form submission for adding/editing a trade good
    */
-  const handleTradeGoodSubmit = (e) => {
+  const handleTradeGoodSubmit = async (e) => {
     e.preventDefault();
     
-    if (currentTradeGoodIndex !== null) {
-      // Update existing good
-      setTradeGoods(prev => 
-        prev.map((good, index) => 
-          index === currentTradeGoodIndex ? tradeGoodFormData : good
-        )
-      );
-    } else {
-      // Add new good
-      setTradeGoods(prev => [...prev, tradeGoodFormData]);
+    try {
+      setProcessingAction(true);
+      
+      if (currentTradeGoodIndex !== null) {
+        // Update existing good
+        const goodToUpdate = tradeGoods[currentTradeGoodIndex];
+        if (goodToUpdate.id) {
+          // If the good has an ID, it's already in the database - update it
+          await DashboardService.updateTransactionGood(
+            transaction.transaction_id, 
+            goodToUpdate.id, 
+            tradeGoodFormData
+          );
+        }
+        
+        // Update the local state
+        setTradeGoods(prev => 
+          prev.map((good, index) => 
+            index === currentTradeGoodIndex ? tradeGoodFormData : good
+          )
+        );
+      } else {
+        // Add new good
+        const newGood = await DashboardService.addTransactionGood(
+          transaction.transaction_id,
+          tradeGoodFormData
+        );
+        
+        // Add the returned good (with ID) to local state
+        setTradeGoods(prev => [...prev, {
+          ...tradeGoodFormData,
+          id: newGood.id
+        }]);
+      }
+      
+      // Close the modal
+      setShowTradeGoodModal(false);
+      
+    } catch (error) {
+      console.error('Error saving trade good:', error);
+      alert('Error saving trade good. Please try again.');
+    } finally {
+      setProcessingAction(false);
     }
-    
-    setShowTradeGoodModal(false);
   };
 
   /**
    * Remove a trade good from the transaction
    * @param {number} index - The index of the trade good to remove
    */
-  const handleDeleteTradeGood = (index) => {
-    setTradeGoods(prevGoods => prevGoods.filter((_, i) => i !== index));
+  const handleDeleteTradeGood = async (index) => {
+    try {
+      setProcessingAction(true);
+      
+      const goodToDelete = tradeGoods[index];
+      
+      // If the good has an ID, delete it from the database
+      if (goodToDelete.id) {
+        await DashboardService.deleteTransactionGood(
+          transaction.transaction_id,
+          goodToDelete.id
+        );
+      }
+      
+      // Update the local state
+      setTradeGoods(prevGoods => prevGoods.filter((_, i) => i !== index));
+      
+    } catch (error) {
+      console.error('Error deleting trade good:', error);
+      alert('Error deleting trade good. Please try again.');
+    } finally {
+      setProcessingAction(false);
+    }
   };
 
   // Function to get entity data based on type
@@ -1430,7 +1489,7 @@ const TransactionDetail = () => {
                 <div className="flex items-start">
                   <CurrencyDollarIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                   <div className="w-full">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Currency & Amount</h3>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Local Currency Amount</h3>
                     {isEditingTrading ? (
                       <div className="flex space-x-2">
                         <input

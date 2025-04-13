@@ -813,3 +813,73 @@ The specific functions modified were:
 3. Make necessary changes to the fields
 4. Click "Save Changes" to persist the changes to the database
 5. The updated values will be reflected in both the UI and the backend database
+
+## Underlying Transaction Information Update Feature
+
+### Overview
+- Implemented functionality to allow users to update underlying transaction information through the TransactionDetail page
+- Created new backend endpoints to handle transaction trading updates and goods management operations
+- Added frontend service methods to interact with these endpoints
+- Enhanced database operations to properly handle updating transaction data and managing trade goods
+
+### Components Modified
+
+1. **Backend API Endpoints**
+   - Added `/api/transactions/{transaction_id}/trading` PUT endpoint to update transaction trading information
+   - Added `/api/transactions/{transaction_id}/goods` POST endpoint to add new trade goods
+   - Added `/api/transactions/{transaction_id}/goods/{good_id}` PUT endpoint to update existing trade goods
+   - Added `/api/transactions/{transaction_id}/goods/{good_id}` DELETE endpoint to remove trade goods
+   - Implemented proper error handling and database transaction management
+
+2. **Frontend Service Methods**
+   - Added `updateTransactionTrading` method to update underlying transaction information
+   - Added `addTransactionGood`, `updateTransactionGood`, and `deleteTransactionGood` methods for trade goods management
+   - Implemented consistent error handling across all methods
+   - Added proper logging for debugging purposes
+
+3. **TransactionDetail Component**
+   - Updated `handleSubmitTradingSection` to use the new service method for updating trading information
+   - Enhanced `handleTradeGoodSubmit` to properly add or update trade goods via API
+   - Modified `handleDeleteTradeGood` to delete trade goods via API
+   - Added loading state management during API operations
+   - Implemented user feedback for successful operations and errors
+
+### Key Features
+
+1. **Underlying Transaction Update**
+   - Users can edit underlying transaction details including:
+     - Industry classification
+     - Form of eligible instrument
+     - Dates (issue date, expiry date, etc.)
+     - Terms of payment
+     - Currency and amounts
+     - Tenors and risk periods
+   - Changes are persisted to the database when "Save Changes" is clicked
+
+2. **List of Goods Management**
+   - Complete CRUD (Create, Read, Update, Delete) operations for trade goods:
+     - Add new goods with name, quantity, unit, classification, and price
+     - Edit existing goods to update any field
+     - Delete goods from the transaction
+   - All changes are immediately reflected in both the UI and the database
+
+### Usage
+1. **Updating Underlying Transaction Information**
+   - Navigate to the Transaction Detail page
+   - Click "Edit Details" in the Transaction Information section
+   - Make necessary changes to the fields
+   - Click "Save Changes" to persist changes to the database
+
+2. **Managing Trade Goods**
+   - In the List of Goods tab:
+     - Click "Add Trade Good" to create a new good
+     - Click the Edit icon to modify an existing good
+     - Click the Delete icon to remove a good
+   - Fill in the required information in the modal dialog
+   - Changes are saved to the database upon submission
+
+### Technical Details
+- Database updates are performed within transactions for data integrity
+- Date fields are properly handled, including parsing ISO format dates
+- Trade goods are identified by unique IDs in the database
+- Frontend maintains synchronization between local state and database
