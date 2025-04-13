@@ -1076,7 +1076,7 @@ const TransactionDetail = () => {
                     <InformationCircleIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
                     <div>
                       <h3 className="text-sm font-medium text-gray-500 mb-1">Signing Office Branch</h3>
-                      <p className="text-base">{getEntityData(activeTab).signing_office_branch}</p>
+                      <p className="text-base">{getEntityData(activeTab).signing_office_branch || "Not specified"}</p>
                     </div>
                   </div>
                   <div className="flex items-start">
