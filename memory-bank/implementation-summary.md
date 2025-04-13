@@ -764,3 +764,25 @@ These enhancements provide more comprehensive data storage and relationships bet
   - Enhanced readability and scanning of entity information
   - More intuitive presentation of relationship data
   - Consistent with standard table design patterns that typically present identifiers first
+
+### 2023-07-15: TransactionDetail Code Cleanup
+- Removed mock data import and fallback code from the TransactionDetail component
+- Replaced mock pricing matrix with direct API call to `/api/pricing/check`
+- Simplified sanctions check function to use API call instead of mocking responses
+- Removed unused CSS animation code
+- Added clear section comments for better code organization and readability
+- Removed unused handleSubmit function in favor of more specific section handlers
+- Structured code with logical sections for entity handling, trading section, status processing, etc.
+- Improved API integration with standardized API URL resolution
+- Enhanced error handling consistency across all API interactions
+- Streamlined component by removing experimental code and redundant functions
+- Improved overall code structure and maintainability
+
+The specific functions modified were:
+- Removed mock data import: `import { MOCK_TRANSACTION_DATA } from '../data/mockTransactionData'`
+- Simplified `fetchTransaction` to use real API and not fall back to mock data
+- Replaced mock implementation of `handleCheckPricing` with API call
+- Simplified `handleRunSanctionsCheck` to use API call
+- Removed unused CSS animations at the top of the file
+- Added comments to organize code into logical sections
+- Removed the legacy `handleSubmit` function which was redundant
