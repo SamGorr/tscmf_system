@@ -1023,11 +1023,22 @@ const TransactionDetail = () => {
           </Link>
         </div>
       </div>
-      
+     
       {/* Add Transaction Step Indicator */}
       {transaction && (
         <TransactionStepIndicator transactionId={id} currentStep="email-extract" transaction={transaction} />
       )}
+  
+      {/* Add a button at the bottom to navigate to the next step */}
+      <div className="mt-8 flex justify-end">
+        <button
+          onClick={navigateToNextStep}
+          className="flex items-center px-6 py-3 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors duration-200"
+        >
+          Confirm Request Information
+          <ArrowRightIcon className="ml-2 h-5 w-5" />
+        </button>
+      </div>
       
       {/* Error and loading states */}
       {error && (
@@ -2030,17 +2041,6 @@ const TransactionDetail = () => {
                 </div>
               )}
             </div>
-          </div>
-          
-          {/* Add a button at the bottom to navigate to the next step */}
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={navigateToNextStep}
-              className="flex items-center px-6 py-3 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors duration-200"
-            >
-              Confirm Request Information
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </button>
           </div>
         </>
       ) : (
