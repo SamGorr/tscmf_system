@@ -191,7 +191,14 @@ const TransactionDetail = () => {
             
             // Set real trade goods from API response if available
             if (transactionDetails.goods && transactionDetails.goods.length > 0) {
-              setTradeGoods(transactionDetails.goods);
+              // Normalize goods data to ensure both item_name and name are available
+              const normalizedGoods = transactionDetails.goods.map(good => ({
+                ...good,
+                // Ensure we have both name and item_name for consistency
+                name: good.name || good.item_name || '',
+                item_name: good.item_name || good.name || ''
+              }));
+              setTradeGoods(normalizedGoods);
             } else {
               // Fall back to goods from the transaction response
               setTradeGoods(normalizedData.goods_list || []);
@@ -543,7 +550,7 @@ const TransactionDetail = () => {
    */
   const handleEditTradeGood = (good, index) => {
     setTradeGoodFormData({
-      name: good.name,
+      name: good.item_name || good.name || '',
       quantity: good.quantity || '',
       unit: good.unit || '',
       goods_classification: good.goods_classification || '',
@@ -562,6 +569,15 @@ const TransactionDetail = () => {
     try {
       setProcessingAction(true);
       
+      // Ensure both name and item_name are set for consistency
+      const formDataWithBothNames = {
+        ...tradeGoodFormData,
+        // Backend expects name, which gets mapped to item_name in the database
+        name: tradeGoodFormData.name,
+        // Ensure item_name is also set for the frontend
+        item_name: tradeGoodFormData.name
+      };
+      
       if (currentTradeGoodIndex !== null) {
         // Update existing good
         const goodToUpdate = tradeGoods[currentTradeGoodIndex];
@@ -570,26 +586,26 @@ const TransactionDetail = () => {
           await DashboardService.updateTransactionGood(
             transaction.transaction_id, 
             goodToUpdate.id, 
-            tradeGoodFormData
+            formDataWithBothNames
           );
         }
         
         // Update the local state
         setTradeGoods(prev => 
           prev.map((good, index) => 
-            index === currentTradeGoodIndex ? tradeGoodFormData : good
+            index === currentTradeGoodIndex ? formDataWithBothNames : good
           )
         );
       } else {
         // Add new good
         const newGood = await DashboardService.addTransactionGood(
           transaction.transaction_id,
-          tradeGoodFormData
+          formDataWithBothNames
         );
         
         // Add the returned good (with ID) to local state
         setTradeGoods(prev => [...prev, {
-          ...tradeGoodFormData,
+          ...formDataWithBothNames,
           id: newGood.id
         }]);
       }
@@ -1438,31 +1454,27 @@ const TransactionDetail = () => {
                 </div>
               </div>
 
-              {/* View Source Email Button - Only for Email sourced transactions */}
-              {transaction.source === 'Email' && (
-                <div className="mt-6 flex justify-start">
-                  <button
-                    onClick={() => setShowEmailModal(true)}
-                    className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                  >
-                    <EnvelopeIcon className="h-5 w-5 mr-2" />
-                    View Source Email
-                  </button>
-                </div>
-              )}
-
+              {/* View Source Email Button */}
+              <div className="mt-6 flex justify-start space-x-4">
+                <button
+                  onClick={() => setShowEmailModal(true)}
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                >
+                  <EnvelopeIcon className="h-5 w-5 mr-2" />
+                  View Source Email
+                </button>
+              
               {/* View Source File Button - Only for File sourced transactions */}
               {transaction.source === 'File' && (
-                <div className="mt-6 flex justify-start">
-                  <button
-                    onClick={() => setShowFileModal(true)}
-                    className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                  >
-                    <DocumentIcon className="h-5 w-5 mr-2" />
-                    View Source File
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowFileModal(true)}
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                >
+                  <DocumentIcon className="h-5 w-5 mr-2" />
+                  View Source File
+                </button>
               )}
+              </div>
             </div>
           </div>
           
@@ -1772,7 +1784,7 @@ const TransactionDetail = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                           {tradeGoods.map((good, index) => (
                             <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{good.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{good.item_name || good.name || 'N/A'}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.goods_classification || 'N/A'}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.quantity || 'N/A'}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{good.unit || 'N/A'}</td>
@@ -1887,6 +1899,7 @@ const TransactionDetail = () => {
                               <div>
                                 <h4 className="text-sm font-medium text-gray-500 mb-2">Goods Information</h4>
                                 <div className="space-y-2">
+                                  <p className="text-sm"><span className="font-medium">Item Name:</span> {ut.goods || 'N/A'}</p>
                                   <p className="text-sm"><span className="font-medium">Goods Description:</span> {ut.goods || 'N/A'}</p>
                                   <p className="text-sm"><span className="font-medium">Classification:</span> {ut.goods_classification || 'N/A'}</p>
                                   <p className="text-sm"><span className="font-medium">Eligibility:</span> {ut.goods_eligible || 'N/A'}</p>
