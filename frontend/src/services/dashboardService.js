@@ -248,6 +248,115 @@ const DashboardService = {
     }
   },
   
+  // Fetch entity details by name
+  fetchEntityByName: async (entityName) => {
+    try {
+      if (!entityName || entityName === 'Not specified') {
+        console.log('No entity name provided or name is "Not specified"');
+        return null;
+      }
+      
+      console.log(`=== Starting fetchEntityByName for '${entityName}' ===`);
+      
+      // Log the request we're about to make
+      const apiUrl = DashboardService.getApiUrl();
+      const requestUrl = `${apiUrl}/api/entities/by-name/${encodeURIComponent(entityName)}`;
+      console.log(`Fetching entity data from: ${requestUrl}`);
+      
+      // First try to fetch by name from the specific endpoint
+      try {
+        console.log(`Making API call to entity-by-name endpoint for '${entityName}'...`);
+        const startTime = performance.now();
+        const response = await axios.get(requestUrl);
+        const endTime = performance.now();
+        
+        console.log(`API call completed in ${(endTime - startTime).toFixed(2)}ms`);
+        console.log(`Response status: ${response.status}`);
+        console.log(`Successfully fetched entity data for '${entityName}'`, response.data);
+        
+        // Validate the returned data
+        if (response.data && response.data.entity_name) {
+          console.log(`Entity data is valid with entity_name: '${response.data.entity_name}'`);
+          console.log(`Response contains fields: ${Object.keys(response.data).join(', ')}`);
+          return response.data;
+        } else {
+          console.warn(`Response data invalid or incomplete:`, response.data);
+          throw new Error('Invalid entity data returned from API');
+        }
+      } catch (specificError) {
+        console.warn(`Error fetching entity by name endpoint: ${specificError.message}`);
+        console.warn(`Status code: ${specificError.response?.status || 'unknown'}`);
+        console.warn(`Error details:`, specificError.response?.data || 'No details available');
+        
+        // If that fails, try to search in all entities
+        console.log('Falling back to searching in all entities');
+        console.log(`Making API call to get all entities...`);
+        
+        const startTime = performance.now();
+        const allEntitiesResponse = await axios.get(`${apiUrl}/api/entities`);
+        const endTime = performance.now();
+        
+        console.log(`All entities API call completed in ${(endTime - startTime).toFixed(2)}ms`);
+        console.log(`Response status: ${allEntitiesResponse.status}`);
+        console.log(`Received ${allEntitiesResponse.data?.length || 0} entities from API`);
+        
+        // Find the entity with matching name
+        if (allEntitiesResponse.data && Array.isArray(allEntitiesResponse.data)) {
+          console.log(`Searching for '${entityName}' in ${allEntitiesResponse.data.length} entities...`);
+          
+          // First try exact match
+          let entityData = allEntitiesResponse.data.find(entity => 
+            entity.entity_name === entityName
+          );
+          
+          // If no exact match, try case-insensitive match
+          if (!entityData) {
+            console.log(`No exact match found, trying case-insensitive match...`);
+            const nameLower = entityName.toLowerCase();
+            entityData = allEntitiesResponse.data.find(entity => 
+              entity.entity_name.toLowerCase() === nameLower
+            );
+          }
+          
+          // If still no match, try partial match
+          if (!entityData) {
+            console.log(`No case-insensitive match found, trying partial match...`);
+            const nameLower = entityName.toLowerCase();
+            entityData = allEntitiesResponse.data.find(entity => 
+              entity.entity_name.toLowerCase().includes(nameLower) || 
+              nameLower.includes(entity.entity_name.toLowerCase())
+            );
+          }
+          
+          if (entityData) {
+            console.log(`Found entity '${entityName}' in all entities list:`, entityData);
+            console.log(`Matched with entity_name: '${entityData.entity_name}'`);
+            return entityData;
+          } else {
+            console.warn(`Entity '${entityName}' not found in all entities list after searching`);
+            console.log(`First 5 entities from list:`);
+            allEntitiesResponse.data.slice(0, 5).forEach((entity, i) => {
+              console.log(`Entity ${i+1}: Name='${entity.entity_name}', Country='${entity.country}'`);
+            });
+          }
+        } else {
+          console.warn(`API did not return a valid array of entities:`, allEntitiesResponse.data);
+        }
+        
+        console.warn(`Entity '${entityName}' not found in all entities list either`);
+        return null;
+      }
+    } catch (error) {
+      console.error(`Error in fetchEntityByName for '${entityName}':`, error);
+      console.error(`Error type: ${error.name}, Message: ${error.message}`);
+      if (error.response) {
+        console.error(`Response status: ${error.response.status}`);
+        console.error(`Response data:`, error.response.data);
+      }
+      return null;
+    }
+  },
+  
   // Update an existing entity
   updateTransactionEntity: async (transactionId, entityId, entityData) => {
     try {

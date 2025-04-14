@@ -242,6 +242,11 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
         # Get the latest event for this transaction to get status information
         event = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).first()
         
+        # Get entity details using relationships
+        issuing_entity = transaction.issuing_entity if transaction.issuing_bank else None
+        confirming_entity = transaction.confirming_entity if transaction.confirming_bank else None
+        requesting_entity = transaction.requesting_entity if transaction.requesting_bank else None
+        
         # Format transaction data including verification check statuses
         transaction_data = {
             "transaction_id": transaction.transaction_id,
@@ -272,6 +277,27 @@ def get_transaction_by_id(transaction_id: int, db: Session = Depends(get_db)):
             "tenor_of_adb_guarantee": transaction.tenor_of_adb_guarantee,
             "guarantee_fee_rate": transaction.guarantee_fee_rate,
             "industry": transaction.industry,
+            
+            # Add entity details for issuing bank
+            "issuing_bank_country": issuing_entity.country if issuing_entity else None,
+            "issuing_bank_entity_address": issuing_entity.entity_address if issuing_entity else None,
+            "issuing_bank_swift": issuing_entity.swift if issuing_entity else None,
+            "issuing_bank_signing_office_branch": issuing_entity.signing_office_branch if issuing_entity else None,
+            "issuing_bank_agreement_date": issuing_entity.agreement_date.isoformat() if issuing_entity and issuing_entity.agreement_date else None,
+            
+            # Add entity details for confirming bank
+            "confirming_bank_country": confirming_entity.country if confirming_entity else None,
+            "confirming_bank_entity_address": confirming_entity.entity_address if confirming_entity else None,
+            "confirming_bank_swift": confirming_entity.swift if confirming_entity else None,
+            "confirming_bank_signing_office_branch": confirming_entity.signing_office_branch if confirming_entity else None,
+            "confirming_bank_agreement_date": confirming_entity.agreement_date.isoformat() if confirming_entity and confirming_entity.agreement_date else None,
+            
+            # Add entity details for requesting bank
+            "requesting_bank_country": requesting_entity.country if requesting_entity else None,
+            "requesting_bank_entity_address": requesting_entity.entity_address if requesting_entity else None,
+            "requesting_bank_swift": requesting_entity.swift if requesting_entity else None,
+            "requesting_bank_signing_office_branch": requesting_entity.signing_office_branch if requesting_entity else None,
+            "requesting_bank_agreement_date": requesting_entity.agreement_date.isoformat() if requesting_entity and requesting_entity.agreement_date else None,
         }
         
         # Add verification check statuses from the latest event
@@ -392,6 +418,11 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
         # Get transaction goods
         transaction_goods = db.query(Transaction_Goods).filter(Transaction_Goods.transaction_id == transaction_id).all()
         
+        # Get entity details using relationships
+        issuing_entity = transaction.issuing_entity if transaction.issuing_bank else None
+        confirming_entity = transaction.confirming_entity if transaction.confirming_bank else None
+        requesting_entity = transaction.requesting_entity if transaction.requesting_bank else None
+        
         # Format entities
         entities_data = []
         for entity in transaction_entities:
@@ -449,7 +480,28 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
                 "expiry_date_of_adb_guarantee": transaction.expiry_date_of_adb_guarantee.isoformat() if transaction.expiry_date_of_adb_guarantee else None,
                 "tenor_of_adb_guarantee": transaction.tenor_of_adb_guarantee,
                 "guarantee_fee_rate": transaction.guarantee_fee_rate,
-                "industry": transaction.industry
+                "industry": transaction.industry,
+                
+                # Add entity details for issuing bank
+                "issuing_bank_country": issuing_entity.country if issuing_entity else None,
+                "issuing_bank_entity_address": issuing_entity.entity_address if issuing_entity else None,
+                "issuing_bank_swift": issuing_entity.swift if issuing_entity else None,
+                "issuing_bank_signing_office_branch": issuing_entity.signing_office_branch if issuing_entity else None,
+                "issuing_bank_agreement_date": issuing_entity.agreement_date.isoformat() if issuing_entity and issuing_entity.agreement_date else None,
+                
+                # Add entity details for confirming bank
+                "confirming_bank_country": confirming_entity.country if confirming_entity else None,
+                "confirming_bank_entity_address": confirming_entity.entity_address if confirming_entity else None,
+                "confirming_bank_swift": confirming_entity.swift if confirming_entity else None,
+                "confirming_bank_signing_office_branch": confirming_entity.signing_office_branch if confirming_entity else None,
+                "confirming_bank_agreement_date": confirming_entity.agreement_date.isoformat() if confirming_entity and confirming_entity.agreement_date else None,
+                
+                # Add entity details for requesting bank
+                "requesting_bank_country": requesting_entity.country if requesting_entity else None,
+                "requesting_bank_entity_address": requesting_entity.entity_address if requesting_entity else None,
+                "requesting_bank_swift": requesting_entity.swift if requesting_entity else None,
+                "requesting_bank_signing_office_branch": requesting_entity.signing_office_branch if requesting_entity else None,
+                "requesting_bank_agreement_date": requesting_entity.agreement_date.isoformat() if requesting_entity and requesting_entity.agreement_date else None,
             },
             "entities": entities_data,
             "goods": goods_data
