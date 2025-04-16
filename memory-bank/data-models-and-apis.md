@@ -7,8 +7,8 @@ Represents clients (financial institutions, obligors, etc.):
 
 ```
 Entity {
-    entity_id: Integer (PK)
-    entity_name: String
+    entity_id: Integer (unique=true, nullable=false)
+    entity_name: String (primary key)
     entity_address: String
     country: String
     client_type: String
@@ -18,6 +18,27 @@ Entity {
     # Relationships
     transactions: relationship to Transaction
     events: relationship to Event
+    entity_limits: relationship to EntityLimit
+}
+```
+
+### EntityLimit
+Represents facility limits associated with an entity:
+
+```
+EntityLimit {
+    id: Integer (PK)
+    entity_name: String (FK to Entity.entity_name)
+    facility_limit: String
+    approved_limit: Float
+    max_tenor_of_adb_guarantee: String
+    type: String
+    pfi_rpa_allocation: Float
+    outstanding_exposure: Float
+    earmark_limit: Float
+    
+    # Relationships
+    entity: relationship to Entity
 }
 ```
 

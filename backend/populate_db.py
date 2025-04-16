@@ -22,7 +22,7 @@ def populate_database():
         
         # Drop existing data
         print("Clearing existing data...")
-        session.execute(text("TRUNCATE transaction, event, transaction_entity, transaction_goods, underlying_transaction CASCADE"))
+        session.execute(text("TRUNCATE transaction, event, transaction_entity, transaction_goods, underlying_transaction, entity_limit CASCADE"))
 
         # Now import entities from CSV file
         print("Importing entity from CSV...")
@@ -52,6 +52,63 @@ def populate_database():
                     "signing_office_branch": row.get('signing_office_branch', ''),
                     "agreement_date": agreement_date
                 })
+        
+        # Import entity_limits from CSV file
+        print("Importing entity_limit from CSV...")
+        entity_limit_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "entity_limit.csv")
+        
+        if os.path.exists(entity_limit_path):
+            with open(entity_limit_path, 'r') as file:
+                csv_reader = csv.DictReader(file)
+                
+                # Create a dictionary to map entity_id to entity_name
+                entity_id_to_name = {}
+                session.execute(text("SELECT entity_id, entity_name FROM entity")).fetchall()
+                for row in session.execute(text("SELECT entity_id, entity_name FROM entity")):
+                    entity_id_to_name[int(row[0])] = row[1]
+                
+                for row in csv_reader:
+                    # Skip empty rows
+                    if not row.get('entity_id'):
+                        continue
+                    
+                    # Convert numeric values with error handling
+                    try:
+                        entity_id = int(row['entity_id'])
+                        entity_name = entity_id_to_name.get(entity_id)
+                        
+                        if not entity_name:
+                            print(f"Warning: Could not find entity name for entity_id {entity_id}, skipping")
+                            continue
+                            
+                        approved_limit = float(row.get('approved_limit', 0))
+                        pfi_rpa_allocation = float(row.get('pfi_rpa_allocation', 0))
+                        outstanding_exposure = float(row.get('outstanding_exposure', 0))
+                        earmark_limit = float(row.get('earmark_limit', 0))
+                    except ValueError as e:
+                        print(f"Warning: Could not convert a numeric value in entity_limit - {e}, using 0")
+                        continue
+                    
+                    # Insert the entity_limit into the database
+                    session.execute(text("""
+                        INSERT INTO entity_limit (
+                            entity_name, facility_limit, approved_limit, max_tenor_of_adb_guarantee,
+                            type, pfi_rpa_allocation, outstanding_exposure, earmark_limit
+                        )
+                        VALUES (
+                            :entity_name, :facility_limit, :approved_limit, :max_tenor_of_adb_guarantee,
+                            :type, :pfi_rpa_allocation, :outstanding_exposure, :earmark_limit
+                        )
+                    """), {
+                        "entity_name": entity_name,
+                        "facility_limit": row.get('facility_limit', ''),
+                        "approved_limit": approved_limit,
+                        "max_tenor_of_adb_guarantee": row.get('max_tenor_of_adb_guarantee', ''),
+                        "type": row.get('type', ''),
+                        "pfi_rpa_allocation": pfi_rpa_allocation,
+                        "outstanding_exposure": outstanding_exposure,
+                        "earmark_limit": earmark_limit
+                    })
         
         # Now import transaction from CSV file
         print("Importing transaction from CSV...")

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, ARRAY, Boolean
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, ARRAY, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -66,13 +66,29 @@ class Event(Base):
 class Entity(Base):
     __tablename__ = "entity"
 
-    entity_id = Column(Integer)
+    entity_id = Column(Integer, unique=True, nullable=False)
     entity_name = Column(String, primary_key=True)
     swift = Column(String)
     entity_address = Column(String)
     country = Column(String)
     signing_office_branch = Column(String)
     agreement_date = Column(DateTime)
+    
+    # Add the relationship to EntityLimit
+    entity_limits = relationship("EntityLimit", backref="entity", foreign_keys="EntityLimit.entity_name")
+
+class EntityLimit(Base):
+    __tablename__ = "entity_limit"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    entity_name = Column(String, ForeignKey("entity.entity_name"), nullable=False)
+    facility_limit = Column(String, nullable=False)
+    approved_limit = Column(Float, nullable=False)
+    max_tenor_of_adb_guarantee = Column(String)
+    type = Column(String)
+    pfi_rpa_allocation = Column(Float)
+    outstanding_exposure = Column(Float)
+    earmark_limit = Column(Float)
 
 class Transaction_Entity(Base):
     __tablename__ = "transaction_entity"

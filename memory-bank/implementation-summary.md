@@ -124,6 +124,36 @@ We've updated the TSCMF Management Platform to replace mock data with real API d
 
 ## Recent Implementations
 
+### Entity Limit Data Model Implementation
+
+- Added a new `EntityLimit` model that has a one-to-many relationship with the `Entity` model:
+  - Created an `EntityLimit` class in `models.py` with the following fields:
+    - `id`: Integer (PK)
+    - `entity_name`: String (FK to Entity.entity_name)
+    - `facility_limit`: String
+    - `approved_limit`: Float
+    - `max_tenor_of_adb_guarantee`: String
+    - `type`: String
+    - `pfi_rpa_allocation`: Float
+    - `outstanding_exposure`: Float
+    - `earmark_limit`: Float
+  - Added a unique constraint to the `entity_id` field in the `Entity` model to ensure data integrity
+  - Established a relationship between `Entity` and `EntityLimit` models using `entity_name` as the foreign key
+  - Each entity can have multiple limit records for different facility types
+
+- Updated the `populate_db.py` script to:
+  - Include `entity_limit` in the truncate statement to clear existing data
+  - Create a mapping between entity_id and entity_name to properly relate entity limits to entities
+  - Add a new section to import entity limit data from `entity_limit.csv`
+  - Handle numeric conversions with proper error handling
+  - Skip empty rows or entities that don't exist in the database
+
+- This implementation allows:
+  - Tracking facility limits for each entity
+  - Different limit types (funded/unfunded)
+  - Monitoring of approved limits vs outstanding exposure
+  - Managing tenor restrictions for different facility types
+
 ### Transaction Detail API Integration
 
 - Added a new `/api/transactions/{transaction_id}` endpoint in the backend that retrieves a single transaction by ID along with its related entity and event information.
