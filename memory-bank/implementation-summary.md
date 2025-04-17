@@ -1006,3 +1006,61 @@ The specific functions modified were:
   - Navigation to detailed check pages is supported but not required
 
 This enhancement streamlines the transaction workflow by combining multiple checks into a single action, saving time and providing a clearer visualization of the transaction status.
+
+## Clients Page Implementation
+
+### Feature Overview
+The Clients Page was implemented to track entity limits and exposures with comprehensive filtering, searching, and visualization capabilities. This implementation provides a detailed view of entity limits, facility breakdowns, and utilization statistics at the entity, country, and program level.
+
+### Backend API Endpoints
+New API endpoints were added to support the client tracking functionality:
+
+1. **GET /api/entities** - Retrieves all entities (clients)
+2. **GET /api/entity-limits** - Retrieves all entity limits
+3. **GET /api/entities/{entity_name}** - Retrieves detailed entity information with limits
+4. **GET /api/country-limits/{country}** - Retrieves country-level limit information
+5. **GET /api/program-limits** - Retrieves program-wide limit information
+
+### Frontend Components
+
+#### EntityService
+A service layer was created to handle API calls and data formatting:
+- `fetchEntities()` - Gets all entities
+- `fetchEntityLimits()` - Gets all entity limits
+- `fetchEntityByName(entityName)` - Gets detailed entity information
+- `fetchCountryLimits(country)` - Gets country limit information
+- `fetchProgramLimits()` - Gets program-wide limit information
+- `formatCurrency(value)` - Formats currency values for display
+
+#### Clients Page Features
+1. **Program Limit Utilization**
+   - Displays total program approved limit, utilized amount, and available limit
+   - Visualizes utilization percentage with a progress bar
+
+2. **Search and Filtering**
+   - Quick search functionality with typeahead for entity name, country, etc.
+   - Country-based filtering with dropdown menu
+   - Clear filters button to reset search parameters
+
+3. **Entities Table**
+   - Lists entities with key information (name, country, SWIFT, total approved limit)
+   - Clickable rows to navigate to entity detail view
+
+#### Entity Detail Page Features
+1. **Entity Information**
+   - Displays basic entity details (ID, country, SWIFT, etc.)
+
+2. **Country Limit Utilization**
+   - Shows country-level limit information
+   - Visualizes country utilization percentage
+
+3. **Facility Limit Breakdown**
+   - Comprehensive table showing all facilities with limit details
+   - Groups facilities by type
+   - Displays calculated fields:
+     - Available Limit = Approved Limit - PFI RPA Allocation - Outstanding Exposure
+     - Net Available Limit = Available Limit - Earmark Limit
+   - Shows subtotals by facility group and overall totals
+
+### Data Model Integration
+The implementation leverages the existing entity and entity_limit tables without modifying their structure. Calculated fields are derived from the raw data at runtime in both the backend and frontend as needed.

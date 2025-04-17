@@ -6,7 +6,7 @@ from sqlalchemy import desc
 import datetime
 
 from .database.database import get_db, engine
-from .models.models import Transaction, Event, Entity, Transaction_Entity, Transaction_Goods, Underlying_Transaction
+from .models.models import Transaction, Event, Entity, Transaction_Entity, Transaction_Goods, Underlying_Transaction, EntityLimit
 from .services.sanctions_check import check_entity_against_watchlist, check_transaction_entities
 # Create the tables if they don't exist
 # Note: In production, use Alembic migrations instead
@@ -169,6 +169,172 @@ def get_entities(db: Session = Depends(get_db)):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error retrieving entities: {str(e)}")
+
+@app.get("/api/entity-limits")
+def get_entity_limits(db: Session = Depends(get_db)):
+    """
+    Retrieve all entity limits
+    """
+    try:
+        print("Starting entity limits API endpoint request...")
+        entity_limits = db.query(EntityLimit).all()
+        print(f"Found {len(entity_limits)} entity limits in the database")
+        
+        result = []
+        for limit in entity_limits:
+            limit_data = {
+                "id": limit.id,
+                "entity_name": limit.entity_name,
+                "facility_limit": limit.facility_limit,
+                "approved_limit": float(limit.approved_limit) if limit.approved_limit else 0,
+                "max_tenor_of_adb_guarantee": limit.max_tenor_of_adb_guarantee,
+                "type": limit.type,
+                "pfi_rpa_allocation": float(limit.pfi_rpa_allocation) if limit.pfi_rpa_allocation else 0,
+                "outstanding_exposure": float(limit.outstanding_exposure) if limit.outstanding_exposure else 0,
+                "earmark_limit": float(limit.earmark_limit) if limit.earmark_limit else 0,
+            }
+            result.append(limit_data)
+        
+        print(f"Returning {len(result)} entity limits in response")
+        return result
+    except Exception as e:
+        print(f"Error retrieving entity limits: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving entity limits: {str(e)}")
+
+@app.get("/api/entities/{entity_name}")
+def get_entity_by_name(entity_name: str, db: Session = Depends(get_db)):
+    """
+    Retrieve entity details by name including its limits
+    """
+    try:
+        print(f"Starting entity detail API endpoint request for {entity_name}...")
+        entity = db.query(Entity).filter(Entity.entity_name == entity_name).first()
+        
+        if not entity:
+            raise HTTPException(status_code=404, detail=f"Entity {entity_name} not found")
+        
+        # Get entity limits
+        entity_limits = db.query(EntityLimit).filter(EntityLimit.entity_name == entity_name).all()
+        
+        # Format entity data
+        entity_data = {
+            "entity_id": entity.entity_id,
+            "entity_name": entity.entity_name,
+            "entity_address": entity.entity_address,
+            "country": entity.country,
+            "swift": entity.swift,
+            "signing_office_branch": entity.signing_office_branch,
+            "agreement_date": entity.agreement_date.isoformat() if entity.agreement_date else None,
+            "limits": []
+        }
+        
+        # Format and add limits data
+        for limit in entity_limits:
+            available_limit = (
+                float(limit.approved_limit if limit.approved_limit else 0) - 
+                float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) - 
+                float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
+            )
+            
+            net_available_limit = (
+                available_limit - 
+                float(limit.earmark_limit if limit.earmark_limit else 0)
+            )
+            
+            limit_data = {
+                "id": limit.id,
+                "facility_limit": limit.facility_limit,
+                "approved_limit": float(limit.approved_limit) if limit.approved_limit else 0,
+                "max_tenor_of_adb_guarantee": limit.max_tenor_of_adb_guarantee,
+                "type": limit.type,
+                "pfi_rpa_allocation": float(limit.pfi_rpa_allocation) if limit.pfi_rpa_allocation else 0,
+                "outstanding_exposure": float(limit.outstanding_exposure) if limit.outstanding_exposure else 0,
+                "earmark_limit": float(limit.earmark_limit) if limit.earmark_limit else 0,
+                "available_limit": available_limit,
+                "net_available_limit": net_available_limit
+            }
+            entity_data["limits"].append(limit_data)
+        
+        print(f"Returning entity {entity_name} with {len(entity_data['limits'])} limits")
+        return entity_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error retrieving entity details: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving entity details: {str(e)}")
+
+@app.get("/api/country-limits/{country}")
+def get_country_limits(country: str, db: Session = Depends(get_db)):
+    """
+    Retrieve country-level limit information
+    """
+    try:
+        print(f"Starting country limits API endpoint request for {country}...")
+        
+        # Get all entities from this country
+        entities = db.query(Entity).filter(Entity.country == country).all()
+        entity_names = [entity.entity_name for entity in entities]
+        
+        # Get all limits for these entities
+        entity_limits = db.query(EntityLimit).filter(EntityLimit.entity_name.in_(entity_names)).all()
+        
+        # Calculate total limits
+        total_country_approved_limit = 400000000  # $400M as specified
+        total_utilized = sum(float(limit.approved_limit) if limit.approved_limit else 0 for limit in entity_limits)
+        available_country_limit = total_country_approved_limit - total_utilized
+        utilization_percentage = (total_utilized / total_country_approved_limit) * 100 if total_country_approved_limit > 0 else 0
+        
+        country_limit_data = {
+            "country": country,
+            "total_country_approved_limit": total_country_approved_limit,
+            "total_utilized": total_utilized,
+            "available_country_limit": available_country_limit,
+            "utilization_percentage": utilization_percentage
+        }
+        
+        print(f"Returning country limit information for {country}")
+        return country_limit_data
+    except Exception as e:
+        print(f"Error retrieving country limits: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving country limits: {str(e)}")
+
+@app.get("/api/program-limits")
+def get_program_limits(db: Session = Depends(get_db)):
+    """
+    Retrieve program-wide limit information
+    """
+    try:
+        print("Starting program limits API endpoint request...")
+        
+        # Get all entity limits
+        entity_limits = db.query(EntityLimit).all()
+        
+        # Calculate total limits
+        total_program_approved_limit = 2000000000  # $2B as specified
+        total_utilized = sum(float(limit.approved_limit) if limit.approved_limit else 0 for limit in entity_limits)
+        available_program_limit = total_program_approved_limit - total_utilized
+        utilization_percentage = (total_utilized / total_program_approved_limit) * 100 if total_program_approved_limit > 0 else 0
+        
+        program_limit_data = {
+            "total_program_approved_limit": total_program_approved_limit,
+            "total_utilized": total_utilized,
+            "available_program_limit": available_program_limit,
+            "utilization_percentage": utilization_percentage
+        }
+        
+        print("Returning program limit information")
+        return program_limit_data
+    except Exception as e:
+        print(f"Error retrieving program limits: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving program limits: {str(e)}")
 
 @app.get("/api/transactions")
 def get_transactions(db: Session = Depends(get_db)):

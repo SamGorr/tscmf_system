@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
+import EntityDetail from './pages/EntityDetail';
 import Products from './pages/Products';
 import Transactions from './pages/Transactions';
 import TransactionDetail from './pages/TransactionDetail';
@@ -28,6 +29,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/clients/:entityName" element={<EntityDetail />} />
             <Route path="/products" element={<Products />} />
             <Route path="/transactions" element={<Transactions />} />
             
