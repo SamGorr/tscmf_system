@@ -896,6 +896,9 @@ const TransactionDetail = () => {
     
     // Run all checks simultaneously
     runAllChecks(updatedTransaction);
+    
+    // Navigate to the limits check page
+    navigate(`/transactions/${id}/limits-check`);
   };
   
   // Function to run all checks simultaneously

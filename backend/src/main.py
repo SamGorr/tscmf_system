@@ -1362,3 +1362,190 @@ def update_transaction_sanctions_check(transaction_id: int, entity_decisions: di
         print(f"Error updating sanctions check status: {str(e)}")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating sanctions check status: {str(e)}")
+
+@app.get("/api/transactions/{transaction_id}/limit-check")
+def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db)):
+    """
+    Check a transaction's impact on program, country, entity, and facility limits
+    without updating limit utilizations
+    """
+    try:
+        print(f"Starting limit check for transaction {transaction_id}")
+        
+        # Get transaction
+        transaction = db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction {transaction_id} not found")
+        
+        # Get transaction amount in USD
+        transaction_amount_usd = transaction.usd_equivalent_amount if transaction.usd_equivalent_amount else 0
+        
+        # Initialize results structure
+        limit_check_results = {
+            "transaction_amount_usd": float(transaction_amount_usd),
+            "program_limit_check": {},
+            "country_limit_check": {},
+            "entity_limit_checks": [],
+            "facility_limit_checks": []
+        }
+        
+        # Check Program Limit
+        program_limits = get_program_limits(db)
+        limit_check_results["program_limit_check"] = {
+            "total_program_approved_limit": program_limits["total_program_approved_limit"],
+            "total_utilized": program_limits["total_utilized"],
+            "available_program_limit": program_limits["available_program_limit"],
+            "current_utilization_percentage": program_limits["utilization_percentage"],
+            "transaction_amount": float(transaction_amount_usd),
+            "post_transaction_utilization": float(program_limits["total_utilized"]) + float(transaction_amount_usd),
+            "post_transaction_available": float(program_limits["available_program_limit"]) - float(transaction_amount_usd),
+            "post_transaction_percentage": ((float(program_limits["total_utilized"]) + float(transaction_amount_usd)) / 
+                                           float(program_limits["total_program_approved_limit"])) * 100,
+            "impact_amount": float(transaction_amount_usd),
+            "impact_percentage": (float(transaction_amount_usd) / float(program_limits["total_program_approved_limit"])) * 100,
+            "status": "PASSED" if float(program_limits["available_program_limit"]) >= float(transaction_amount_usd) else "WARNING"
+        }
+        
+        # Check Country Limit
+        if transaction.country:
+            try:
+                country_limits = get_country_limits(transaction.country, db)
+                limit_check_results["country_limit_check"] = {
+                    "country": transaction.country,
+                    "total_country_approved_limit": country_limits["total_country_approved_limit"],
+                    "total_utilized": country_limits["total_utilized"],
+                    "available_country_limit": country_limits["available_country_limit"],
+                    "current_utilization_percentage": country_limits["utilization_percentage"],
+                    "transaction_amount": float(transaction_amount_usd),
+                    "post_transaction_utilization": float(country_limits["total_utilized"]) + float(transaction_amount_usd),
+                    "post_transaction_available": float(country_limits["available_country_limit"]) - float(transaction_amount_usd),
+                    "post_transaction_percentage": ((float(country_limits["total_utilized"]) + float(transaction_amount_usd)) / 
+                                                  float(country_limits["total_country_approved_limit"])) * 100,
+                    "impact_amount": float(transaction_amount_usd),
+                    "impact_percentage": (float(transaction_amount_usd) / float(country_limits["total_country_approved_limit"])) * 100,
+                    "status": "PASSED" if float(country_limits["available_country_limit"]) >= float(transaction_amount_usd) else "WARNING"
+                }
+            except Exception as e:
+                print(f"Could not check country limits for {transaction.country}: {str(e)}")
+                limit_check_results["country_limit_check"] = {"error": f"Could not check country limits: {str(e)}"}
+        
+        # Check Entity Limits (for issuing, confirming, and requesting banks)
+        entity_names = []
+        if transaction.issuing_bank:
+            entity_names.append(transaction.issuing_bank)
+        if transaction.confirming_bank:
+            entity_names.append(transaction.confirming_bank)
+        if transaction.requesting_bank:
+            entity_names.append(transaction.requesting_bank)
+        
+        # Get unique entity names
+        entity_names = list(set(entity_names))
+        
+        for entity_name in entity_names:
+            try:
+                entity = db.query(Entity).filter(Entity.entity_name == entity_name).first()
+                if not entity:
+                    continue
+                
+                entity_limits = db.query(EntityLimit).filter(EntityLimit.entity_name == entity_name).all()
+                
+                entity_limit_check = {
+                    "entity_name": entity_name,
+                    "entity_type": "Issuing Bank" if entity_name == transaction.issuing_bank else 
+                                 "Confirming Bank" if entity_name == transaction.confirming_bank else 
+                                 "Requesting Bank" if entity_name == transaction.requesting_bank else "Unknown",
+                    "facility_limit_checks": []
+                }
+                
+                # Check each facility limit for this entity
+                for limit in entity_limits:
+                    # Calculate available limit
+                    available_limit = (
+                        float(limit.approved_limit if limit.approved_limit else 0) - 
+                        float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) - 
+                        float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
+                    )
+                    
+                    net_available_limit = (
+                        available_limit - 
+                        float(limit.earmark_limit if limit.earmark_limit else 0)
+                    )
+                    
+                    # Check if transaction fits within this facility's available limit
+                    facility_status = "PASSED" if net_available_limit >= float(transaction_amount_usd) else "WARNING"
+                    
+                    # If this is a sub-limit type check, verify it matches the transaction's sub_limit_type
+                    is_matching_sublimit = True
+                    if transaction.sub_limit_type and limit.facility_limit:
+                        is_matching_sublimit = transaction.sub_limit_type.lower() in limit.facility_limit.lower()
+                    
+                    facility_limit_check = {
+                        "facility_limit": limit.facility_limit,
+                        "approved_limit": float(limit.approved_limit) if limit.approved_limit else 0,
+                        "pfi_rpa_allocation": float(limit.pfi_rpa_allocation) if limit.pfi_rpa_allocation else 0,
+                        "outstanding_exposure": float(limit.outstanding_exposure) if limit.outstanding_exposure else 0,
+                        "earmark_limit": float(limit.earmark_limit) if limit.earmark_limit else 0,
+                        "available_limit": available_limit,
+                        "net_available_limit": net_available_limit,
+                        "transaction_amount": float(transaction_amount_usd),
+                        "post_transaction_utilization": float(limit.outstanding_exposure if limit.outstanding_exposure else 0) + float(transaction_amount_usd),
+                        "post_transaction_available": net_available_limit - float(transaction_amount_usd),
+                        "impact_amount": float(transaction_amount_usd),
+                        "impact_percentage": (float(transaction_amount_usd) / float(limit.approved_limit)) * 100 if limit.approved_limit else 0,
+                        "is_matching_sublimit": is_matching_sublimit,
+                        "status": facility_status
+                    }
+                    
+                    # Add to facility limit checks
+                    entity_limit_check["facility_limit_checks"].append(facility_limit_check)
+                    
+                    # Also add to the flat list for easier access
+                    facility_limit_check_copy = facility_limit_check.copy()
+                    facility_limit_check_copy["entity_name"] = entity_name
+                    facility_limit_check_copy["entity_type"] = entity_limit_check["entity_type"]
+                    limit_check_results["facility_limit_checks"].append(facility_limit_check_copy)
+                
+                # Add overall status for this entity
+                if entity_limit_check["facility_limit_checks"]:
+                    overall_status = all(check["status"] == "PASSED" for check in entity_limit_check["facility_limit_checks"])
+                    entity_limit_check["overall_status"] = "PASSED" if overall_status else "WARNING"
+                else:
+                    entity_limit_check["overall_status"] = "WARNING"  # No limits defined
+                
+                # Add to entity limit checks
+                limit_check_results["entity_limit_checks"].append(entity_limit_check)
+                
+            except Exception as e:
+                print(f"Could not check entity limits for {entity_name}: {str(e)}")
+                limit_check_results["entity_limit_checks"].append({
+                    "entity_name": entity_name, 
+                    "error": f"Could not check entity limits: {str(e)}"
+                })
+        
+        # Determine overall limit check status
+        has_warnings = (
+            limit_check_results["program_limit_check"].get("status") == "WARNING" or
+            limit_check_results["country_limit_check"].get("status") == "WARNING" or
+            any(check.get("overall_status") == "WARNING" for check in limit_check_results["entity_limit_checks"])
+        )
+        
+        limit_check_results["overall_status"] = "WARNING" if has_warnings else "PASSED"
+        
+        # Update the transaction's limit_check_status in the event
+        event = db.query(Event).filter(Event.transaction_id == transaction_id).order_by(desc(Event.created_at)).first()
+        if event:
+            event.limit_check_status = limit_check_results["overall_status"]
+            db.commit()
+        
+        print(f"Completed limit check for transaction {transaction_id}")
+        return limit_check_results
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error checking transaction limits: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error checking transaction limits: {str(e)}")

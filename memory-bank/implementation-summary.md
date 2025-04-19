@@ -1141,3 +1141,40 @@ The Client and Entity Detail pages have been enhanced to provide a more comprehe
    - Detailed utilization metrics are presented when viewing specific entity details
 
 This enhancement improves the user experience by providing more intuitive visualization of limit utilization while maintaining a clean, hierarchical information structure that flows from program-wide limits down to individual facilities.
+
+## Limit Check Implementation
+
+### Overview
+Added a limit check functionality that analyzes the impact of a transaction on program limits, country limits, entity limits, and facility limits without updating the actual limit utilization. The implementation consists of:
+
+1. A backend API endpoint that conducts the limit impact analysis
+2. A frontend UI that displays the limit check results with color-coded status indicators
+3. Integration with the transaction flow to trigger the limit check after confirming request information
+
+### Backend Implementation
+- Created a new API endpoint `/api/transactions/{transaction_id}/limit-check` that:
+  - Retrieves program, country, entity, and facility limits relevant to the transaction
+  - Calculates the impact of the transaction amount on each limit type
+  - Returns a structured response with pre-transaction and post-transaction utilization metrics
+  - Updates the transaction's limit_check_status without affecting actual limit utilizations
+
+### Frontend Implementation
+- Enhanced the `LimitsCheckStep` component to:
+  - Fetch and display limit check results from the backend API
+  - Show color-coded status indicators based on warning/passed statuses
+  - Display utilization bars for program and country limits
+  - Present facility-level checks in an organized tabular format
+  - Provide a "Run Limits Check" button to manually trigger the check
+
+- Modified the transaction flow to:
+  - Navigate to the limits-check page after clicking "Confirm Request Information"
+  - Update verification check statuses to show checks are in progress
+
+### User Experience
+- Users can see the impact a transaction would have on various limits before proceeding
+- Clear color coding helps identify potential limit breaches:
+  - Green = Passed (transaction fits within the available limit)
+  - Yellow = Warning (transaction exceeds the available limit)
+- The UI shows current utilization and projected post-transaction utilization for each limit type
+
+This implementation allows users to perform impact analysis of transactions on program, country, entity, and facility limits before committing to a transaction. It helps in making informed decisions while preventing limit breaches.
