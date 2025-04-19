@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        'xxs': '.65rem',
+      },
       colors: {
         primary: {
           DEFAULT: '#007DB7',

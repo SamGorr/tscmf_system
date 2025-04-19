@@ -1223,4 +1223,6 @@ The Entity Limit Check functionality has been enhanced with the following improv
 
 4. **Covered Amount Usage**: All limit checks (Program, Country, and Entity) now use the transaction's Covered Amount (USD) instead of the total transaction amount. This provides a more accurate assessment of the actual risk exposure against limits, while maintaining the existing UI.
 
+5. **Gross Available Calculation**: Limit checks now use the gross available limit (without subtracting earmark limits) for determining if a transaction can proceed. This ensures that earmarked amounts, which are temporary reservations, don't unnecessarily restrict new transactions. The system still calculates and displays net available limits (with earmark subtracted) for reference, but all status determinations and post-transaction calculations are based on gross available.
+
 These changes provide more precise and relevant limits impact analysis, reducing confusion and ensuring that only the most applicable information is presented to users.

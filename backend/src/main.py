@@ -1449,6 +1449,7 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                     "facility_limit_checks": [],
                     "total_approved_limit": 0,
                     "total_utilized": 0,
+                    "total_earmark": 0,
                     "available_limit": 0,
                     "current_utilization_percentage": 0
                 }
@@ -1459,21 +1460,27 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                 # Calculate the entity-level totals first
                 total_approved_limit = 0
                 total_utilized = 0
+                total_earmark = 0
                 for limit in entity_limits:
                     total_approved_limit += float(limit.approved_limit if limit.approved_limit else 0)
                     utilized = float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) + float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
                     total_utilized += utilized
+                    total_earmark += float(limit.earmark_limit if limit.earmark_limit else 0)
                 
                 entity_limit_check["total_approved_limit"] = total_approved_limit
                 entity_limit_check["total_utilized"] = total_utilized
+                # Gross available (without earmark)
                 entity_limit_check["available_limit"] = total_approved_limit - total_utilized
                 entity_limit_check["current_utilization_percentage"] = (total_utilized / total_approved_limit) * 100 if total_approved_limit > 0 else 0
                 entity_limit_check["transaction_amount"] = float(transaction_amount_usd)
                 entity_limit_check["post_transaction_utilization"] = total_utilized + float(transaction_amount_usd)
+                # Post-transaction available using gross available
                 entity_limit_check["post_transaction_available"] = entity_limit_check["available_limit"] - float(transaction_amount_usd)
                 entity_limit_check["post_transaction_percentage"] = (entity_limit_check["post_transaction_utilization"] / total_approved_limit) * 100 if total_approved_limit > 0 else 0
                 entity_limit_check["impact_amount"] = float(transaction_amount_usd)
                 entity_limit_check["impact_percentage"] = (float(transaction_amount_usd) / total_approved_limit) * 100 if total_approved_limit > 0 else 0
+                entity_limit_check["total_earmark"] = total_earmark
+                entity_limit_check["net_available_limit"] = entity_limit_check["available_limit"] - total_earmark
                 
                 # Check each facility limit for this entity (but only include ones that match the product)
                 matching_facility_found = False
@@ -1489,13 +1496,14 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                     
                     matching_facility_found = True
                     
-                    # Calculate available limit
+                    # Calculate available limit (gross available limit - without earmark)
                     available_limit = (
                         float(limit.approved_limit if limit.approved_limit else 0) - 
                         float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) - 
                         float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
                     )
                     
+                    # Also calculate net available limit (with earmark) for reference
                     net_available_limit = (
                         available_limit - 
                         float(limit.earmark_limit if limit.earmark_limit else 0)
@@ -1505,8 +1513,8 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                     utilized = float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) + float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
                     utilization_percentage = (utilized / float(limit.approved_limit)) * 100 if limit.approved_limit and float(limit.approved_limit) > 0 else 0
                     
-                    # Check if transaction fits within this facility's available limit
-                    facility_status = "PASSED" if net_available_limit >= float(transaction_amount_usd) else "WARNING"
+                    # Check if transaction fits within this facility's available limit (using gross available limit)
+                    facility_status = "PASSED" if available_limit >= float(transaction_amount_usd) else "WARNING"
                     
                     facility_limit_check = {
                         "facility_limit": limit.facility_limit,
@@ -1520,7 +1528,7 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                         "current_utilization_percentage": utilization_percentage,
                         "transaction_amount": float(transaction_amount_usd),
                         "post_transaction_utilization": utilized + float(transaction_amount_usd),
-                        "post_transaction_available": net_available_limit - float(transaction_amount_usd),
+                        "post_transaction_available": available_limit - float(transaction_amount_usd),  # Use gross available limit
                         "post_transaction_percentage": ((utilized + float(transaction_amount_usd)) / 
                                                       float(limit.approved_limit)) * 100 if limit.approved_limit and float(limit.approved_limit) > 0 else 0,
                         "impact_amount": float(transaction_amount_usd),

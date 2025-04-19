@@ -57,6 +57,16 @@ This test plan covers the enhanced Limit Check functionality for transaction imp
 | CA-04 | Verify facility limits use covered amount | 1. Create transaction with differing total and covered amounts<br>2. Check facility limit table | Calculated impact reflects covered amount, not total amount | |
 | CA-05 | Verify warning thresholds with covered amount | 1. Create transaction with covered amount near but below warning threshold<br>2. Verify status shows PASSED | Impact calculations based on covered amount determine the displayed status | |
 
+### 6. Gross Available Limit Usage
+
+| Test ID | Description | Steps | Expected Results | Status |
+|---------|-------------|-------|------------------|--------|
+| GL-01 | Verify facility status uses gross available limit | 1. Create transaction with amount less than gross limit but more than net limit<br>2. Check facility status | Status shows PASSED since gross available is used | |
+| GL-02 | Verify post-transaction available uses gross available | 1. Create transaction<br>2. Check post-transaction available in facility table | Post-transaction available = Gross Available - Transaction Amount | |
+| GL-03 | Verify both available types are displayed | 1. Create transaction for entity with earmarked amount<br>2. Check facility details | Both gross available limit and net available limit (with earmark) are displayed | |
+| GL-04 | Verify entity-level gross available calculation | 1. Create transaction<br>2. Check entity limit section | Entity-level available is calculated without considering earmarked amounts | |
+| GL-05 | Verify transaction at gross limit boundary | 1. Create transaction equal to gross available limit<br>2. Check facility status | Status shows PASSED as transaction amount equals gross limit exactly | |
+
 ## Regression Tests
 
 | Test ID | Description | Steps | Expected Results | Status |

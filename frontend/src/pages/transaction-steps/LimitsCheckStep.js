@@ -478,10 +478,10 @@ const LimitsCheckStep = () => {
                                               Current Utilization
                                             </th>
                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                              Available
+                                              Available<span className="block text-xs normal-case font-normal text-gray-400">(Gross)</span>
                                             </th>
                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                              Post-Txn Available
+                                              Post-Txn Available<span className="block text-xs normal-case font-normal text-gray-400">(Gross)</span>
                                             </th>
                                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                               Impact %
@@ -512,10 +512,20 @@ const LimitsCheckStep = () => {
                                                 </div>
                                               </td>
                                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {formatCurrency(facilityCheck.net_available_limit)}
+                                                {formatCurrency(facilityCheck.available_limit)}
+                                                {facilityCheck.earmark_limit > 0 && (
+                                                  <div className="text-xs text-gray-400 mt-1">
+                                                    Net: {formatCurrency(facilityCheck.net_available_limit)}
+                                                  </div>
+                                                )}
                                               </td>
                                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatCurrency(facilityCheck.post_transaction_available)}
+                                                {facilityCheck.earmark_limit > 0 && (
+                                                  <div className="text-xs text-gray-400 mt-1">
+                                                    Net: {formatCurrency(facilityCheck.post_transaction_available - facilityCheck.earmark_limit)}
+                                                  </div>
+                                                )}
                                               </td>
                                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatPercentage(facilityCheck.impact_percentage)}

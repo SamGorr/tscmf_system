@@ -7,6 +7,9 @@ The enhanced Limit Check feature provides improved impact analysis for transacti
 - For all limit impact calculations, the system uses the transaction's **Covered Amount (USD)** rather than the total transaction amount
 - This means the displayed impact analysis reflects the guaranteed portion of the transaction
 - The UI continues to refer to this as "Transaction Amount" in the display
+- Available limit calculations use the **Gross Available Limit** (without considering earmarked amounts)
+- Post-transaction available amounts also use gross available limit for calculation
+- Both gross and net available limits (with earmark subtracted) are displayed for reference
 
 ## Accessing Limit Checks
 1. Navigate to the Transaction creation workflow
