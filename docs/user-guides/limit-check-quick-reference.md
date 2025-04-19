@@ -35,7 +35,8 @@ The enhanced Limit Check feature provides improved impact analysis for transacti
 - **Post-Transaction Available**: Entity limit - post-transaction utilization
 
 ### Facility-Level Details
-- Only facilities relevant to the transaction's product type are displayed
+- Only facilities that exactly match the transaction's product type are displayed
+- Product matching uses the transaction's sub_limit_type and requires an exact match (not a substring match)
 - Each facility displays:
   - Facility name and type
   - Facility limit amount
@@ -63,9 +64,10 @@ The enhanced Limit Check feature provides improved impact analysis for transacti
   - Requesting a temporary limit increase
 
 ## No Matching Facilities
-If you see "No matching facilities for [product]" message:
-- The transaction's product type doesn't match any facilities for the entity
-- Consult with Credit Administration to establish appropriate facilities
+If you see "No facility limits found that exactly match the transaction's product type" message:
+- The transaction's product type doesn't exactly match any facilities for the entity
+- The system requires an exact match between the transaction's sub_limit_type and the facility limit
+- Consult with Credit Administration to establish appropriate facilities or adjust the product type
 
 ## Tips
 - Review both Country and Entity impact before proceeding

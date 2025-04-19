@@ -1481,7 +1481,7 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                     # Check if this facility matches the transaction's product type
                     is_matching_sublimit = False
                     if transaction_product and limit.facility_limit:
-                        is_matching_sublimit = transaction_product in limit.facility_limit.lower()
+                        is_matching_sublimit = transaction_product == limit.facility_limit.lower()
                     
                     # Skip facilities that don't match the transaction product
                     if not is_matching_sublimit:

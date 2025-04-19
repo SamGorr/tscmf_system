@@ -395,7 +395,7 @@ const LimitsCheckStep = () => {
                         ) : (
                           <div className="p-4">
                             {entityCheck.no_matching_facilities ? (
-                              <p className="text-yellow-600">No matching facility limits found for the transaction's product type ({transaction.sub_limit_type || 'Not specified'}).</p>
+                              <p className="text-yellow-600">No facility limits found that exactly match the transaction's product type ({transaction.sub_limit_type || 'Not specified'}).</p>
                             ) : (
                               <>
                                 {/* Entity Level Summary */}
@@ -532,7 +532,7 @@ const LimitsCheckStep = () => {
                                     </div>
                                   </div>
                                 ) : (
-                                  <p className="text-yellow-600">No facility limits found for this entity's product type.</p>
+                                  <p className="text-yellow-600">No facility limits found that exactly match this entity's product type.</p>
                                 )}
                               </>
                             )}

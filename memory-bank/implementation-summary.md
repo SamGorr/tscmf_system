@@ -1210,3 +1210,15 @@ We've made significant improvements to the Limit Check functionality to provide 
 - Clear visual indication of post-transaction impacts helps users assess risk more effectively
 
 These enhancements maintain all existing functionality while providing a more streamlined and relevant limit check experience.
+
+## Entity Limit Check Enhancement
+
+The Entity Limit Check functionality has been enhanced with the following improvements:
+
+1. **Issuing Bank Only**: The system now only displays limit checks for the Issuing Bank entity, streamlining the information shown to users.
+
+2. **Exact Product Matching**: When matching transaction products to facility limits, the system now uses exact matching instead of substring matching. This ensures that only facilities that exactly match the transaction's `sub_limit_type` are displayed, preventing false matches.
+
+3. **Clear Error Messages**: When no matching facilities are found, the system now clearly indicates that exact matching is being used, helping users understand why certain facilities may not be displayed.
+
+These changes provide more precise and relevant limits impact analysis, reducing confusion and ensuring that only the most applicable information is presented to users.

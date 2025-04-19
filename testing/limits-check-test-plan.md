@@ -26,16 +26,17 @@ This test plan covers the enhanced Limit Check functionality for transaction imp
 |---------|-------------|-------|------------------|--------|
 | EL-01 | Verify only Issuing Bank entity is displayed | 1. Create transaction with Issuing Bank<br>2. Proceed to Limit Check step | Only the selected Issuing Bank entity appears in Entity Limit section | |
 | EL-02 | Verify product-specific facility filtering | 1. Create LC transaction<br>2. Check facility limits | Only LC-related facilities are displayed | |
-| EL-03 | Verify product matching with sub_limit_type | 1. Create transaction with specific product<br>2. Check facility limits | Only facilities matching transaction's sub_limit_type are shown | |
-| EL-04 | Verify "No matching facilities" message | 1. Create transaction with product that has no matching facilities<br>2. Check facility limits | "No matching facilities for [product]" message is displayed | |
+| EL-03 | Verify exact product matching with sub_limit_type | 1. Create transaction with specific product<br>2. Check facility limits | Only facilities exactly matching transaction's sub_limit_type are shown | |
+| EL-04 | Verify substring vs. exact matching behavior | 1. Create transaction with product "LC"<br>2. Check facility limits<br>3. Verify facilities with "LC Trade" or "LC Facility" are not shown | Only facilities with exactly "LC" as facility_limit are displayed | |
+| EL-05 | Verify "No matching facilities" message | 1. Create transaction with product that has no exact matching facilities<br>2. Check facility limits | "No facility limits found that exactly match..." message is displayed | |
 
 ### 3. Entity Limit Impact Analysis Display
 
 | Test ID | Description | Steps | Expected Results | Status |
 |---------|-------------|-------|------------------|--------|
-| EL-05 | Verify entity-level impact analysis metrics | 1. Create transaction<br>2. Check entity section | Total limit, current utilization, post-transaction utilization and available amounts are displayed | |
-| EL-06 | Verify facility-level impact analysis metrics | 1. Create transaction<br>2. Check facility table | Each facility shows current and post-transaction utilization | |
-| EL-07 | Verify facility utilization bars | 1. Create transaction<br>2. Check facility table | Each facility has current and post-transaction utilization bars with correct percentages | |
+| EL-06 | Verify entity-level impact analysis metrics | 1. Create transaction<br>2. Check entity section | Total limit, current utilization, post-transaction utilization and available amounts are displayed | |
+| EL-07 | Verify facility-level impact analysis metrics | 1. Create transaction<br>2. Check facility table | Each facility shows current and post-transaction utilization | |
+| EL-08 | Verify facility utilization bars | 1. Create transaction<br>2. Check facility table | Each facility has current and post-transaction utilization bars with correct percentages | |
 
 ### 4. Edge Cases and Error Handling
 
