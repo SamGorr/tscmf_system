@@ -223,152 +223,6 @@ const LimitsCheckStep = () => {
                   </span>
                 </div>
 
-                {/* Program Limit Check */}
-                {limitsData.program_limit_check && !limitsData.program_limit_check.error && (
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-gray-50 p-4 flex items-center">
-                      <BuildingLibraryIcon className="h-6 w-6 text-primary mr-2" />
-                      <h3 className="text-lg font-medium">Program Limit Check</h3>
-                      <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(limitsData.program_limit_check.status)}`}>
-                        {limitsData.program_limit_check.status}
-                      </span>
-                    </div>
-                    <div className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Total Program Limit</p>
-                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.total_program_approved_limit)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Currently Utilized</p>
-                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.total_utilized)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Available</p>
-                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.available_program_limit)}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Transaction Amount</p>
-                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.transaction_amount)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Post-Transaction Utilization</p>
-                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.post_transaction_utilization)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Post-Transaction Available</p>
-                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.post_transaction_available)}</p>
-                        </div>
-                      </div>
-                      
-                      {/* Utilization bars */}
-                      <div className="mt-4 space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Current Utilization</span>
-                            <span>{formatPercentage(limitsData.program_limit_check.current_utilization_percentage)}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                              className={`${getUtilizationColor(limitsData.program_limit_check.current_utilization_percentage)} h-2.5 rounded-full`}
-                              style={{ width: `${Math.min(limitsData.program_limit_check.current_utilization_percentage, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Post-Transaction Utilization</span>
-                            <span>{formatPercentage(limitsData.program_limit_check.post_transaction_percentage)}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                              className={`${getUtilizationColor(limitsData.program_limit_check.post_transaction_percentage)} h-2.5 rounded-full`}
-                              style={{ width: `${Math.min(limitsData.program_limit_check.post_transaction_percentage, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Country Limit Check */}
-                {limitsData.country_limit_check && !limitsData.country_limit_check.error && (
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-gray-50 p-4 flex items-center">
-                      <GlobeAsiaAustraliaIcon className="h-6 w-6 text-primary mr-2" />
-                      <h3 className="text-lg font-medium">Country Limit Check - {limitsData.country_limit_check.country}</h3>
-                      <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(limitsData.country_limit_check.status)}`}>
-                        {limitsData.country_limit_check.status}
-                      </span>
-                    </div>
-                    <div className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Total Country Limit</p>
-                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.total_country_approved_limit)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Currently Utilized</p>
-                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.total_utilized)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Available</p>
-                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.available_country_limit)}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Transaction Amount</p>
-                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.transaction_amount)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Post-Transaction Utilization</p>
-                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.post_transaction_utilization)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Post-Transaction Available</p>
-                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.post_transaction_available)}</p>
-                        </div>
-                      </div>
-                      
-                      {/* Utilization bars */}
-                      <div className="mt-4 space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Current Utilization</span>
-                            <span>{formatPercentage(limitsData.country_limit_check.current_utilization_percentage)}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                              className={`${getUtilizationColor(limitsData.country_limit_check.current_utilization_percentage)} h-2.5 rounded-full`}
-                              style={{ width: `${Math.min(limitsData.country_limit_check.current_utilization_percentage, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Post-Transaction Utilization</span>
-                            <span>{formatPercentage(limitsData.country_limit_check.post_transaction_percentage)}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div 
-                              className={`${getUtilizationColor(limitsData.country_limit_check.post_transaction_percentage)} h-2.5 rounded-full`}
-                              style={{ width: `${Math.min(limitsData.country_limit_check.post_transaction_percentage, 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Entity Limit Checks */}
                 {limitsData.entity_limit_checks && limitsData.entity_limit_checks.length > 0 && (
                   <div className="space-y-4">
@@ -550,6 +404,152 @@ const LimitsCheckStep = () => {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Country Limit Check */}
+                {limitsData.country_limit_check && !limitsData.country_limit_check.error && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 p-4 flex items-center">
+                      <GlobeAsiaAustraliaIcon className="h-6 w-6 text-primary mr-2" />
+                      <h3 className="text-lg font-medium">Country Limit Check - {limitsData.country_limit_check.country}</h3>
+                      <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(limitsData.country_limit_check.status)}`}>
+                        {limitsData.country_limit_check.status}
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Total Country Limit</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.total_country_approved_limit)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Currently Utilized</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.total_utilized)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Available</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.available_country_limit)}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Transaction Amount</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.transaction_amount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Post-Transaction Utilization</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.post_transaction_utilization)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Post-Transaction Available</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.post_transaction_available)}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Utilization bars */}
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Current Utilization</span>
+                            <span>{formatPercentage(limitsData.country_limit_check.current_utilization_percentage)}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`${getUtilizationColor(limitsData.country_limit_check.current_utilization_percentage)} h-2.5 rounded-full`}
+                              style={{ width: `${Math.min(limitsData.country_limit_check.current_utilization_percentage, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Post-Transaction Utilization</span>
+                            <span>{formatPercentage(limitsData.country_limit_check.post_transaction_percentage)}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`${getUtilizationColor(limitsData.country_limit_check.post_transaction_percentage)} h-2.5 rounded-full`}
+                              style={{ width: `${Math.min(limitsData.country_limit_check.post_transaction_percentage, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Program Limit Check */}
+                {limitsData.program_limit_check && !limitsData.program_limit_check.error && (
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 p-4 flex items-center">
+                      <BuildingLibraryIcon className="h-6 w-6 text-primary mr-2" />
+                      <h3 className="text-lg font-medium">Program Limit Check</h3>
+                      <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusColorClass(limitsData.program_limit_check.status)}`}>
+                        {limitsData.program_limit_check.status}
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Total Program Limit</p>
+                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.total_program_approved_limit)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Currently Utilized</p>
+                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.total_utilized)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Available</p>
+                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.available_program_limit)}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Transaction Amount</p>
+                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.transaction_amount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Post-Transaction Utilization</p>
+                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.post_transaction_utilization)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Post-Transaction Available</p>
+                          <p className="font-medium">{formatCurrency(limitsData.program_limit_check.post_transaction_available)}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Utilization bars */}
+                      <div className="mt-4 space-y-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Current Utilization</span>
+                            <span>{formatPercentage(limitsData.program_limit_check.current_utilization_percentage)}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`${getUtilizationColor(limitsData.program_limit_check.current_utilization_percentage)} h-2.5 rounded-full`}
+                              style={{ width: `${Math.min(limitsData.program_limit_check.current_utilization_percentage, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Post-Transaction Utilization</span>
+                            <span>{formatPercentage(limitsData.program_limit_check.post_transaction_percentage)}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`${getUtilizationColor(limitsData.program_limit_check.post_transaction_percentage)} h-2.5 rounded-full`}
+                              style={{ width: `${Math.min(limitsData.program_limit_check.post_transaction_percentage, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
