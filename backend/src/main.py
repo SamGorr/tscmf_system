@@ -1430,17 +1430,10 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                 print(f"Could not check country limits for {transaction.country}: {str(e)}")
                 limit_check_results["country_limit_check"] = {"error": f"Could not check country limits: {str(e)}"}
         
-        # Check Entity Limits (for issuing, confirming, and requesting banks)
+        # Check Entity Limits - Only for issuing bank
         entity_names = []
         if transaction.issuing_bank:
             entity_names.append(transaction.issuing_bank)
-        if transaction.confirming_bank:
-            entity_names.append(transaction.confirming_bank)
-        if transaction.requesting_bank:
-            entity_names.append(transaction.requesting_bank)
-        
-        # Get unique entity names
-        entity_names = list(set(entity_names))
         
         for entity_name in entity_names:
             try:
@@ -1452,14 +1445,50 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                 
                 entity_limit_check = {
                     "entity_name": entity_name,
-                    "entity_type": "Issuing Bank" if entity_name == transaction.issuing_bank else 
-                                 "Confirming Bank" if entity_name == transaction.confirming_bank else 
-                                 "Requesting Bank" if entity_name == transaction.requesting_bank else "Unknown",
-                    "facility_limit_checks": []
+                    "entity_type": "Issuing Bank",
+                    "facility_limit_checks": [],
+                    "total_approved_limit": 0,
+                    "total_utilized": 0,
+                    "available_limit": 0,
+                    "current_utilization_percentage": 0
                 }
                 
-                # Check each facility limit for this entity
+                # Get the transaction's product type (sub_limit_type)
+                transaction_product = transaction.sub_limit_type.lower() if transaction.sub_limit_type else None
+                
+                # Calculate the entity-level totals first
+                total_approved_limit = 0
+                total_utilized = 0
                 for limit in entity_limits:
+                    total_approved_limit += float(limit.approved_limit if limit.approved_limit else 0)
+                    utilized = float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) + float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
+                    total_utilized += utilized
+                
+                entity_limit_check["total_approved_limit"] = total_approved_limit
+                entity_limit_check["total_utilized"] = total_utilized
+                entity_limit_check["available_limit"] = total_approved_limit - total_utilized
+                entity_limit_check["current_utilization_percentage"] = (total_utilized / total_approved_limit) * 100 if total_approved_limit > 0 else 0
+                entity_limit_check["transaction_amount"] = float(transaction_amount_usd)
+                entity_limit_check["post_transaction_utilization"] = total_utilized + float(transaction_amount_usd)
+                entity_limit_check["post_transaction_available"] = entity_limit_check["available_limit"] - float(transaction_amount_usd)
+                entity_limit_check["post_transaction_percentage"] = (entity_limit_check["post_transaction_utilization"] / total_approved_limit) * 100 if total_approved_limit > 0 else 0
+                entity_limit_check["impact_amount"] = float(transaction_amount_usd)
+                entity_limit_check["impact_percentage"] = (float(transaction_amount_usd) / total_approved_limit) * 100 if total_approved_limit > 0 else 0
+                
+                # Check each facility limit for this entity (but only include ones that match the product)
+                matching_facility_found = False
+                for limit in entity_limits:
+                    # Check if this facility matches the transaction's product type
+                    is_matching_sublimit = False
+                    if transaction_product and limit.facility_limit:
+                        is_matching_sublimit = transaction_product in limit.facility_limit.lower()
+                    
+                    # Skip facilities that don't match the transaction product
+                    if not is_matching_sublimit:
+                        continue
+                    
+                    matching_facility_found = True
+                    
                     # Calculate available limit
                     available_limit = (
                         float(limit.approved_limit if limit.approved_limit else 0) - 
@@ -1472,13 +1501,12 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                         float(limit.earmark_limit if limit.earmark_limit else 0)
                     )
                     
+                    # Calculate utilization percentage
+                    utilized = float(limit.pfi_rpa_allocation if limit.pfi_rpa_allocation else 0) + float(limit.outstanding_exposure if limit.outstanding_exposure else 0)
+                    utilization_percentage = (utilized / float(limit.approved_limit)) * 100 if limit.approved_limit and float(limit.approved_limit) > 0 else 0
+                    
                     # Check if transaction fits within this facility's available limit
                     facility_status = "PASSED" if net_available_limit >= float(transaction_amount_usd) else "WARNING"
-                    
-                    # If this is a sub-limit type check, verify it matches the transaction's sub_limit_type
-                    is_matching_sublimit = True
-                    if transaction.sub_limit_type and limit.facility_limit:
-                        is_matching_sublimit = transaction.sub_limit_type.lower() in limit.facility_limit.lower()
                     
                     facility_limit_check = {
                         "facility_limit": limit.facility_limit,
@@ -1488,11 +1516,15 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                         "earmark_limit": float(limit.earmark_limit) if limit.earmark_limit else 0,
                         "available_limit": available_limit,
                         "net_available_limit": net_available_limit,
+                        "current_utilization": utilized,
+                        "current_utilization_percentage": utilization_percentage,
                         "transaction_amount": float(transaction_amount_usd),
-                        "post_transaction_utilization": float(limit.outstanding_exposure if limit.outstanding_exposure else 0) + float(transaction_amount_usd),
+                        "post_transaction_utilization": utilized + float(transaction_amount_usd),
                         "post_transaction_available": net_available_limit - float(transaction_amount_usd),
+                        "post_transaction_percentage": ((utilized + float(transaction_amount_usd)) / 
+                                                      float(limit.approved_limit)) * 100 if limit.approved_limit and float(limit.approved_limit) > 0 else 0,
                         "impact_amount": float(transaction_amount_usd),
-                        "impact_percentage": (float(transaction_amount_usd) / float(limit.approved_limit)) * 100 if limit.approved_limit else 0,
+                        "impact_percentage": (float(transaction_amount_usd) / float(limit.approved_limit)) * 100 if limit.approved_limit and float(limit.approved_limit) > 0 else 0,
                         "is_matching_sublimit": is_matching_sublimit,
                         "status": facility_status
                     }
@@ -1511,7 +1543,12 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                     overall_status = all(check["status"] == "PASSED" for check in entity_limit_check["facility_limit_checks"])
                     entity_limit_check["overall_status"] = "PASSED" if overall_status else "WARNING"
                 else:
-                    entity_limit_check["overall_status"] = "WARNING"  # No limits defined
+                    # If no matching facilities were found, make this more clear in the response
+                    if matching_facility_found:
+                        entity_limit_check["overall_status"] = "WARNING"  # No limits defined
+                    else:
+                        entity_limit_check["overall_status"] = "WARNING"
+                        entity_limit_check["no_matching_facilities"] = True
                 
                 # Add to entity limit checks
                 limit_check_results["entity_limit_checks"].append(entity_limit_check)
@@ -1520,6 +1557,7 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
                 print(f"Could not check entity limits for {entity_name}: {str(e)}")
                 limit_check_results["entity_limit_checks"].append({
                     "entity_name": entity_name, 
+                    "entity_type": "Issuing Bank",
                     "error": f"Could not check entity limits: {str(e)}"
                 })
         

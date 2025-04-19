@@ -1178,3 +1178,35 @@ Added a limit check functionality that analyzes the impact of a transaction on p
 - The UI shows current utilization and projected post-transaction utilization for each limit type
 
 This implementation allows users to perform impact analysis of transactions on program, country, entity, and facility limits before committing to a transaction. It helps in making informed decisions while preventing limit breaches.
+
+## Enhanced Limit Check Functionality (July 2023)
+
+We've made significant improvements to the Limit Check functionality to provide more relevant and focused impact analysis:
+
+### Backend Enhancements:
+- Modified the `/api/transactions/{transaction_id}/limit-check` endpoint to filter Entity Limit Checks to only include the Issuing Bank entity
+- Implemented product-specific filtering to only show facility limits that match the transaction's `sub_limit_type` (product)
+- Enhanced impact analysis calculations for Country and Entity Limit Checks to match the comprehensive analysis done for Program Limit Checks
+- Added calculation of post-transaction utilization, available limits, and impact percentages for all limit types
+
+### Frontend Improvements:
+- Updated the LimitsCheckStep.js component to display standardized impact analysis across all limit check sections
+- Enhanced the Country Limit Check section to show:
+  - Transaction amount
+  - Post-transaction utilization
+  - Post-transaction available limits
+  - Utilization percentage bars for both current and post-transaction states
+- Improved the Entity Limit Check section to:
+  - Only display the Issuing Bank entity
+  - Show entity-level summary with total limits, current utilization, and post-transaction impacts
+  - Display product-specific facility limits that match the transaction's product type
+  - Include more detailed impact analysis in the facility limits table
+  - Provide visual indicators of utilization through color-coded status bars
+
+### User Experience Benefits:
+- Users now see only the most relevant information for decision-making
+- Consistent impact analysis presentation across all limit types makes comparison easier
+- Focused display of only matching product facilities reduces information overload
+- Clear visual indication of post-transaction impacts helps users assess risk more effectively
+
+These enhancements maintain all existing functionality while providing a more streamlined and relevant limit check experience.

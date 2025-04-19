@@ -322,6 +322,21 @@ const LimitsCheckStep = () => {
                         </div>
                       </div>
                       
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Transaction Amount</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.transaction_amount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Post-Transaction Utilization</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.post_transaction_utilization)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Post-Transaction Available</p>
+                          <p className="font-medium">{formatCurrency(limitsData.country_limit_check.post_transaction_available)}</p>
+                        </div>
+                      </div>
+                      
                       {/* Utilization bars */}
                       <div className="mt-4 space-y-4">
                         <div>
@@ -333,6 +348,19 @@ const LimitsCheckStep = () => {
                             <div 
                               className={`${getUtilizationColor(limitsData.country_limit_check.current_utilization_percentage)} h-2.5 rounded-full`}
                               style={{ width: `${Math.min(limitsData.country_limit_check.current_utilization_percentage, 100)}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Post-Transaction Utilization</span>
+                            <span>{formatPercentage(limitsData.country_limit_check.post_transaction_percentage)}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5">
+                            <div 
+                              className={`${getUtilizationColor(limitsData.country_limit_check.post_transaction_percentage)} h-2.5 rounded-full`}
+                              style={{ width: `${Math.min(limitsData.country_limit_check.post_transaction_percentage, 100)}%` }}
                             ></div>
                           </div>
                         </div>
@@ -366,54 +394,147 @@ const LimitsCheckStep = () => {
                           <div className="p-4 text-red-600">{entityCheck.error}</div>
                         ) : (
                           <div className="p-4">
-                            {entityCheck.facility_limit_checks && entityCheck.facility_limit_checks.length > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                  <thead className="bg-gray-50">
-                                    <tr>
-                                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Facility Limit
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Approved Limit
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Available
-                                      </th>
-                                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody className="bg-white divide-y divide-gray-200">
-                                    {entityCheck.facility_limit_checks.map((facilityCheck, i) => (
-                                      <tr key={i} className={facilityCheck.is_matching_sublimit ? '' : 'opacity-60'}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                          {facilityCheck.facility_limit}
-                                          {!facilityCheck.is_matching_sublimit && (
-                                            <span className="text-xs text-gray-500 ml-2">
-                                              (not matching transaction type)
-                                            </span>
-                                          )}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {formatCurrency(facilityCheck.approved_limit)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                          {formatCurrency(facilityCheck.net_available_limit)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColorClass(facilityCheck.status)}`}>
-                                            {facilityCheck.status}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
+                            {entityCheck.no_matching_facilities ? (
+                              <p className="text-yellow-600">No matching facility limits found for the transaction's product type ({transaction.sub_limit_type || 'Not specified'}).</p>
                             ) : (
-                              <p className="text-yellow-600">No facility limits found for this entity.</p>
+                              <>
+                                {/* Entity Level Summary */}
+                                <div className="mb-6">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                      <p className="text-sm text-gray-500">Total Entity Limit</p>
+                                      <p className="font-medium">{formatCurrency(entityCheck.total_approved_limit)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Currently Utilized</p>
+                                      <p className="font-medium">{formatCurrency(entityCheck.total_utilized)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Available</p>
+                                      <p className="font-medium">{formatCurrency(entityCheck.available_limit)}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                      <p className="text-sm text-gray-500">Transaction Amount</p>
+                                      <p className="font-medium">{formatCurrency(entityCheck.transaction_amount)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Post-Transaction Utilization</p>
+                                      <p className="font-medium">{formatCurrency(entityCheck.post_transaction_utilization)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Post-Transaction Available</p>
+                                      <p className="font-medium">{formatCurrency(entityCheck.post_transaction_available)}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Utilization bars */}
+                                  <div className="mt-4 space-y-4">
+                                    <div>
+                                      <div className="flex justify-between text-sm mb-1">
+                                        <span>Current Utilization</span>
+                                        <span>{formatPercentage(entityCheck.current_utilization_percentage)}</span>
+                                      </div>
+                                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div 
+                                          className={`${getUtilizationColor(entityCheck.current_utilization_percentage)} h-2.5 rounded-full`}
+                                          style={{ width: `${Math.min(entityCheck.current_utilization_percentage, 100)}%` }}
+                                        ></div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div>
+                                      <div className="flex justify-between text-sm mb-1">
+                                        <span>Post-Transaction Utilization</span>
+                                        <span>{formatPercentage(entityCheck.post_transaction_percentage)}</span>
+                                      </div>
+                                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div 
+                                          className={`${getUtilizationColor(entityCheck.post_transaction_percentage)} h-2.5 rounded-full`}
+                                          style={{ width: `${Math.min(entityCheck.post_transaction_percentage, 100)}%` }}
+                                        ></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Facility Level Details */}
+                                {entityCheck.facility_limit_checks && entityCheck.facility_limit_checks.length > 0 ? (
+                                  <div>
+                                    <h5 className="font-medium text-gray-700 mb-2">Product Facility Limits</h5>
+                                    <div className="overflow-x-auto">
+                                      <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                          <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Facility Limit
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Approved Limit
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Current Utilization
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Available
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Post-Txn Available
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Impact %
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Status
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                          {entityCheck.facility_limit_checks.map((facilityCheck, i) => (
+                                            <tr key={i}>
+                                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {facilityCheck.facility_limit}
+                                              </td>
+                                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatCurrency(facilityCheck.approved_limit)}
+                                              </td>
+                                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <div className="flex items-center">
+                                                  <span className="mr-2">{formatPercentage(facilityCheck.current_utilization_percentage)}</span>
+                                                  <div className="w-20 bg-gray-200 rounded-full h-1.5">
+                                                    <div 
+                                                      className={`${getUtilizationColor(facilityCheck.current_utilization_percentage)} h-1.5 rounded-full`}
+                                                      style={{ width: `${Math.min(facilityCheck.current_utilization_percentage, 100)}%` }}
+                                                    ></div>
+                                                  </div>
+                                                </div>
+                                              </td>
+                                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatCurrency(facilityCheck.net_available_limit)}
+                                              </td>
+                                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatCurrency(facilityCheck.post_transaction_available)}
+                                              </td>
+                                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatPercentage(facilityCheck.impact_percentage)}
+                                              </td>
+                                              <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColorClass(facilityCheck.status)}`}>
+                                                  {facilityCheck.status}
+                                                </span>
+                                              </td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-yellow-600">No facility limits found for this entity's product type.</p>
+                                )}
+                              </>
                             )}
                           </div>
                         )}
