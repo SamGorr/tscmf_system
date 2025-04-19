@@ -513,19 +513,19 @@ const LimitsCheckStep = () => {
                                               </td>
                                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatCurrency(facilityCheck.available_limit)}
-                                                {facilityCheck.earmark_limit > 0 && (
+                                                {
                                                   <div className="text-xs text-gray-400 mt-1">
                                                     Net: {formatCurrency(facilityCheck.net_available_limit)}
                                                   </div>
-                                                )}
+                                                }
                                               </td>
                                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatCurrency(facilityCheck.post_transaction_available)}
-                                                {facilityCheck.earmark_limit > 0 && (
+                                                {
                                                   <div className="text-xs text-gray-400 mt-1">
                                                     Net: {formatCurrency(facilityCheck.post_transaction_available - facilityCheck.earmark_limit)}
                                                   </div>
-                                                )}
+                                                }
                                               </td>
                                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {formatPercentage(facilityCheck.impact_percentage)}
