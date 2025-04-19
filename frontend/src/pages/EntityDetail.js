@@ -4,7 +4,7 @@ import EntityService from '../services/entityService';
 
 // Helper function to determine progress bar color based on utilization percentage
 const getUtilizationColor = (percentage) => {
-  if (percentage < 60) return 'bg-green-500'; // Green for low utilization
+  if (percentage < 50) return 'bg-green-500'; // Green for low utilization
   if (percentage < 85) return 'bg-amber-500'; // Amber/Yellow for moderate utilization
   return 'bg-red-500'; // Red for high utilization
 };
