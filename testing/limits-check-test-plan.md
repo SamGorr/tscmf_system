@@ -15,10 +15,11 @@ This test plan covers the enhanced Limit Check functionality for transaction imp
 | Test ID | Description | Steps | Expected Results | Status |
 |---------|-------------|-------|------------------|--------|
 | CL-01 | Verify Country Limit display includes transaction amount | 1. Navigate to transaction creation<br>2. Fill required fields<br>3. Proceed to Limit Check step | Transaction amount is displayed in Country Limit section | |
-| CL-02 | Verify post-transaction utilization calculation | 1. Create transaction<br>2. Check post-transaction utilization in Country Limit section | Post-transaction utilization = Current Utilization + Transaction Amount | |
+| CL-02 | Verify post-transaction utilization calculation | 1. Create transaction<br>2. Check post-transaction utilization in Country Limit section | Post-transaction utilization = Current Utilization + Transaction Covered Amount | |
 | CL-03 | Verify post-transaction available calculation | 1. Create transaction<br>2. Check post-transaction available in Country Limit section | Post-transaction available = Country Limit - Post-transaction Utilization | |
 | CL-04 | Verify utilization bars display correct percentages | 1. Create transaction<br>2. Check utilization bars in Country Limit section | Current and post-transaction bars show correct utilization percentages | |
 | CL-05 | Verify color coding of utilization bars | 1. Create transaction with different amounts<br>2. Check utilization bars | <50%: Green<br>50-80%: Yellow<br>>80%: Red | |
+| CL-06 | Verify indicator showing covered amount is being used | 1. Create transaction<br>2. Check limit check page | Notification banner indicates covered amount is used for calculations | |
 
 ### 2. Entity Limit Check Filtering
 
@@ -46,6 +47,16 @@ This test plan covers the enhanced Limit Check functionality for transaction imp
 | EC-02 | Verify handling when entity has no limit set | 1. Create transaction for entity with no limit<br>2. Check Entity Limit section | "No entity limit defined" message is displayed | |
 | EC-03 | Verify handling of transaction amount exceeding available limit | 1. Create transaction exceeding country/entity limit<br>2. Check Limit sections | Red indicators shown for exceeded limits<br>Warning message displayed | |
 
+### 5. Covered Amount Usage
+
+| Test ID | Description | Steps | Expected Results | Status |
+|---------|-------------|-------|------------------|--------|
+| CA-01 | Verify Program Limit uses covered amount | 1. Create transaction with differing total and covered amounts<br>2. Check Program Limit section | Calculated impact reflects covered amount, not total amount | |
+| CA-02 | Verify Country Limit uses covered amount | 1. Create transaction with differing total and covered amounts<br>2. Check Country Limit section | Calculated impact reflects covered amount, not total amount | |
+| CA-03 | Verify Entity Limit uses covered amount | 1. Create transaction with differing total and covered amounts<br>2. Check Entity Limit section | Calculated impact reflects covered amount, not total amount | |
+| CA-04 | Verify facility limits use covered amount | 1. Create transaction with differing total and covered amounts<br>2. Check facility limit table | Calculated impact reflects covered amount, not total amount | |
+| CA-05 | Verify warning thresholds with covered amount | 1. Create transaction with covered amount near but below warning threshold<br>2. Verify status shows PASSED | Impact calculations based on covered amount determine the displayed status | |
+
 ## Regression Tests
 
 | Test ID | Description | Steps | Expected Results | Status |
@@ -57,6 +68,7 @@ This test plan covers the enhanced Limit Check functionality for transaction imp
 - At least one country with defined limits
 - At least one entity with multiple facility limits of different product types
 - Transaction amounts that trigger different utilization levels (low, medium, high)
+- Transactions with differing total amount vs. covered amount values
 
 ## Acceptance Criteria
 - All country limit impact analysis metrics display correctly
@@ -64,4 +76,5 @@ This test plan covers the enhanced Limit Check functionality for transaction imp
 - Only facilities matching the transaction's product type are displayed
 - All utilization bars correctly represent utilization percentages
 - Color coding of utilization bars is consistent and accurate
+- All limit calculations use covered amount rather than transaction total amount
 - All edge cases are handled gracefully with appropriate messages 

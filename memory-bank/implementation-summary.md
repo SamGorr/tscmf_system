@@ -1221,4 +1221,6 @@ The Entity Limit Check functionality has been enhanced with the following improv
 
 3. **Clear Error Messages**: When no matching facilities are found, the system now clearly indicates that exact matching is being used, helping users understand why certain facilities may not be displayed.
 
+4. **Covered Amount Usage**: All limit checks (Program, Country, and Entity) now use the transaction's Covered Amount (USD) instead of the total transaction amount. This provides a more accurate assessment of the actual risk exposure against limits, while maintaining the existing UI.
+
 These changes provide more precise and relevant limits impact analysis, reducing confusion and ensuring that only the most applicable information is presented to users.

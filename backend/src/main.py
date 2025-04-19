@@ -1378,8 +1378,8 @@ def check_transaction_limits(transaction_id: int, db: Session = Depends(get_db))
         if not transaction:
             raise HTTPException(status_code=404, detail=f"Transaction {transaction_id} not found")
         
-        # Get transaction amount in USD
-        transaction_amount_usd = transaction.usd_equivalent_amount if transaction.usd_equivalent_amount else 0
+        # Get transaction covered amount in USD instead of total amount
+        transaction_amount_usd = transaction.usd_equivalent_amount_cover if transaction.usd_equivalent_amount_cover else 0
         
         # Initialize results structure
         limit_check_results = {

@@ -3,6 +3,11 @@
 ## Overview
 The enhanced Limit Check feature provides improved impact analysis for transactions against Country and Entity limits. This guide explains how to interpret the limit check results and use them to make informed decisions.
 
+## Important Notes
+- For all limit impact calculations, the system uses the transaction's **Covered Amount (USD)** rather than the total transaction amount
+- This means the displayed impact analysis reflects the guaranteed portion of the transaction
+- The UI continues to refer to this as "Transaction Amount" in the display
+
 ## Accessing Limit Checks
 1. Navigate to the Transaction creation workflow
 2. Complete the required transaction details
