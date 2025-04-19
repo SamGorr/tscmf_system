@@ -11,7 +11,6 @@ const Clients = () => {
   const [filters, setFilters] = useState({
     country: '',
   });
-  const [programLimits, setProgramLimits] = useState(null);
   
   const navigate = useNavigate();
 
@@ -25,15 +24,13 @@ const Clients = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [entitiesData, limitsData, programLimitsData] = await Promise.all([
+        const [entitiesData, limitsData] = await Promise.all([
           EntityService.fetchEntities(),
-          EntityService.fetchEntityLimits(),
-          EntityService.fetchProgramLimits()
+          EntityService.fetchEntityLimits()
         ]);
         
         setEntities(entitiesData);
         setEntityLimits(limitsData);
-        setProgramLimits(programLimitsData);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -111,41 +108,6 @@ const Clients = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Clients</h1>
       </div>
-
-      {/* Program Limit Utilization */}
-      {programLimits && (
-        <div className="bg-white shadow-md rounded-lg p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">Program Limit Utilization</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 p-3 rounded">
-              <p className="text-sm text-gray-500">Total Program Approved Limit</p>
-              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(programLimits.total_program_approved_limit)}</p>
-            </div>
-            <div className="bg-gray-50 p-3 rounded">
-              <p className="text-sm text-gray-500">Total Utilized</p>
-              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(programLimits.total_utilized)}</p>
-            </div>
-            <div className="bg-gray-50 p-3 rounded">
-              <p className="text-sm text-gray-500">Available Program Limit</p>
-              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(programLimits.available_program_limit)}</p>
-            </div>
-          </div>
-          
-          {/* Progress bar for utilization */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Utilization</span>
-              <span>{programLimits.utilization_percentage.toFixed(1)}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-primary h-2.5 rounded-full" 
-                style={{ width: `${Math.min(programLimits.utilization_percentage, 100)}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Search and Filter Controls */}
       <div className="bg-white shadow-md rounded-lg p-4 mb-6">

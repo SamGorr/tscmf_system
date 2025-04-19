@@ -1064,3 +1064,80 @@ A service layer was created to handle API calls and data formatting:
 
 ### Data Model Integration
 The implementation leverages the existing entity and entity_limit tables without modifying their structure. Calculated fields are derived from the raw data at runtime in both the backend and frontend as needed.
+
+## Enhanced Client and Entity Detail Pages
+
+### Overview of Changes
+
+The Client and Entity Detail pages have been enhanced to provide a more comprehensive and visually informative view of entity limits and utilization metrics. The key changes include:
+
+1. **Relocated Program Limit Utilization**
+   - Moved the Program Limit Utilization section from the Clients listing page to the Entity Detail page
+   - This provides context-specific program information while viewing entity details
+   - Creates a hierarchical view of limits (Program → Country → Entity → Facility)
+
+2. **Enhanced Progress Bar Visualization**
+   - Implemented color-coded progress bars for all utilization metrics:
+     - Green (< 60%): Low utilization, healthy headroom
+     - Amber/Yellow (60-85%): Moderate utilization, caution warranted
+     - Red (> 85%): High utilization, limited availability
+   - Applied consistent color coding across all utilization indicators:
+     - Program-level utilization
+     - Country-level utilization
+     - Entity-level utilization
+     - Individual facility utilization
+
+3. **Added Entity Limit Utilization Section**
+   - Created a new section that summarizes the entity's total limit and utilization
+   - Displays total entity approved limit, utilized amount, and available limit
+   - Includes color-coded utilization progress bar with percentage
+
+4. **Enhanced Facility Limits Table**
+   - Added a dedicated Utilization column to the facility limits table
+   - Implemented compact visual indicators for each facility's utilization
+   - Applied color coding to facility and group subtotal utilization bars
+   - Added percentage labels for precise utilization metrics
+
+### Implementation Details
+
+1. **Helper Function**
+   - Added `getUtilizationColor()` utility function that determines the appropriate color class based on utilization percentage
+   - Centralized color logic for consistent application across all progress bars
+
+2. **API Integration**
+   - Updated the data fetching in EntityDetail to include program limits data
+   - Used Promise.all for concurrent API requests to improve loading performance
+
+3. **Utilization Calculations**
+   - Added dynamic calculations for entity-level utilization metrics
+   - Implemented facility-specific utilization calculations in the table rows
+   - Added group subtotal utilization metrics for each facility type
+
+4. **Visual Improvements**
+   - Standardized progress bar height and styling
+   - Added appropriate spacing and alignment
+   - Used consistent labeling conventions for all utilization sections
+
+### Benefits
+
+1. **Improved Risk Visualization**
+   - Color-coded progress bars provide instant visual indication of utilization levels
+   - Users can quickly identify entities or facilities approaching their limits
+   - Consistent color scheme creates an intuitive understanding of utilization status
+
+2. **Hierarchical Context**
+   - Users can see how entity utilization impacts country and program levels
+   - Provides multi-level perspective on limit utilization
+   - Enables more informed decision-making about limit allocation
+
+3. **Enhanced Detail View**
+   - More comprehensive facility table with utilization indicators
+   - Precise percentage values alongside visual indicators
+   - Clear breakdown of available vs. utilized limits at every level
+
+4. **Streamlined Clients Page**
+   - Removing the Program Limit Utilization from the Clients listing page streamlines the interface
+   - Clients page now focuses on entity discovery and navigation
+   - Detailed utilization metrics are presented when viewing specific entity details
+
+This enhancement improves the user experience by providing more intuitive visualization of limit utilization while maintaining a clean, hierarchical information structure that flows from program-wide limits down to individual facilities.

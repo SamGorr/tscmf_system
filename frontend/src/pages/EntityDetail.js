@@ -2,11 +2,19 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import EntityService from '../services/entityService';
 
+// Helper function to determine progress bar color based on utilization percentage
+const getUtilizationColor = (percentage) => {
+  if (percentage < 60) return 'bg-green-500'; // Green for low utilization
+  if (percentage < 85) return 'bg-amber-500'; // Amber/Yellow for moderate utilization
+  return 'bg-red-500'; // Red for high utilization
+};
+
 const EntityDetail = () => {
   const { entityName } = useParams();
   const navigate = useNavigate();
   const [entity, setEntity] = useState(null);
   const [countryLimits, setCountryLimits] = useState(null);
+  const [programLimits, setProgramLimits] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,7 +22,10 @@ const EntityDetail = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const entityData = await EntityService.fetchEntityByName(entityName);
+        const [entityData, programLimitsData] = await Promise.all([
+          EntityService.fetchEntityByName(entityName),
+          EntityService.fetchProgramLimits()
+        ]);
         
         // Fetch country limits if entity has country
         if (entityData.country) {
@@ -23,6 +34,7 @@ const EntityDetail = () => {
         }
         
         setEntity(entityData);
+        setProgramLimits(programLimitsData);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching entity data:', err);
@@ -197,6 +209,41 @@ const EntityDetail = () => {
         </div>
       </div>
 
+      {/* Program Limit Utilization */}
+      {programLimits && (
+        <div className="bg-white shadow-md rounded-lg p-4 mb-6">
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">Program Limit Utilization</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Total Program Approved Limit</p>
+              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(programLimits.total_program_approved_limit)}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Total Utilized</p>
+              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(programLimits.total_utilized)}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Available Program Limit</p>
+              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(programLimits.available_program_limit)}</p>
+            </div>
+          </div>
+          
+          {/* Color-coded progress bar for utilization */}
+          <div className="mt-4">
+            <div className="flex justify-between text-sm mb-1">
+              <span>Program Utilization</span>
+              <span>{programLimits.utilization_percentage.toFixed(1)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div 
+                className={`${getUtilizationColor(programLimits.utilization_percentage)} h-2.5 rounded-full`}
+                style={{ width: `${Math.min(programLimits.utilization_percentage, 100)}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Country Limit Utilization */}
       {countryLimits && (
         <div className="bg-white shadow-md rounded-lg p-4 mb-6">
@@ -216,19 +263,69 @@ const EntityDetail = () => {
             </div>
           </div>
           
-          {/* Progress bar for utilization */}
+          {/* Color-coded progress bar for utilization */}
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-1">
-              <span>Utilization</span>
+              <span>Country Utilization</span>
               <span>{countryLimits.utilization_percentage.toFixed(1)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div 
-                className="bg-primary h-2.5 rounded-full" 
+                className={`${getUtilizationColor(countryLimits.utilization_percentage)} h-2.5 rounded-full`}
                 style={{ width: `${Math.min(countryLimits.utilization_percentage, 100)}%` }}
               ></div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Entity Utilization (if entity has limits) */}
+      {entityTotal && (
+        <div className="bg-white shadow-md rounded-lg p-4 mb-6">
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">Entity Limit Utilization</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Total Entity Approved Limit</p>
+              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(entityTotal.approvedLimit)}</p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Total Utilized</p>
+              <p className="text-xl font-bold text-primary">
+                {EntityService.formatCurrency(entityTotal.approvedLimit - entityTotal.availableLimit)}
+              </p>
+            </div>
+            <div className="bg-gray-50 p-3 rounded">
+              <p className="text-sm text-gray-500">Available Entity Limit</p>
+              <p className="text-xl font-bold text-primary">{EntityService.formatCurrency(entityTotal.availableLimit)}</p>
+            </div>
+          </div>
+          
+          {/* Color-coded progress bar for utilization */}
+          {entityTotal.approvedLimit > 0 && (
+            <div className="mt-4">
+              <div className="flex justify-between text-sm mb-1">
+                <span>Entity Utilization</span>
+                {/* Calculate entity utilization percentage */}
+                {(() => {
+                  const utilizedAmount = entityTotal.approvedLimit - entityTotal.availableLimit;
+                  const utilizationPercentage = (utilizedAmount / entityTotal.approvedLimit) * 100;
+                  return <span>{utilizationPercentage.toFixed(1)}%</span>;
+                })()}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                {(() => {
+                  const utilizedAmount = entityTotal.approvedLimit - entityTotal.availableLimit;
+                  const utilizationPercentage = (utilizedAmount / entityTotal.approvedLimit) * 100;
+                  return (
+                    <div 
+                      className={`${getUtilizationColor(utilizationPercentage)} h-2.5 rounded-full`}
+                      style={{ width: `${Math.min(utilizationPercentage, 100)}%` }}
+                    ></div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -266,6 +363,9 @@ const EntityDetail = () => {
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Net Available Limit
                 </th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Utilization
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -274,40 +374,57 @@ const EntityDetail = () => {
                 <React.Fragment key={type}>
                   {/* Group header */}
                   <tr className="bg-gray-100">
-                    <td colSpan="8" className="px-4 py-2 font-medium">
+                    <td colSpan="9" className="px-4 py-2 font-medium">
                       {type} Facilities
                     </td>
                   </tr>
                   
                   {/* Limits in this group */}
-                  {limitsByType[type].map(limit => (
-                    <tr key={limit.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {limit.facility_limit}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {EntityService.formatCurrency(limit.approved_limit)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                        {limit.max_tenor_of_adb_guarantee || 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {EntityService.formatCurrency(limit.pfi_rpa_allocation)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {EntityService.formatCurrency(limit.outstanding_exposure)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {EntityService.formatCurrency(limit.earmark_limit)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {EntityService.formatCurrency(limit.available_limit)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {EntityService.formatCurrency(limit.net_available_limit)}
-                      </td>
-                    </tr>
-                  ))}
+                  {limitsByType[type].map(limit => {
+                    // Calculate utilization percentage for this facility
+                    const utilizedAmount = limit.pfi_rpa_allocation + limit.outstanding_exposure;
+                    const utilizationPercentage = limit.approved_limit > 0 
+                      ? (utilizedAmount / limit.approved_limit) * 100 
+                      : 0;
+                    
+                    return (
+                      <tr key={limit.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {limit.facility_limit}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {EntityService.formatCurrency(limit.approved_limit)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {limit.max_tenor_of_adb_guarantee || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {EntityService.formatCurrency(limit.pfi_rpa_allocation)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {EntityService.formatCurrency(limit.outstanding_exposure)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {EntityService.formatCurrency(limit.earmark_limit)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {EntityService.formatCurrency(limit.available_limit)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {EntityService.formatCurrency(limit.net_available_limit)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`${getUtilizationColor(utilizationPercentage)} h-2 rounded-full`}
+                              style={{ width: `${Math.min(utilizationPercentage, 100)}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs mt-1">{utilizationPercentage.toFixed(1)}%</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   
                   {/* Group subtotal */}
                   <tr className="bg-gray-50 border-t border-gray-300">
@@ -334,6 +451,27 @@ const EntityDetail = () => {
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-right">
                       {EntityService.formatCurrency(groupSubtotals[type].netAvailableLimit)}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">
+                      {(() => {
+                        const subtotal = groupSubtotals[type];
+                        const utilizedAmount = subtotal.pfiRpaAllocation + subtotal.outstandingExposure;
+                        const utilizationPercentage = subtotal.approvedLimit > 0 
+                          ? (utilizedAmount / subtotal.approvedLimit) * 100
+                          : 0;
+                        
+                        return (
+                          <>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`${getUtilizationColor(utilizationPercentage)} h-2 rounded-full`}
+                                style={{ width: `${Math.min(utilizationPercentage, 100)}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs mt-1">{utilizationPercentage.toFixed(1)}%</span>
+                          </>
+                        );
+                      })()}
                     </td>
                   </tr>
                 </React.Fragment>
@@ -366,13 +504,33 @@ const EntityDetail = () => {
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                     {EntityService.formatCurrency(entityTotal.netAvailableLimit)}
                   </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
+                    {(() => {
+                      const utilizedAmount = entityTotal.pfiRpaAllocation + entityTotal.outstandingExposure;
+                      const utilizationPercentage = entityTotal.approvedLimit > 0 
+                        ? (utilizedAmount / entityTotal.approvedLimit) * 100
+                        : 0;
+                      
+                      return (
+                        <>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`${getUtilizationColor(utilizationPercentage)} h-2 rounded-full`}
+                              style={{ width: `${Math.min(utilizationPercentage, 100)}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs mt-1">{utilizationPercentage.toFixed(1)}%</span>
+                        </>
+                      );
+                    })()}
+                  </td>
                 </tr>
               )}
               
               {/* Show message if no limits */}
               {entity.limits.length === 0 && (
                 <tr>
-                  <td colSpan="8" className="px-4 py-4 text-center text-sm text-gray-500">
+                  <td colSpan="9" className="px-4 py-4 text-center text-sm text-gray-500">
                     No facility limits found for this entity
                   </td>
                 </tr>
